@@ -11,6 +11,12 @@ import threading
 #   EXAMPLE CASE 2: Module has n input queues of the same type and 1 output
 #       queue, to which it writes packaged messages.
 #       - This cannot be done with a "property" decorator. 
+#   EXAMPLE CASE 3: Module has 1 input queue of type A and 1 input queue of
+#       type B, as well as 1 output queue of type C and 1 output queue of
+#       type D.
+#       - It becomes necessary to distinguish between the different types of
+#           queues. This may warrant a queue class with type information.
+
 #   Maybe rather than directly manipulate queues, we could have methods that
 #   handle connecting two modules. Example: 
 #       module_in.queue_to(module_out)

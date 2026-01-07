@@ -1,5 +1,5 @@
 # chatbot/middle_methods/vosk.py
-from input_methods.dummy import DummyModule
+from middle_methods.dummy import DummyMiddle, middle_methods_class
 import sounddevice as sd
 import queue
 import json
@@ -8,9 +8,9 @@ import threading
 import time
 import numpy as np
 
-class VoskTranscriber(DummyModule):
+class VoskTranscriber(DummyMiddle):
     def __init__(self, name="vosk_transcriber", model_path=None, samplerate=16000, timeout=5.0, **stream_args):
-        DummyModule.__init__(self, name)
+        DummyMiddle.__init__(self, name)
         self.samplerate = samplerate
         self.timeout = timeout
         self.loop_type = "thread"
@@ -39,7 +39,6 @@ class VoskTranscriber(DummyModule):
         
         with sd.RawInputStream(**self.stream_args) as stream:
             self._stream = stream
-            print("🎤 Listening...")
             
             while not self._stopped.is_set():
                 try:
@@ -75,6 +74,4 @@ class VoskTranscriber(DummyModule):
         if hasattr(self, 'loop'):
             self.loop.join(timeout=2.0)
 
-middle_methods_class = dict()
 middle_methods_class['vosk'] = VoskTranscriber
-

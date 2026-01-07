@@ -8,45 +8,54 @@ argparse in chatbot/main.py.  Ideally, multiple modules achieving the same
 functionality should be able to be used simultaneously for confidence
 estimation. (e.g. do levenshtein distance between multiple STT)
 
-Modules:
-    Input:
-        Dummy (Hello Worlds at regular intervals)
-        Speech to text  (TODO)
-            Vosk        (WIP)
-            Whisper     (TODO)
-        Keyboard input
-        Pipe in?        (TODO)
-    Output:
-        Dummy (prints to console)
-        Text to speech  (TODO)
-        Pipe out?       (TODO)
-    Storage:
-        Dummy           (TODO)
-        File            (TODO)
-        Neo4j           (TODO)
-    NLP:
-        Dummy           (TODO)
-        Language model  (TODO)
-        SpaCy           (TODO)
-        Stanza          (TODO)
-    Sentence generation:
-        Dummy           (TODO)
-        Language model  (TODO)
-        Graph?          (TODO)
-    Body language:
-        Dummy           (TODO)
-        Face            (TODO)
-        Gaze            (TODO)
-        Body?           (TODO)
-    Perception:
-        Dummy           (TODO)
-        Vision          (TODO)
-        Audio           (TODO)
+### Planned Modules:
+* Input:
+    * Dummy (Hello Worlds at regular intervals)
+    * Speech to text  (WIP)
+    1. Vosk         (rough draft)
+    2. Whisper      (TODO)
+    * Keyboard input
+    * Pipe in?        (TODO)
+* Output:
+    * Dummy (prints to console)
+    * Text to speech (TODO)
+    1. Navel TTS?    (TODO)
+    * Pipe out?       (TODO)
+* Storage:
+    * Dummy           (TODO)
+    * File            (TODO)
+    * Neo4j           (TODO)
+* NLP:
+    * Dummy           (TODO)
+    * Language model  (TODO)
+    * SpaCy           (TODO)
+    * Stanza          (TODO)
+* Sentence generation:
+    * Dummy           (TODO)
+    * Language model  (TODO)
+    * Graph?          (TODO)
+* Body language:
+    * Dummy           (TODO)
+    * Face            (TODO)
+    * Gaze            (TODO)
+    * Body?           (TODO)
+* Perception:
+    * Dummy           (TODO)
+    * Vision          (TODO)
+    * Audio           (TODO)
+
+### Module Structure
+
+All modules are composed of a set of input queues, a set of output queues, and 
+a loop function.  A module can only read from its input queues, and can only write
+to its output queues.  Each queue is unique to a pair of modules.
 
 
+### Layout Storage
 
-
-
+Currently, layouts are entirely managed by `chatbot/main.py` for testing.
+Modules are selected by command line arguments.  Available modules can be
+listed by running `chatbot/main.py --help`.
 
 
 ## Multithreaded structure

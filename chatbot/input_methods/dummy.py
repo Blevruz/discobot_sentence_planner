@@ -23,17 +23,15 @@ class DummyInput(DummyModule):
 
 
     def action(self, i):
-        self.output_queue.put(f"Hello world! {i}")
-        time.sleep(self.delay)
+        return
 
     def get_input(self):
         return self.output_queue.get()
 
-    def __init__(self, name="dummy_input", queue=None, delay=1.0, timeout=1.0):
+    def __init__(self, name="dummy_input", queue=None):
         DummyModule.__init__(self, name)
         self.type = "input"
-        self.delay = delay
-        self.timeout = timeout
+
         # An input module is the end point of the pipeline, so it has no need
         # for an output queue
         self.loop_type = "process"

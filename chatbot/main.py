@@ -20,7 +20,7 @@ if __name__ == '__main__':
         '--input', dest='input',
         required=False,
         default='dummy',
-        help=f"Input method for the chatbot. Use one of {input_methods.keys()}, or multiple separated by commas")
+        help=f"Input method for the chatbot. Use one of {input_methods.keys()}.")
     parser.add_argument(
         '--middle', dest='middle',
         nargs='*',
@@ -31,7 +31,7 @@ if __name__ == '__main__':
         '--output', dest='output',
         required=False,
         default='dummy',
-        help=f"Output method for the chatbot. Use one of {output_methods.keys()}, or multiple separated by commas")
+        help=f"Output method for the chatbot. Use one of {output_methods.keys()}.")
     args = parser.parse_args()
 
     verbose = args.verbose
