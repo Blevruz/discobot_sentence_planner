@@ -1,17 +1,18 @@
+# chatbot/input_methods/keyboard.py
 from input_methods.dummy import DummyInput, input_methods_class
-from multiprocessing import Queue
-import queue
-import threading
+import time
 
 class KeyboardInput(DummyInput):
-    def __init__(self, name):
-        DummyInput.__init__(self, name)
-        self.name = name
-        self.input_loop = threading.Thread(target=self._input_loop)
 
-    def _input_loop(self):
-        while True:
-            self.output_queue.put(input())
+    def action(self, i):
+        while not self.output_queue.empty():
+            return
+        self.output_queue.put(input("USR> "))
+        time.sleep(self.delay)
+
+    def __init__(self, name="keyboard_input", delay=1.0, timeout=1.0):
+        DummyInput.__init__(self, name)
+        self.loop_type = "thread"
 
 input_methods_class = dict()
 input_methods_class['keyboard'] = KeyboardInput

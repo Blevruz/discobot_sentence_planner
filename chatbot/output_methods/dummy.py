@@ -1,3 +1,4 @@
+# chatbot/output_methods/dummy.py
 from utils.module_management import DummyModule
 
 import multiprocessing
@@ -6,53 +7,49 @@ import time
 
 
 class DummyOutput(DummyModule):
-    def __init__(self, name, delay=1.0, timeout=1.0):
-        DummyModule.__init__(self, name)
-        self.delay = delay
-        self.timeout = timeout
-        # An output module is the end point of the pipeline, so it doesn't
-        # need an output queue
-        self.output_queue = None
-        #self.output_loop = multiprocessing.Process(target=self._output_loop)
-        #self.stopped = False
-        self.output_loop = threading.Thread(target=self._output_loop)
-        self.stopped = threading.Event()
 
-    def _output_loop(self):
-        while not self.is_stopped():
-            try:
-                print(self.input_queue.get(timeout=self.timeout))
-                time.sleep(self.delay)
-            except:
-                pass
+    # Output queue is not used
+    @property
+    def output_queue(self):
+        raise "Attempted to read output queue on output module"
+        return None
+    @output_queue.setter
+    def output_queue(self, queue):
+        raise "Attempted to write to output queue on output module"
+    def _create_output_queue(self): 
+        raise "Attempted to create output queue on output module"
+    def _add_output_queue(self, queue):
+        raise "Attempted to add output queue on output module"
 
-    def start_loop(self, verbose):
-        if type(self.output_loop) is not threading.Thread:
-            self.stopped = False
-        if verbose:
-            print(f"[DEBUG] Starting output loop for {self.name}")
-        self.output_loop.start()
 
-    def stop_loop(self, verbose):
-        if verbose:
-            print(f"[DEBUG] Stopping output loop for {self.name}")
-        if type(self.output_loop) is threading.Thread:
-            self.stopped.set()
-            self.output_loop.join(self.timeout)
-        elif type(self.output_loop) is multiprocessing.Process:
-            self.stopped = True
-            self.output_loop.terminate()
-        else:
-            raise ValueError(f"Unknown type for output loop: {type(self.output_loop)}")
-
-    def is_stopped(self):
-        if type(self.stopped) is threading.Event:
-            return self.stopped.is_set()
-        else:
-            return self.stopped
+    def action(self, i):
+        try:
+            if self.verbose:
+                print(f"READ ATTEMPT N°{i}")
+            print(f"SYS> {self.input_queue.get(timeout=self.timeout)}")
+            time.sleep(self.delay)
+        except:
+            if self.verbose:
+                print(f"READ ATTEMPT N°{i} FAILED")
+            time.sleep(self.delay)
+            return
 
     def put_output(self, message):
         self.input_queue.put(message)
 
+    def __init__(self, name = "dummy_output", delay=1.0, timeout=1.0):
+        DummyModule.__init__(self, name)
+        self.type = "output"
+        self.delay = delay
+        self.timeout = timeout
+        # An output module is the end point of the pipeline, so it doesn't
+        # need an output queue
+        self.loop_type = 'thread'
+
+        self._input_queues.append(None)
+        self._output_queues.append(None)
+
+
 output_methods_class = dict()
 output_methods_class['dummy'] = DummyOutput
+#output_methods_class['dummy'] = lambda name: DummyOutput(name, delay=0.0, timeout=0.0)
