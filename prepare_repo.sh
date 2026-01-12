@@ -18,9 +18,13 @@ if $UV_INSTALLED; then
     uv venv venv
     source venv/bin/activate && uv pip install -r requirements.txt
 # En utilisant pyenv:
-elif $PYENV_INSTALLED; then
-    pyenv init && pyenv local 3.11.2
-    pyenv exec python3 -m venv venv || python3 -m venv venv
+else
+    if $PYENV_INSTALLED; then
+    	pyenv init && pyenv local 3.11.2
+    	pyenv exec python3 -m venv venv 
+    else
+	python3 -m venv venv
+    fi
     source venv/bin/activate && python -m pip install -r requirements.txt
 fi
 
