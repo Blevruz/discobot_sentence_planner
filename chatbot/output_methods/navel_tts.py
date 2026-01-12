@@ -15,3 +15,4 @@ class NavelTTS(DummyOutput):
         DummyOutput.__init__(self, name, verbose)
         self.loop_type = 'thread'
 
+output_methods_class['navel_tts'] = NavelTTS
