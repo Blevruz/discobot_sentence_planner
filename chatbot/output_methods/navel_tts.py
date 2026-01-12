@@ -1,5 +1,5 @@
 # chatbot/output_methods/navel_tts.py
-from output_methods.dummy import DummyOutput
+from output_methods.dummy import DummyOutput, output_methods_class
 
 import navel
 
