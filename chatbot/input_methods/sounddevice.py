@@ -11,7 +11,6 @@ class SoundDeviceInput(DummyInput):
         self.loop_type = "process"  # Use multiprocessing
         self.stream_args = stream_args
         self._stream_running = multiprocessing.Event()
-        self._stream_running.set()  # Start in running state
         self._process = None
 
     def _loop(self):

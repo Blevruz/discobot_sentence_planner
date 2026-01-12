@@ -1,4 +1,4 @@
-#!/usr/bin/env python
+#!venv/bin/python
 # chatbot/main.py
 import argparse
 import importlib
@@ -44,7 +44,7 @@ if __name__ == '__main__':
     output_method = output_module.output_methods_class[args.output](args.output, verbose)
 
     middle_modules = [importlib.import_module(middle_methods[m]) for m in args.middle]
-    middle_method_list = [mm.middle_methods_class[mn](mn, verbose) for mm, mn in zip(middle_modules, args.middle)]
+    middle_method_list = [mm.middle_methods_class[mn] for mm, mn in zip(middle_modules, args.middle)]
 
     input_module = importlib.import_module(input_methods[args.input])
     input_method = input_module.input_methods_class[args.input](args.input, verbose)

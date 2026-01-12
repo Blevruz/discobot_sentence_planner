@@ -36,8 +36,5 @@ class DummyInput(DummyModule):
         # for an output queue
         self.loop_type = "process"
 
-        self._input_queues.append(None)
-        self._output_queues.append(None)
-
 input_methods_class = dict()
 input_methods_class['dummy'] = DummyInput
