@@ -11,8 +11,9 @@ class NavelTTS(DummyOutput):
         return
 
 
-    def __init__(self, name = "navel_tts", verbose=False):
-        DummyOutput.__init__(self, name, verbose)
+    def __init__(self, name = "navel_tts"):
+        DummyOutput.__init__(self, name)
         self.loop_type = 'thread'
+        self.datatype_in = 'string'
 
 output_methods_class['navel_tts'] = NavelTTS

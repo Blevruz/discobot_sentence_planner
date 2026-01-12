@@ -14,5 +14,6 @@ class ConsoleOutput(DummyOutput):
         self.delay = delay
         self.timeout = timeout
         self.loop_type = 'thread'
+        self.datatype_in = 'string'
 
 output_methods_class['console'] = ConsoleOutput

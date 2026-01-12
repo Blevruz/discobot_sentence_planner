@@ -14,6 +14,7 @@ class HelloWorldInput(DummyInput):
 
     def __init__(self, name="helloworld", queue=None, delay=1.0, timeout=1.0):
         DummyInput.__init__(self, name)
+        self.datatype_out = "string"
         self.delay = delay
         self.timeout = timeout
 

@@ -34,7 +34,6 @@ class DummyInput(DummyModule):
 
         # An input module is the end point of the pipeline, so it has no need
         # for an output queue
-        self.loop_type = "process"
 
 input_methods_class = dict()
 input_methods_class['dummy'] = DummyInput

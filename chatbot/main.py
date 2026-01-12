@@ -4,6 +4,7 @@ import argparse
 import importlib
 import time
 from utils.module_management import get_methods
+from utils.config import load_config, verbose
 
 if __name__ == '__main__':
 
@@ -12,6 +13,11 @@ if __name__ == '__main__':
     middle_methods = get_methods("middle")
 
     parser = argparse.ArgumentParser()
+    parser.add_argument(
+        '--config', dest='config',
+        required=False,
+        default='config.json',
+        help=f"Configuration file for the chatbot")
     parser.add_argument(
         '--verbose', dest='verbose',
         action='store_true',
@@ -41,13 +47,13 @@ if __name__ == '__main__':
         print(f"[DEBUG] Output method: {args.output}")
 
     output_module = importlib.import_module(output_methods[args.output])
-    output_method = output_module.output_methods_class[args.output](args.output, verbose)
+    output_method = output_module.output_methods_class[args.output](args.output)
 
     middle_modules = [importlib.import_module(middle_methods[m]) for m in args.middle]
-    middle_method_list = [mm.middle_methods_class[mn] for mm, mn in zip(middle_modules, args.middle)]
+    middle_method_list = [mm.middle_methods_class[mn](mn) for mm, mn in zip(middle_modules, args.middle)]
 
     input_module = importlib.import_module(input_methods[args.input])
-    input_method = input_module.input_methods_class[args.input](args.input, verbose)
+    input_method = input_module.input_methods_class[args.input](args.input)
 
     # Method linking
 

@@ -1,41 +1,19 @@
 # chatbot/utils/module_management.py
 import multiprocessing
 import threading
+from utils.config import verbose
 
-##  We want to have an arbitrary number of input and output queues
-#   and be able to work with a set of assumptions in specific modules
-#   EXAMPLE CASE 1: Module has 1 input queue and 1 output queue.
-#       - We could have a list of queue that is only accessed through getters
-#           and setters, thus restricting us to only one input and output queue
-#           which could work elegantly with "property" decorators.
-#   EXAMPLE CASE 2: Module has n input queues of the same type and 1 output
-#       queue, to which it writes packaged messages.
-#       - This cannot be done with a "property" decorator. 
-#   EXAMPLE CASE 3: Module has 1 input queue of type A and 1 input queue of
-#       type B, as well as 1 output queue of type C and 1 output queue of
-#       type D.
-#       - It becomes necessary to distinguish between the different types of
-#           queues. This may warrant a queue class with type information.
-
-#   Maybe rather than directly manipulate queues, we could have methods that
-#   handle connecting two modules. Example: 
-#       module_in.queue_to(module_out)
-#       module_in.queue_from(module_out)
-#   Within the methods, they would call the receiving module's methods to add
-#   queues appropriately (or not! Error handling would be necessary).
-#       Mockup:
-#       def queue_to(self, module_out):
-#           module_out.add_input_queue(self._create_output_queue())
-#       def _create_output_queue(self): # for our 1 input-1 output case
-#           self._output_queues[0] = multiprocessing.Queue()
-#           return self._output_queues[0]
-#       def add_input_queue(self, queue):   # for our n input-1 output case
-#           self._input_queues.append(queue)
+def datatype_match(datatype1, datatype2):
+    if datatype1 == datatype2:
+        return True
+    if datatype1 == "any" or datatype2 == "any":
+        return True
+    return False
 
 class QueueWrapper:
     def __init__(self, datatype="string", name="unnamed_queue"):
         self.name = name
-        self.type = datatype
+        self.datatype = datatype
         self._queue = multiprocessing.Queue()
         self._mod_from = None
         self._mod_to = None
@@ -47,6 +25,8 @@ class QueueWrapper:
     def mod_from(self, from_module):
         if from_module.type == "output":
             raise ValueError("Cannot set input queue from output module")
+        if not datatype_match(from_module.datatype_out, self.datatype):
+            raise ValueError(f"Datatype mismatch between queue and module, with datatypes {self.datatype} and {from_module.datatype_out}")
         self._mod_from = from_module
         self._mod_from.add_output_queue(self)
 
@@ -57,6 +37,8 @@ class QueueWrapper:
     def mod_to(self, to_module):
         if to_module.type == "input":
             raise ValueError("Cannot set output queue to input module")
+        if not datatype_match(to_module.datatype_in, self.datatype):
+            raise ValueError(f"Datatype mismatch between queue and module, with datatypes {self.datatype} and {to_module.datatype_in}")
         self._mod_to = to_module
         self._mod_to.add_input_queue(self)
 
@@ -83,15 +65,16 @@ class QueueWrapper:
 
 
 class DummyModule:
-    def __init__(self, name = "dummy", verbose=False):
+    def __init__(self, name = "dummy"):
         self._type = 'dummy'
         self._name = name
-        self.verbose = verbose
         self.loop_timeout = 0.1
         # Set of queues we only read from
         self._input_queues = list()
+        self.datatype_in = 'any'
         # Set of queues we only write to
         self._output_queues = list()
+        self.datatype_out = 'any'
         self._loop_type = 'blocking'
 
     @property
@@ -137,12 +120,13 @@ class DummyModule:
 
     def _create_input_queue(self): 
         # Example implementation, only one input queue
+        Q = QueueWrapper(datatype=self.datatype_in, name=f"{self.name}_input_queue")
         if len(self._input_queues) > 0:
-            self._input_queues[0] = QueueWrapper()
+            self._input_queues[0] = Q
         else:
-            self._input_queues.append(QueueWrapper())
+            self._input_queues.append(Q)
         self._input_queues[0].mod_to = self
-        if self.verbose:
+        if verbose:
             print(f"[DEBUG] Created input queue {self._input_queues[0]} for {self.name}")
         return self._input_queues[0]
 
@@ -150,17 +134,18 @@ class DummyModule:
     #  If yes, delete this method
     def _create_output_queue(self): 
         # Example implementation, only one output queue
+        Q = QueueWrapper(datatype=self.datatype_out, name=f"{self.name}_output_queue")
         if len(self._output_queues) > 0:
-            self._output_queues[0] = QueueWrapper()
+            self._output_queues[0] = Q
         else:
-            self._output_queues.append(QueueWrapper())
+            self._output_queues.append(Q)
         self._output_queues[0].mod_from = self
-        if self.verbose:
+        if verbose:
             print(f"[DEBUG] Created output queue {self._output_queues[0]} for {self.name}")
         return self._output_queues[0]
 
     def add_input_queue(self, queue):
-        if self.verbose:
+        if verbose:
             print(f"[DEBUG] Assigning input queue {queue} to {self.name}")
         if len(self._input_queues) > 0:
             self._input_queues[0] = queue
@@ -168,7 +153,7 @@ class DummyModule:
             self._input_queues.append(queue)
 
     def add_output_queue(self, queue):
-        if self.verbose:
+        if verbose:
             print(f"[DEBUG] Assigning output queue {queue} to {self.name}")
         if len(self._output_queues) > 0:
             self._output_queues[0] = queue
@@ -176,7 +161,7 @@ class DummyModule:
             self._output_queues.append(queue)
 
     def link_to(self, other):
-        if self.verbose:
+        if verbose:
             print(f"[DEBUG] Setting {self.name}'s output queue as {other.name}'s input queue, of types {type(self.output_queue)} and {type(other.input_queue)}")
         #other.add_input_queue(self._create_output_queue())
         if self.output_queue is None:
@@ -184,7 +169,7 @@ class DummyModule:
         self.output_queue.mod_to = other
 
     def link_from(self, other):
-        if self.verbose:
+        if verbose:
             print(f"[DEBUG] Setting {self.name}'s input queue as {other.name}'s output queue, of types {type(self.input_queue)} and {type(other.output_queue)}")
         #other.add_output_queue(self._create_input_queue())
         if self.input_queue is None:
@@ -200,11 +185,11 @@ class DummyModule:
 
     # Overwrite this method if you want to do something when the loop starts
     def module_start(self):
-        if self.verbose:
+        if verbose:
             print(f"[DEBUG] Called empty module_start() for {self.name}")
 
     def start_loop(self):
-        if self.verbose:
+        if verbose:
             print(f"[DEBUG] Starting {self.type} loop for {self.name}")
         self.module_start()
         self.stopped = threading.Event()
@@ -218,11 +203,11 @@ class DummyModule:
 
     # Overwrite this method if you want to do something when the loop ends
     def module_stop(self):
-        if self.verbose:
+        if verbose:
             print(f"[DEBUG] Called empty module_stop() for {self.name}")
 
     def stop_loop(self):
-        if self.verbose:
+        if verbose:
             print(f"[DEBUG] Stopping {self.type} loop for {self.name}")
         self.stopped.set()
         if self._loop_type == 'thread':

@@ -22,9 +22,11 @@ class VoskTranscriber(DummyMiddle):
         self.samplerate = samplerate
         self.timeout = timeout
         self.loop_type = "thread"
+        self.datatype_in = "audio"
+        self.datatype_out = "string"
 
         # Initialize Vosk
         self.model = vosk.Model(model_path) if model_path else vosk.Model(lang="en-us")
         self.recognizer = vosk.KaldiRecognizer(self.model, samplerate)
 
-middle_methods_class['vosk'] = VoskTranscriber(model_path="models/vosk/en")
+middle_methods_class['vosk'] = lambda n: VoskTranscriber(n, model_path="models/vosk/en")
