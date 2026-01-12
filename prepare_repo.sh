@@ -1,9 +1,29 @@
 #!/bin/bash
 # Gestion de la version de Python sur environnement Linux
 # et installation des dépendances
-pyenv init && pyenv local 3.11.2
-pyenv exec python3 -m venv venv || python3 -m venv venv
-source venv/bin/activate && python -m pip install -r requirements.txt
+UV_INSTALLED=false
+PYENV_INSTALLED=false
+if uv --version > /dev/null; then
+    echo "uv is installed"
+    UV_INSTALLED=true
+fi
+if pyenv --version > /dev/null; then
+    echo "pyenv is installed"
+    PYENV_INSTALLED=true
+fi
+
+if $UV_INSTALLED; then
+# En utilisant uv:
+    uv python install 3.11
+    uv venv venv
+    source venv/bin/activate && uv pip install -r requirements.txt
+# En utilisant pyenv:
+elif $PYENV_INSTALLED; then
+    pyenv init && pyenv local 3.11.2
+    pyenv exec python3 -m venv venv || python3 -m venv venv
+    source venv/bin/activate && python -m pip install -r requirements.txt
+fi
+
 
 # Gestion des modèles de STT Vosk
 SCRIPT_DIR=$( cd -- "$( dirname -- "${BASH_SOURCE[0]}" )" &> /dev/null && pwd )
