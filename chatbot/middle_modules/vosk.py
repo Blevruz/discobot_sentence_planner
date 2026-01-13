@@ -32,6 +32,6 @@ class VoskTranscriber(DummyMiddle):
 
         # Initialize Vosk
         self.model = vosk.Model(self.model_path) if self.model_path else vosk.Model(lang="en-us")
-        self.recognizer = vosk.KaldiRecognizer(self.model, samplerate)
+        self.recognizer = vosk.KaldiRecognizer(self.model, self.samplerate)
 
 middle_modules_class['vosk'] = lambda n: VoskTranscriber(n, model_path="models/vosk/en")
