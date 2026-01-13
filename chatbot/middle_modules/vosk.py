@@ -26,8 +26,8 @@ class VoskTranscriber(DummyMiddle):
         self.samplerate = args.get('samplerate', 16000)
         self.timeout = args.get('timeout', 1)
         self._loop_type = "thread"
-        self._datatype_in = "audio"
-        self._datatype_out = "string"
+        self.datatype_in = "audio"
+        self.datatype_out = "string"
 
         # Initialize Vosk
         self.model = vosk.Model(model_path) if model_path else vosk.Model(lang="en-us")

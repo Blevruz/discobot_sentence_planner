@@ -12,6 +12,6 @@ class ConsoleOutput(DummyOutput):
     def __init__(self, name = "console_output", **args):
         DummyOutput.__init__(self, name)
         self._loop_type = 'thread'
-        self._datatype_in = 'string'
+        self.datatype_in = 'string'
 
 output_modules_class['console'] = ConsoleOutput

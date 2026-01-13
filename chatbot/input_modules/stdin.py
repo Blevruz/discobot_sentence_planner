@@ -11,7 +11,7 @@ class StdinInput(DummyInput):
     def __init__(self, name="stdin_input", **args):
         DummyInput.__init__(self, name)
         self._loop_type = "thread"
-        self._datatype_out = "any"
+        self.datatype_out = "any"
 
 input_modules_class['stdin'] = StdinInput
 

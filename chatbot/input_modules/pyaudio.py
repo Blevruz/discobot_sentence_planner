@@ -1,6 +1,6 @@
 # chatbot/input_modules/pyaudio.py
 from input_modules.dummy import DummyInput, input_modules_class
-from utils.config import verbose
+import utils.config
 import pyaudio
 import multiprocessing
 
@@ -20,7 +20,7 @@ class PyAudioInput(DummyInput):
     def __init__(self, name="pyaudio_input", **args):
         DummyInput.__init__(self, name)
         self._loop_type = "blocking"  # We use a callback so it's fine to use blocking
-        self._datatype_out = "audio"
+        self.datatype_out = "audio"
         self.format = args.get('format', pyaudio.paInt16)
         self.channels = args.get('channels', 1)
         self.rate = args.get('rate', 16000)
@@ -31,8 +31,9 @@ class PyAudioInput(DummyInput):
 
 
     def module_start(self):
-        if verbose:
+        if utils.config.verbose:
             print(f"[DEBUG] Starting PyAudioInput loop for {self.name}")
+            print(f"[DEBUG] PyAudioInput loop for {self.name}: {self.format}, {self.channels}, {self.rate}, {self.frames_per_buffer}")
         self._stream = self.pyaudio.open(
                     format=self.format,
                     channels=self.channels,
@@ -44,7 +45,7 @@ class PyAudioInput(DummyInput):
                 )
 
     def module_stop(self):
-        if verbose:
+        if utils.config.verbose:
             print(f"[DEBUG] Stopping PyAudioInput loop for {self.name}")
         self._stream.stop_stream()
         self._stream.close()

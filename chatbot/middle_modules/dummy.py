@@ -1,5 +1,5 @@
 # chatbot/middle_modules/dummy.py
-from utils.module_management import DummyModule
+from utils.dummy_module import DummyModule
 
 class DummyMiddle(DummyModule):
 

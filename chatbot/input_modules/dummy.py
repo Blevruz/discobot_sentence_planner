@@ -1,5 +1,5 @@
 # chatbot/input_modules/dummy.py
-from utils.module_management import DummyModule
+from utils.dummy_module import DummyModule
 
 import multiprocessing
 import threading
@@ -16,9 +16,9 @@ class DummyInput(DummyModule):
     @input_queue.setter
     def input_queue(self, queue):
         raise "Attempted to write to input queue on input module"
-    def _create_input_queue(self): 
+    def _create_input_queue(self, slot="default", name="input_queue"): 
         raise "Attempted to create input queue on input module"
-    def _add_input_queue(self, queue):
+    def add_input_queue(self, queue, slot="default"):
         raise "Attempted to add input queue on input module"
 
 

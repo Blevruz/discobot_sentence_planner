@@ -16,6 +16,6 @@ class StdoutOutput(DummyOutput):
     def __init__(self, name="stdout_output", **args):
         DummyOutput.__init__(self, name)
         self._loop_type = "thread"
-        self._datatype_in = "any"
+        self.datatype_in = "any"
 
 output_modules_class['stdout'] = StdoutOutput

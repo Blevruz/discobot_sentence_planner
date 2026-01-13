@@ -4,10 +4,10 @@ import argparse
 import importlib
 import time
 from utils.module_management import get_modules
-from utils.config import load_config, verbose
+import utils.config
+from utils.config import load_config
 
-if __name__ == '__main__':
-
+def main():
     input_modules = get_modules("input")
     output_modules = get_modules("output")
     middle_modules = get_modules("middle")
@@ -40,8 +40,8 @@ if __name__ == '__main__':
         help=f"Output module for the chatbot. Use one of {output_modules.keys()}.")
     args = parser.parse_args()
 
-    verbose = args.verbose
-    if verbose:
+    utils.config.verbose = args.verbose
+    if utils.config.verbose:
         print(f"[DEBUG] Input module: {args.input}")
         print(f"[DEBUG] Middle modules: {args.middle}")
         print(f"[DEBUG] Output module: {args.output}")
@@ -69,7 +69,7 @@ if __name__ == '__main__':
     else:
         input_module.link_to(output_module)
 
-    if verbose:
+    if utils.config.verbose:
         print(f"[DEBUG] Input module: {input_module.name}, input module's output queue: {input_module.output_queue}")
         for m in middle_module_list:
             print(f"[DEBUG] Middle module: {m.name}, middle module's input queue: {m.input_queue}, middle module's output queue: {m.output_queue}")
@@ -95,5 +95,8 @@ if __name__ == '__main__':
     input_module.stop_loop()
     output_module.stop_loop()
     
-    if verbose:
+    if utils.config.verbose:
         print(f"[DEBUG] Done")
+
+if __name__ == '__main__':
+    main()

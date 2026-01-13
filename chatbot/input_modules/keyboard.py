@@ -13,7 +13,7 @@ class KeyboardInput(DummyInput):
     def __init__(self, name="keyboard_input", **args):
         DummyInput.__init__(self, name)
         self._loop_type = "thread"
-        self._datatype_out = "string"
+        self.datatype_out = "string"
         self.delay = args.get('delay', 1.0)
 
 input_modules_class['keyboard'] = KeyboardInput

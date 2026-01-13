@@ -8,8 +8,6 @@ class Repeater(DummyMiddle):
 
     def __init__(self, name="repeater", **args):
         DummyMiddle.__init__(self, name)
-        self._input_queues = []
-        self._output_queues = []
         self._loop_type = 'process'
 
 middle_modules_class['repeater'] = Repeater

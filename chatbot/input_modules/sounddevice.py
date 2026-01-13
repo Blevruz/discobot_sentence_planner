@@ -9,7 +9,7 @@ class SoundDeviceInput(DummyInput):
     def __init__(self, name="sound_input", **args):
         DummyInput.__init__(self, name)
         self._loop_type = "process"  # Use multiprocessing
-        self._datatype_out = "audio"
+        self.datatype_out = "audio"
         self.args = args
         self._stream_running = multiprocessing.Event()
         self._process = None
