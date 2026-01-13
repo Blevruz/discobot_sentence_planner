@@ -9,37 +9,37 @@ functionality should be able to be used simultaneously for confidence
 estimation. (e.g. do levenshtein distance between multiple STT)
 
 ### Planned Modules:
-* Input:
+* Input:    (WIP)
     * Dummy (Hello Worlds at regular intervals)
     * Speech to text  (WIP)
     1. Vosk         (rough draft)
     2. Whisper      (TODO)
     * Keyboard input
-    * Pipe in?        (TODO)
+    * Pipe in
 * Output:
     * Dummy (prints to console)
-    * Text to speech (TODO)
-    1. Navel TTS?    (TODO)
-    * Pipe out?       (TODO)
-* Storage:
+    * Text to speech
+    1. Navel TTS
+    * Pipe out
+* Storage:  (TODO)
     * Dummy           (TODO)
     * File            (TODO)
     * Neo4j           (TODO)
-* NLP:
+* NLP:  (TODO)
     * Dummy           (TODO)
     * Language model  (TODO)
     * SpaCy           (TODO)
     * Stanza          (TODO)
-* Sentence generation:
+* Sentence generation:  (TODO)
     * Dummy           (TODO)
     * Language model  (TODO)
     * Graph?          (TODO)
-* Body language:
+* Body language:    (TODO)
     * Dummy           (TODO)
     * Face            (TODO)
     * Gaze            (TODO)
     * Body?           (TODO)
-* Perception:
+* Perception:   (TODO)
     * Dummy           (TODO)
     * Vision          (TODO)
     * Audio           (TODO)
