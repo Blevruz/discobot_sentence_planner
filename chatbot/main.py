@@ -3,14 +3,14 @@
 import argparse
 import importlib
 import time
-from utils.module_management import get_methods
+from utils.module_management import get_modules
 from utils.config import load_config, verbose
 
 if __name__ == '__main__':
 
-    input_methods = get_methods("input")
-    output_methods = get_methods("output")
-    middle_methods = get_methods("middle")
+    input_modules = get_modules("input")
+    output_modules = get_modules("output")
+    middle_modules = get_modules("middle")
 
     parser = argparse.ArgumentParser()
     parser.add_argument(
@@ -26,61 +26,61 @@ if __name__ == '__main__':
         '--input', dest='input',
         required=False,
         default='dummy',
-        help=f"Input method for the chatbot. Use one of {input_methods.keys()}.")
+        help=f"Input module for the chatbot. Use one of {input_modules.keys()}.")
     parser.add_argument(
         '--middle', dest='middle',
         nargs='*',
         required=False,
         default=[],
-        help=f"Middle methods for the chatbot. Use entries from {middle_methods.keys()}.")
+        help=f"Middle modules for the chatbot. Use entries from {middle_modules.keys()}.")
     parser.add_argument(
         '--output', dest='output',
         required=False,
         default='dummy',
-        help=f"Output method for the chatbot. Use one of {output_methods.keys()}.")
+        help=f"Output module for the chatbot. Use one of {output_modules.keys()}.")
     args = parser.parse_args()
 
     verbose = args.verbose
     if verbose:
-        print(f"[DEBUG] Input method: {args.input}")
-        print(f"[DEBUG] Middle methods: {args.middle}")
-        print(f"[DEBUG] Output method: {args.output}")
+        print(f"[DEBUG] Input module: {args.input}")
+        print(f"[DEBUG] Middle modules: {args.middle}")
+        print(f"[DEBUG] Output module: {args.output}")
 
-    output_module = importlib.import_module(output_methods[args.output])
-    output_method = output_module.output_methods_class[args.output](args.output)
+    output_module = importlib.import_module(output_modules[args.output])
+    output_module = output_module.output_modules_class[args.output](args.output)
 
-    middle_modules = [importlib.import_module(middle_methods[m]) for m in args.middle]
-    middle_method_list = [mm.middle_methods_class[mn](mn) for mm, mn in zip(middle_modules, args.middle)]
+    middle_modules = [importlib.import_module(middle_modules[m]) for m in args.middle]
+    middle_module_list = [mm.middle_modules_class[mn](mn) for mm, mn in zip(middle_modules, args.middle)]
 
-    input_module = importlib.import_module(input_methods[args.input])
-    input_method = input_module.input_methods_class[args.input](args.input)
+    input_module = importlib.import_module(input_modules[args.input])
+    input_module = input_module.input_modules_class[args.input](args.input)
 
-    # Method linking
+    # module linking
 
-    # Do we have any middle methods? If so, link input to the first one
-    if len(middle_method_list) > 0:
-        input_method.link_to(middle_method_list[0])
-        # Link the rest of the middle methods together if there's more than one
+    # Do we have any middle modules? If so, link input to the first one
+    if len(middle_module_list) > 0:
+        input_module.link_to(middle_module_list[0])
+        # Link the rest of the middle modules together if there's more than one
         # left
-        for i in range(len(middle_method_list) - 1):
-            middle_method_list[i].link_to(middle_method_list[i + 1])
-        # Link the last middle method to the output method
-        middle_method_list[-1].link_to(output_method)
+        for i in range(len(middle_module_list) - 1):
+            middle_module_list[i].link_to(middle_module_list[i + 1])
+        # Link the last middle module to the output module
+        middle_module_list[-1].link_to(output_module)
     else:
-        input_method.link_to(output_method)
+        input_module.link_to(output_module)
 
     if verbose:
-        print(f"[DEBUG] Input module: {input_method.name}, input module's output queue: {input_method.output_queue}")
-        for m in middle_method_list:
+        print(f"[DEBUG] Input module: {input_module.name}, input module's output queue: {input_module.output_queue}")
+        for m in middle_module_list:
             print(f"[DEBUG] Middle module: {m.name}, middle module's input queue: {m.input_queue}, middle module's output queue: {m.output_queue}")
-        print(f"[DEBUG] Output module: {output_method.name}, output module's input queue: {output_method.input_queue}")
+        print(f"[DEBUG] Output module: {output_module.name}, output module's input queue: {output_module.input_queue}")
 
         print(f"[DEBUG] Starting loops")
 
-    output_method.start_loop()
-    for m in middle_method_list:
+    output_module.start_loop()
+    for m in middle_module_list:
         m.start_loop()
-    input_method.start_loop()
+    input_module.start_loop()
 
     timestart = time.time()
 
@@ -92,8 +92,8 @@ if __name__ == '__main__':
             break
 
 
-    input_method.stop_loop()
-    output_method.stop_loop()
+    input_module.stop_loop()
+    output_module.stop_loop()
     
     if verbose:
         print(f"[DEBUG] Done")

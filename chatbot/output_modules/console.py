@@ -1,5 +1,5 @@
-# chatbot/output_methods/console.py
-from output_methods.dummy import DummyOutput, output_methods_class
+# chatbot/output_modules/console.py
+from output_modules.dummy import DummyOutput, output_modules_class
 
 
 class ConsoleOutput(DummyOutput):
@@ -11,7 +11,7 @@ class ConsoleOutput(DummyOutput):
 
     def __init__(self, name = "console_output", **args):
         DummyOutput.__init__(self, name)
-        self.loop_type = 'thread'
-        self.datatype_in = 'string'
+        self._loop_type = 'thread'
+        self._datatype_in = 'string'
 
-output_methods_class['console'] = ConsoleOutput
+output_modules_class['console'] = ConsoleOutput

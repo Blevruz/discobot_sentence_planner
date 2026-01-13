@@ -1,5 +1,5 @@
-# chatbot/output_methods/stdout.py
-from output_methods.dummy import DummyOutput, output_methods_class
+# chatbot/output_modules/stdout.py
+from output_modules.dummy import DummyOutput, output_modules_class
 import sys
 
 class StdoutOutput(DummyOutput):
@@ -15,7 +15,7 @@ class StdoutOutput(DummyOutput):
 
     def __init__(self, name="stdout_output", **args):
         DummyOutput.__init__(self, name)
-        self.loop_type = "thread"
-        self.datatype_in = "any"
+        self._loop_type = "thread"
+        self._datatype_in = "any"
 
-output_methods_class['stdout'] = StdoutOutput
+output_modules_class['stdout'] = StdoutOutput

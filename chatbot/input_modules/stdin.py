@@ -1,5 +1,5 @@
-# chatbot/input_methods/stdin.py
-from input_methods.dummy import DummyInput, input_methods_class
+# chatbot/input_modules/stdin.py
+from input_modules.dummy import DummyInput, input_modules_class
 import sys
 
 class StdinInput(DummyInput):
@@ -10,9 +10,9 @@ class StdinInput(DummyInput):
 
     def __init__(self, name="stdin_input", **args):
         DummyInput.__init__(self, name)
-        self.loop_type = "thread"
-        self.datatype_out = "any"
+        self._loop_type = "thread"
+        self._datatype_out = "any"
 
-input_methods_class['stdin'] = StdinInput
+input_modules_class['stdin'] = StdinInput
 
 

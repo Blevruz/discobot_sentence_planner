@@ -1,4 +1,4 @@
-# chatbot/output_methods/dummy.py
+# chatbot/output_modules/dummy.py
 from utils.module_management import DummyModule
 
 import multiprocessing
@@ -34,5 +34,5 @@ class DummyOutput(DummyModule):
         # need an output queue
 
 
-output_methods_class = dict()
-output_methods_class['dummy'] = DummyOutput
+output_modules_class = dict()
+output_modules_class['dummy'] = DummyOutput

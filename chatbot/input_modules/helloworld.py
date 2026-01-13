@@ -1,5 +1,5 @@
-# chatbot/input_methods/helloworld.py
-from input_methods.dummy import DummyInput, input_methods_class
+# chatbot/input_modules/helloworld.py
+from input_modules.dummy import DummyInput, input_modules_class
 
 import multiprocessing
 import threading
@@ -18,4 +18,4 @@ class HelloWorldInput(DummyInput):
         self.delay = args.get('delay', 1.0)
         self.timeout = args.get('timeout', 1.0)
 
-input_methods_class['helloworld'] = HelloWorldInput
+input_modules_class['helloworld'] = HelloWorldInput

@@ -1,5 +1,5 @@
-# chatbot/input_methods/sounddevice.py
-from input_methods.dummy import DummyInput, input_methods_class
+# chatbot/input_modules/sounddevice.py
+from input_modules.dummy import DummyInput, input_modules_class
 import sounddevice as sd
 import numpy as np
 import multiprocessing
@@ -8,8 +8,8 @@ import time
 class SoundDeviceInput(DummyInput):
     def __init__(self, name="sound_input", **args):
         DummyInput.__init__(self, name)
-        self.loop_type = "process"  # Use multiprocessing
-        self.datatype_out = "audio"
+        self._loop_type = "process"  # Use multiprocessing
+        self._datatype_out = "audio"
         self.args = args
         self._stream_running = multiprocessing.Event()
         self._process = None
@@ -45,6 +45,6 @@ class SoundDeviceInput(DummyInput):
             self._process.terminate()
             self._process.join()
 
-input_methods_class = dict()
-input_methods_class['sounddevice'] = SoundDeviceInput
+input_modules_class = dict()
+input_modules_class['sounddevice'] = SoundDeviceInput
 

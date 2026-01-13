@@ -1,5 +1,5 @@
-# chatbot/output_methods/pyaudio.py
-from output_methods.dummy import DummyOutput, output_methods_class
+# chatbot/output_modules/pyaudio.py
+from output_modules.dummy import DummyOutput, output_modules_class
 from utils.config import verbose
 import pyaudio
 
@@ -10,9 +10,9 @@ class PyAudioOutput(DummyOutput):
 
     def __init__(self, name="pyaudio_output", **args):
         DummyOutput.__init__(self, name)
-        self.loop_type = "process"
-        self.datatype_in = "audio"
-        self.datatype_out = "audio"
+        self._loop_type = "process"
+        self._datatype_in = "audio"
+        self._datatype_out = "audio"
         self.format = args.get('format', pyaudio.paInt16)
         self.channels = args.get('channels', 1)
         self.rate = args.get('rate', 16000)
@@ -37,4 +37,4 @@ class PyAudioOutput(DummyOutput):
         self.pyaudio.terminate()
 
 
-output_methods_class['pyaudio'] = PyAudioOutput
+output_modules_class['pyaudio'] = PyAudioOutput

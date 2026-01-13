@@ -1,4 +1,4 @@
-# chatbot/middle_methods/dummy.py
+# chatbot/middle_modules/dummy.py
 from utils.module_management import DummyModule
 
 class DummyMiddle(DummyModule):
@@ -10,5 +10,5 @@ class DummyMiddle(DummyModule):
         DummyModule.__init__(self, name)
         self.type = "middle"
 
-middle_methods_class = dict()
-middle_methods_class['dummy'] = DummyMiddle
+middle_modules_class = dict()
+middle_modules_class['dummy'] = DummyMiddle

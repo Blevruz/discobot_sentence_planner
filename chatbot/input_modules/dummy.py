@@ -1,4 +1,4 @@
-# chatbot/input_methods/dummy.py
+# chatbot/input_modules/dummy.py
 from utils.module_management import DummyModule
 
 import multiprocessing
@@ -35,5 +35,5 @@ class DummyInput(DummyModule):
         # An input module is the end point of the pipeline, so it has no need
         # for an output queue
 
-input_methods_class = dict()
-input_methods_class['dummy'] = DummyInput
+input_modules_class = dict()
+input_modules_class['dummy'] = DummyInput

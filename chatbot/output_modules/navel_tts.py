@@ -1,5 +1,5 @@
-# chatbot/output_methods/navel_tts.py
-from output_methods.dummy import DummyOutput, output_methods_class
+# chatbot/output_modules/navel_tts.py
+from output_modules.dummy import DummyOutput, output_modules_class
 
 import navel
 
@@ -13,7 +13,7 @@ class NavelTTS(DummyOutput):
 
     def __init__(self, name = "navel_tts", **args):
         DummyOutput.__init__(self, name)
-        self.loop_type = 'thread'
-        self.datatype_in = 'string'
+        self._loop_type = 'thread'
+        self._datatype_in = 'string'
 
-output_methods_class['navel_tts'] = NavelTTS
+output_modules_class['navel_tts'] = NavelTTS

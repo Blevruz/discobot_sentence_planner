@@ -61,9 +61,6 @@ class QueueWrapper:
         return self._queue.full()
 
 
-
-
-
 class DummyModule:
     def __init__(self, name = "dummy"):
         self._type = 'dummy'
@@ -75,6 +72,9 @@ class DummyModule:
         self._output_queues = list()
         self._datatype_out = 'any'
         self._loop_type = 'blocking'
+        
+        self._loop_timeout = 1
+
 
     @property
     def type(self):
@@ -135,7 +135,7 @@ class DummyModule:
         return self._input_queues[0]
 
     ## Should we only be able to create queues in one direction?
-    #  If yes, delete this method
+    #  If yes, delete this module
     def _create_output_queue(self): 
         # Example implementation, only one output queue
         Q = QueueWrapper(datatype=self.datatype_out, name=f"{self.name}_output_queue")
@@ -187,7 +187,7 @@ class DummyModule:
             self.action(i)
             i += 1
 
-    # Overwrite this method if you want to do something when the loop starts
+    # Overwrite this module if you want to do something when the loop starts
     def module_start(self):
         if verbose:
             print(f"[DEBUG] Called empty module_start() for {self.name}")
@@ -205,7 +205,7 @@ class DummyModule:
             self.loop = multiprocessing.Process(target=self._loop)
         self.loop.start()
 
-    # Overwrite this method if you want to do something when the loop ends
+    # Overwrite this module if you want to do something when the loop ends
     def module_stop(self):
         if verbose:
             print(f"[DEBUG] Called empty module_stop() for {self.name}")
@@ -215,7 +215,7 @@ class DummyModule:
             print(f"[DEBUG] Stopping {self.type} loop for {self.name}")
         self.stopped.set()
         if self._loop_type == 'thread':
-            self.loop.join(self.loop_timeout)
+            self.loop.join(self._loop_timeout)
         elif self._loop_type == 'process':
             self.loop.terminate()
         self.module_stop()
@@ -226,17 +226,17 @@ class DummyModule:
 
 import os
 
-def get_methods(method_type):
+def get_modules(module_type):
     file_folder = '/'.join(__file__.split('/')[:-1])
     
-    methods_dir = ''
+    modules_dir = ''
     try:
-        methods_dir = os.listdir(f'{file_folder}/../{method_type}_methods')
-        assert methods_dir, f'{method_type} methods folder is empty'
+        modules_dir = os.listdir(f'{file_folder}/../{module_type}_modules')
+        assert modules_dir, f'{module_type} modules folder is empty'
     except Exception as e:
-        print(f'Error reading {method_type} methods folder: {e}')
+        print(f'Error reading {module_type} modules folder: {e}')
     
-    methods = dict(zip(['.'.join(method.split('.')[:-1]) for method in methods_dir],
-                            [f"{method_type}_methods."+'.'.join(method.split('.')[:-1]) for method in methods_dir]))
+    modules = dict(zip(['.'.join(module.split('.')[:-1]) for module in modules_dir],
+                            [f"{module_type}_modules."+'.'.join(module.split('.')[:-1]) for module in modules_dir]))
 
-    return methods
+    return modules

@@ -1,5 +1,5 @@
-# chatbot/input_methods/wav.py
-from input_methods.dummy import DummyInput, input_methods_class
+# chatbot/input_modules/wav.py
+from input_modules.dummy import DummyInput, input_modules_class
 from utils.config import verbose
 import wave
 
@@ -9,12 +9,12 @@ class WavInput(DummyInput):
         if len(data := self.wf.readframes(self.frames_per_buffer)):
             self.output_queue.put(data)
 
-    def __init__(self, name="wav_input", wav_file_path="fitnessgram.wav", **args):
+    def __init__(self, name="wav_input", **args):
         DummyInput.__init__(self, name)
         self.frames_per_buffer = args.get('frames_per_buffer', 48000)
-        self.loop_type = "thread"  # Use threading
-        self.datatype_out = "audio"
-        self.file_path = wav_file_path
+        self._loop_type = "thread"  # Use threading
+        self._datatype_out = "audio"
+        self.file_path = args.get('file_path', "fitnessgram.wav")
         self.wf = None
 
     def module_start(self):
@@ -27,5 +27,5 @@ class WavInput(DummyInput):
             print(f"[DEBUG] Stopping WavInput loop for {self.name}")
         self.wf.close()
 
-input_methods_class['wav'] = WavInput
+input_modules_class['wav'] = WavInput
 

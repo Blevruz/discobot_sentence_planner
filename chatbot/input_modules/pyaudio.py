@@ -1,5 +1,5 @@
-# chatbot/input_methods/pyaudio.py
-from input_methods.dummy import DummyInput, input_methods_class
+# chatbot/input_modules/pyaudio.py
+from input_modules.dummy import DummyInput, input_modules_class
 from utils.config import verbose
 import pyaudio
 import multiprocessing
@@ -7,7 +7,7 @@ import multiprocessing
 class PyAudioInput(DummyInput):
 
     def action(self, i):
-        raise NotImplementedError("PyAudioInput does not have an action method. It is a blocking module.")
+        raise NotImplementedError("PyAudioInput does not have an action module. It is a blocking module.")
         #data = self._stream.read(self.frames_per_buffer)
         #self.output_queue.put(data)
 
@@ -52,4 +52,4 @@ class PyAudioInput(DummyInput):
 
 
 
-input_methods_class['pyaudio'] = PyAudioInput
+input_modules_class['pyaudio'] = PyAudioInput

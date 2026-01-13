@@ -1,5 +1,5 @@
-# chatbot/input_methods/keyboard.py
-from input_methods.dummy import DummyInput, input_methods_class
+# chatbot/input_modules/keyboard.py
+from input_modules.dummy import DummyInput, input_modules_class
 import time
 
 class KeyboardInput(DummyInput):
@@ -12,8 +12,8 @@ class KeyboardInput(DummyInput):
 
     def __init__(self, name="keyboard_input", **args):
         DummyInput.__init__(self, name)
-        self.loop_type = "thread"
-        self.datatype_out = "string"
+        self._loop_type = "thread"
+        self._datatype_out = "string"
         self.delay = args.get('delay', 1.0)
 
-input_methods_class['keyboard'] = KeyboardInput
+input_modules_class['keyboard'] = KeyboardInput

@@ -1,5 +1,5 @@
-# chatbot/middle_methods/repeater.py
-from middle_methods.dummy import DummyMiddle, middle_methods_class
+# chatbot/middle_modules/repeater.py
+from middle_modules.dummy import DummyMiddle, middle_modules_class
 
 class Repeater(DummyMiddle):
 
@@ -12,5 +12,5 @@ class Repeater(DummyMiddle):
         self._output_queues = []
         self._loop_type = 'process'
 
-middle_methods_class['repeater'] = Repeater
+middle_modules_class['repeater'] = Repeater
 
