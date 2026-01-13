@@ -13,7 +13,7 @@ class StdoutOutput(DummyOutput):
             elif type(out_next) is str:
                 sys.stdout.write(out_next)
 
-    def __init__(self, name="stdout_output"):
+    def __init__(self, name="stdout_output", **args):
         DummyOutput.__init__(self, name)
         self.loop_type = "thread"
         self.datatype_in = "any"

@@ -10,10 +10,10 @@ class KeyboardInput(DummyInput):
         self.output_queue.put(input("USR> "))
         time.sleep(self.delay)
 
-    def __init__(self, name="keyboard_input", delay=0.01):
+    def __init__(self, name="keyboard_input", **args):
         DummyInput.__init__(self, name)
         self.loop_type = "thread"
         self.datatype_out = "string"
-        self.delay = delay
+        self.delay = args.get('delay', 1.0)
 
 input_methods_class['keyboard'] = KeyboardInput

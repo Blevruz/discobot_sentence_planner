@@ -6,11 +6,11 @@ import multiprocessing
 import time
 
 class SoundDeviceInput(DummyInput):
-    def __init__(self, name="sound_input", delay=0.0, timeout=1.0, **stream_args):
+    def __init__(self, name="sound_input", **args):
         DummyInput.__init__(self, name)
         self.loop_type = "process"  # Use multiprocessing
         self.datatype_out = "audio"
-        self.stream_args = stream_args
+        self.args = args
         self._stream_running = multiprocessing.Event()
         self._process = None
 
@@ -18,7 +18,7 @@ class SoundDeviceInput(DummyInput):
         """Runs in a separate process to manage the audio stream."""
         self._stream_running.set()
         try:
-            with sd.RawInputStream(callback=self._audio_callback, **self.stream_args) as stream:
+            with sd.RawInputStream(callback=self._audio_callback, **self.args) as stream:
                 self._stream = stream
                 # Keep process alive while running
                 while self._stream_running.is_set():
@@ -30,8 +30,8 @@ class SoundDeviceInput(DummyInput):
         """Audio callback: processes frames and puts them in the queue."""
         if status:
             print(f"Audio stream status: {status}")
-        audio_data = np.frombuffer(indata, dtype=self.stream_args.get('dtype', 'float32'))
-        self.output_queue.put(audio_data)
+        #audio_data = np.frombuffer(indata, dtype=self.args.get('dtype', 'float32'))
+        self.output_queue.put(bytes(indata))
 
     def start_loop(self):
         """Starts the audio stream in a new process."""

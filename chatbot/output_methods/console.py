@@ -9,10 +9,8 @@ class ConsoleOutput(DummyOutput):
             print(f"SYS> {self.input_queue.get()}")
         return
 
-    def __init__(self, name = "console_output", delay=1.0, timeout=1.0):
+    def __init__(self, name = "console_output", **args):
         DummyOutput.__init__(self, name)
-        self.delay = delay
-        self.timeout = timeout
         self.loop_type = 'thread'
         self.datatype_in = 'string'
 

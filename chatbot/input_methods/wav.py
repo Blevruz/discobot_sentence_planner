@@ -9,9 +9,9 @@ class WavInput(DummyInput):
         if len(data := self.wf.readframes(self.frames_per_buffer)):
             self.output_queue.put(data)
 
-    def __init__(self, name="wav_input", wav_file_path="fitnessgram.wav", **stream_args):
+    def __init__(self, name="wav_input", wav_file_path="fitnessgram.wav", **args):
         DummyInput.__init__(self, name)
-        self.frames_per_buffer = stream_args.get('frames_per_buffer', 48000)
+        self.frames_per_buffer = args.get('frames_per_buffer', 48000)
         self.loop_type = "thread"  # Use threading
         self.datatype_out = "audio"
         self.file_path = wav_file_path

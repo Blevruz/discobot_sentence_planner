@@ -12,10 +12,10 @@ class HelloWorldInput(DummyInput):
         self.output_queue.put(f"Hello world! {i}")
         time.sleep(self.delay)
 
-    def __init__(self, name="helloworld", queue=None, delay=1.0, timeout=1.0):
+    def __init__(self, name="helloworld", **args):
         DummyInput.__init__(self, name)
-        self.datatype_out = "string"
-        self.delay = delay
-        self.timeout = timeout
+        self._datatype_out = "string"
+        self.delay = args.get('delay', 1.0)
+        self.timeout = args.get('timeout', 1.0)
 
 input_methods_class['helloworld'] = HelloWorldInput

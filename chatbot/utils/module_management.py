@@ -68,13 +68,12 @@ class DummyModule:
     def __init__(self, name = "dummy"):
         self._type = 'dummy'
         self._name = name
-        self.loop_timeout = 0.1
         # Set of queues we only read from
         self._input_queues = list()
-        self.datatype_in = 'any'
+        self._datatype_in = 'any'
         # Set of queues we only write to
         self._output_queues = list()
-        self.datatype_out = 'any'
+        self._datatype_out = 'any'
         self._loop_type = 'blocking'
 
     @property
@@ -90,6 +89,14 @@ class DummyModule:
     @name.setter
     def name(self, name):
         self._name = name
+
+    @property
+    def datatype_in(self):
+        return self._datatype_in
+
+    @property
+    def datatype_out(self):
+        return self._datatype_out
 
     @property
     def input_queue(self):
@@ -114,9 +121,6 @@ class DummyModule:
     @property
     def loop_type(self):
         return self._loop_type
-    @loop_type.setter
-    def loop_type(self, loop_type):
-        self._loop_type = loop_type
 
     def _create_input_queue(self): 
         # Example implementation, only one input queue

@@ -8,16 +8,16 @@ class PyAudioOutput(DummyOutput):
     def action(self, i):
         self._stream.write(self.input_queue.get())
 
-    def __init__(self, name="pyaudio_output", delay=0.0, timeout=1.0, **stream_args):
+    def __init__(self, name="pyaudio_output", **args):
         DummyOutput.__init__(self, name)
         self.loop_type = "process"
         self.datatype_in = "audio"
         self.datatype_out = "audio"
-        self.format = stream_args.get('format', pyaudio.paInt16)
-        self.channels = stream_args.get('channels', 1)
-        self.rate = stream_args.get('rate', 48000)
-        self.frames_per_buffer = stream_args.get('frames_per_buffer', 48000)
-        self.stream_args = stream_args
+        self.format = args.get('format', pyaudio.paInt16)
+        self.channels = args.get('channels', 1)
+        self.rate = args.get('rate', 16000)
+        self.frames_per_buffer = args.get('frames_per_buffer', 48000)
+        self.args = args
         self.pyaudio = None
         self._stream = None
 

@@ -6,7 +6,7 @@ class DummyMiddle(DummyModule):
     def action(self, i):
         return
 
-    def __init__(self, name = "dummy_middle"):
+    def __init__(self, name = "dummy_middle", **args):
         DummyModule.__init__(self, name)
         self.type = "middle"
 

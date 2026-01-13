@@ -4,6 +4,10 @@ import queue
 import json
 import vosk
 
+# Important to keep in mind working with VOSK:
+# - The model expects a sampling freq of 16kHz and a mono format
+
+
 class VoskTranscriber(DummyMiddle):
     def action(self, i):
         try:
@@ -17,10 +21,10 @@ class VoskTranscriber(DummyMiddle):
         except Exception as e:
             print(f"Error processing audio: {e}")
 
-    def __init__(self, name="vosk_transcriber", model_path=None, samplerate=16000, timeout=5.0, **stream_args):
+    def __init__(self, name="vosk_transcriber", **args):
         DummyMiddle.__init__(self, name)
-        self.samplerate = samplerate
-        self.timeout = timeout
+        self.samplerate = args.get('samplerate', 16000)
+        self.timeout = args.get('timeout', 1)
         self.loop_type = "thread"
         self.datatype_in = "audio"
         self.datatype_out = "string"
