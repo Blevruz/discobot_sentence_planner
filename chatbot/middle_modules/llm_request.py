@@ -17,7 +17,7 @@ class LLMRequest(DummyMiddle):
             generation_time = end_time - start_time
             data = resp.json()
             payload['messages'].append({"role": "assistant", "content": data['choices'][0]['message']['content']})
-            self.output_queue.put(f"GENERATION TIME: {generation_time}, \"{data['choices'][0]['message']['content']}\"")
+            self.output_queue.put(f"\"{data['choices'][0]['message']['content']}\"")
 
 
     def __init__(self, name="llm_request", **args):
