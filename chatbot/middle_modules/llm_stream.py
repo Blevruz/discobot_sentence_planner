@@ -1,9 +1,13 @@
-# chatbot/middle_modules/llm_request.py
-import requests
+# chatbot/middle_modules/llm_stream.py
 from middle_modules.dummy import DummyMiddle, middle_modules_class
 import time
+import json
+import aiohttp
+import asyncio
 
-class LLMRequest(DummyMiddle):
+raise NotImplementedError, "Not implemented yet"
+
+class LLMStream(DummyMiddle):
 
     def action(self, i):
         if not self.input_queue.empty():
@@ -24,7 +28,6 @@ class LLMRequest(DummyMiddle):
         DummyMiddle.__init__(self, name, **args)
         self._loop_type = 'process'
         self._initial_prompt = args.get('prompt', 'You are a friendly robot assistant.  Have a pleasant chat with your interlocutor, and keep your answers short.')
-        self._context = args.get('context', [])
         self._max_tokens = args.get('max_tokens', 256)
         self._temperature = args.get('temperature', 0.3)
         self._language = args.get('language', 'fr')
@@ -43,7 +46,7 @@ class LLMRequest(DummyMiddle):
                 "messages": [],
                 "max_tokens": self._max_tokens,
                 "temperature": self._temperature,
-                "stream": False
+                "stream": True
                 }
 
         payload['messages'].append({"role": "developer", "content": self._initial_prompt})

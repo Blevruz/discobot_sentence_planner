@@ -10,7 +10,7 @@ class ConsoleOutput(DummyOutput):
         return
 
     def __init__(self, name = "console_output", **args):
-        DummyOutput.__init__(self, name)
+        DummyOutput.__init__(self, name, **args)
         self._loop_type = 'thread'
         self.datatype_in = 'string'
 

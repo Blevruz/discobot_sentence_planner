@@ -28,8 +28,8 @@ class DummyInput(DummyModule):
     def get_input(self):
         return self.output_queue.get()
 
-    def __init__(self, name="dummy_input", queue=None):
-        DummyModule.__init__(self, name)
+    def __init__(self, name="dummy_input", **args):
+        DummyModule.__init__(self, name, **args)
         self.type = "input"
 
         # An input module is the end point of the pipeline, so it has no need

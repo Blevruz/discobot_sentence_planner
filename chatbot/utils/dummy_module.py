@@ -6,7 +6,7 @@ from utils.queues import QueueWrapper, QueueSlot
 
 
 class DummyModule:
-    def __init__(self, name = "dummy"):
+    def __init__(self, name = "dummy", **args):
         self._type = 'dummy'
         self._name = name
         # Set of queues we only read from
@@ -21,6 +21,9 @@ class DummyModule:
         self._output_queues['default'] = self._output_queues['output']
         self._loop_type = 'blocking'
         self._loop_timeout = 1
+
+        if utils.config.verbose:
+            print("[DEBUG] Module {name} initializing with args: {args}")
 
 
     @property

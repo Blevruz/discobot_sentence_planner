@@ -1,0 +1,34 @@
+[
+    {
+        "name": "dummy_input",
+        "module": "input_modules.dummy",
+        "args": {},
+        "links": [
+            {
+                "name": "dummy_input_to_dummy_middle",
+                "from_slot": "default",
+                "target_name": "dummy_middle",
+                "to_slot": "default"
+            }
+        ]
+    },
+    {
+        "name": "dummy_middle",
+        "module": "middle_modules.dummy",
+        "args": {},
+        "links": [
+            {
+                "name": "dummy_middle_to_dummy_output",
+                "from_slot": "default",
+                "target_name": "dummy_output",
+                "to_slot": "default"
+            }
+        ]
+    },
+    {
+        "name": "dummy_output",
+        "module": "output_modules.dummy",
+        "args": {},
+        "links": []
+    }
+]

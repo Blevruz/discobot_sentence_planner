@@ -12,7 +12,7 @@ class NavelTTS(DummyOutput):
 
 
     def __init__(self, name = "navel_tts", **args):
-        DummyOutput.__init__(self, name)
+        DummyOutput.__init__(self, name, **args)
         self._loop_type = 'thread'
         self.datatype_in = 'string'
 

@@ -10,11 +10,11 @@ class WavInput(DummyInput):
             self.output_queue.put(data)
 
     def __init__(self, name="wav_input", **args):
-        DummyInput.__init__(self, name)
+        DummyInput.__init__(self, name, **args)
         self.frames_per_buffer = args.get('frames_per_buffer', 48000)
         self._loop_type = "thread"  # Use threading
         self.datatype_out = "audio"
-        self.file_path = args.get('file_path', "fitnessgram.wav")
+        self.file_path = args.get('file_path', "/home/main/navel/recorded/phrase_1.wav")
         self.wf = None
 
     def module_start(self):

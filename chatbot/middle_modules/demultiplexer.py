@@ -1,0 +1,17 @@
+# chatbot/middle_modules/demultiplexer.py
+from middle_modules.dummy import DummyMiddle, middle_modules_class
+
+class Demultiplexer(DummyMiddle):
+
+    def action(self, i):
+        if not self.input_queue.empty():
+            v = self.input_queue.get()
+            for oq in self._output_queues['output']:
+                oq.put(v)
+
+    def __init__(self, name="demultiplexer", **args):
+        DummyMiddle.__init__(self, name, **args)
+        self._loop_type = 'process'
+        self._output_queues['output']._size = -1
+
+middle_modules_class['demultiplexer'] = Demultiplexer

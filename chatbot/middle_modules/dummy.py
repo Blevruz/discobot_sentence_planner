@@ -7,7 +7,7 @@ class DummyMiddle(DummyModule):
         return
 
     def __init__(self, name = "dummy_middle", **args):
-        DummyModule.__init__(self, name)
+        DummyModule.__init__(self, name, **args)
         self.type = "middle"
 
 middle_modules_class = dict()

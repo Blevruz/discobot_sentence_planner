@@ -11,7 +11,7 @@ class KeyboardInput(DummyInput):
         time.sleep(self.delay)
 
     def __init__(self, name="keyboard_input", **args):
-        DummyInput.__init__(self, name)
+        DummyInput.__init__(self, name, **args)
         self._loop_type = "thread"
         self.datatype_out = "string"
         self.delay = args.get('delay', 1.0)

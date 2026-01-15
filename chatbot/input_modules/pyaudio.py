@@ -18,7 +18,7 @@ class PyAudioInput(DummyInput):
 
 
     def __init__(self, name="pyaudio_input", **args):
-        DummyInput.__init__(self, name)
+        DummyInput.__init__(self, name, **args)
         self._loop_type = "blocking"  # We use a callback so it's fine to use blocking
         self.datatype_out = "audio"
         self.format = args.get('format', pyaudio.paInt16)

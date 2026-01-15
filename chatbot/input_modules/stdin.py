@@ -9,7 +9,7 @@ class StdinInput(DummyInput):
             self.output_queue.put(line)
 
     def __init__(self, name="stdin_input", **args):
-        DummyInput.__init__(self, name)
+        DummyInput.__init__(self, name, **args)
         self._loop_type = "thread"
         self.datatype_out = "any"
 

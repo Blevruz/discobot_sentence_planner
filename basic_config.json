@@ -1,0 +1,60 @@
+[
+    {
+        "name": "keyboard_input",
+        "module": "input_modules.keyboard",
+        "args": {},
+        "links": [
+            {
+                "name": "keyboard_input_to_console_multiplexer",
+                "from_slot": "default",
+                "target_name": "console_multiplexer",
+                "to_slot": "default"
+            }
+        ]
+    },
+    {
+        "name": "pyaudio_input",
+        "module": "input_modules.pyaudio",
+        "args": {},
+        "links": [
+            {
+                "name": "pyaudio_input_to_vosk_middle",
+                "from_slot": "default",
+                "target_name": "vosk_middle",
+                "to_slot": "default"
+            }
+        ]
+    },
+    {
+        "name": "vosk_middle",
+        "module": "middle_modules.vosk",
+        "args": {},
+        "links": [
+            {
+                "name": "vosk_middle_to_console_multiplexer",
+                "from_slot": "default",
+                "target_name": "console_multiplexer",
+                "to_slot": "default"
+            }
+        ]
+    },
+    {
+        "name": "console_multiplexer",
+        "module": "middle_modules.multiplexer",
+        "args": {},
+        "links": [
+            {
+                "name": "console_multiplexer_to_console_output",
+                "from_slot": "default",
+                "target_name": "console_output",
+                "to_slot": "default"
+            }
+        ]
+    },
+    {
+        "name": "console_output",
+        "module": "output_modules.console",
+        "args": {},
+        "links": []
+    }
+]

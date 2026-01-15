@@ -13,7 +13,7 @@ class HelloWorldInput(DummyInput):
         time.sleep(self.delay)
 
     def __init__(self, name="helloworld", **args):
-        DummyInput.__init__(self, name)
+        DummyInput.__init__(self, name, **args)
         self.datatype_out = "string"
         self.delay = args.get('delay', 1.0)
         self.timeout = args.get('timeout', 1.0)

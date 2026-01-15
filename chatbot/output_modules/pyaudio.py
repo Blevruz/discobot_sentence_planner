@@ -9,7 +9,7 @@ class PyAudioOutput(DummyOutput):
         self._stream.write(self.input_queue.get())
 
     def __init__(self, name="pyaudio_output", **args):
-        DummyOutput.__init__(self, name)
+        DummyOutput.__init__(self, name, **args)
         self._loop_type = "process"
         self.datatype_in = "audio"
         self.datatype_out = "audio"

@@ -7,7 +7,7 @@ import time
 
 class SoundDeviceInput(DummyInput):
     def __init__(self, name="sound_input", **args):
-        DummyInput.__init__(self, name)
+        DummyInput.__init__(self, name, **args)
         self._loop_type = "process"  # Use multiprocessing
         self.datatype_out = "audio"
         self.args = args
