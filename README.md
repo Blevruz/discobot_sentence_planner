@@ -1,86 +1,101 @@
-# ARCHITECTURE
+# DISCOBOT: Designing an LLM powered user-centered knowledge graph for social robots to mitigate loneliness among university students
 
-## Modularity
+This is the repository for Lab-STICC DISCOBOT project for social robotics.  The
+goal is a modular system that allows for easy creation of chatbot pipelines,
+focusing on the "Navel" robot from navel robotics GmbH.
 
-It is preferable for all modules to be independent, and for the user to choose
-which modules to use when running the program.  Choice of modules is handled by
-argparse in chatbot/main.py.  Ideally, multiple modules achieving the same
-functionality should be able to be used simultaneously for confidence
-estimation. (e.g. do levenshtein distance between multiple STT)
+The project is currently in development, and contributions are welcome.
 
-### Planned Modules:
-* Input:    (WIP)
-    * Dummy (Hello Worlds at regular intervals)
-    * Speech to text  (WIP)
-    1. Vosk         (rough draft)
-    2. Whisper      (TODO)
-    * Keyboard input
-    * Pipe in
-* Output:
-    * Dummy (prints to console)
-    * Text to speech
-    1. Navel TTS
-    * Pipe out
-* Storage:  (TODO)
-    * Dummy           (TODO)
-    * File            (TODO)
-    * Neo4j           (TODO)
-* NLP:  (TODO)
-    * Dummy           (TODO)
-    * Language model  (TODO)
-    * SpaCy           (TODO)
-    * Stanza          (TODO)
-* Sentence generation:  (TODO)
-    * Dummy           (TODO)
-    * Language model  (TODO)
-    * Graph?          (TODO)
-* Body language:    (TODO)
-    * Dummy           (TODO)
-    * Face            (TODO)
-    * Gaze            (TODO)
-    * Body?           (TODO)
-* Perception:   (TODO)
-    * Dummy           (TODO)
-    * Vision          (TODO)
-    * Audio           (TODO)
+## Installation
 
-### Module Structure
+### Linux
 
-All modules are composed of a set of input queues, a set of output queues, and 
-a loop function.  A module can only read from its input queues, and can only write
-to its output queues.  Each queue is unique to a pair of modules.
+Installation presumes a `python` or `python3` install, with functional `pip`.
 
+Once the repo is cloned, run the following.
+```bash
+./prepare_repo.sh
+```
+This should install the required dependencies, and download the required models.
 
-### Layout Storage
+### Windows
 
-Currently, layouts are entirely managed by `chatbot/main.py` for testing.
-Modules are selected by command line arguments.  Available modules can be
-listed by running `chatbot/main.py --help`.
+Not set up right now, would be a welcome contribution.
 
+## Usage
 
-## Multithreaded structure
+The project is structured as a set of modules each contained within a file.
 
-Thread for speech to text
-Other user input:
-    Keyboard input needs to be on main thread, as should printing/logging
-Thread for sentence planning
-    Needs to use history to plan sentences
-        Read-only queue from input thread
-    Poll database for relevant info?
-    Prompt language model for generated sentence
+We expect three types of modules: 
+1. input (takes data from outside the system, and thus has no "input" queues),
+2. middle (takes data from within the system, and has both "input" and "output"
+queues)
+3. output (takes data from within the system, and thus has no "output" queues).
 
+After activating the virtual environment with
+```bash
+source venv/bin/activate
+```
+you can run the main file with
+```bash
+python main.py --help
+```
 
-## Prompt structure
+You can either provide a simple, input-middle-output pipeline using command
+line arguments, for instance
+```bash
+python main.py --input-module input_modules/stdin.py --middle-module middle_modules/repeater.py --output-module output_modules/stdout.py
+```
+or use a configuration file, for instance
+```bash
+python main.py --config basic_config.json
+```
 
-Ability to identify a number of features on request
-    Named entities?
-    Subject/Verb/Object triplets?
-    Eventual train of thoughts
-    And of course the generated sentence
+Config files are json files containing a list of modules and links between 
+them in a simplistic in-to-out format.
 
-Formulate response as a json object
+## Structure
 
-## Database
+Each type of module is contained in a separate directory, and each module is
+contained in a separate file.
 
-Store information about user
-Store information about the agent as another user
+Each of these modules inherit from their directory's "dummy" module class,
+which provides a basic structure for the module.
+
+```bash
+chatbot/
+├── main.py         # Main file
+├── input_modules   # Modules with output queues and no input queues
+├── middle_modules  # Modules with input and output queues
+├── output_modules  # Modules with input queues and no output queues
+└── utils           # Non-module utilities and prototypes
+```
+
+## Progress
+
+How far along is the project?
+
+Minimal viable product is:
+* Input modules: 
+    - Audio input (Done, implementations with pyaudio and sounddevice)
+    - Keyboard input
+* Middle modules: 
+    - Speech to text (Done, using Vosk)
+    - Database polling (TODO)
+    - Language model (Done, using OpenAI API)
+* Output modules: 
+    - Text to speech (Done, using Navel TTS)
+    - Database update (TODO)
+
+Other desirable features:
+* Input modules:
+    - STDIN
+    - Vision input  (TODO)
+* Middle modules: 
+    - Alternative, lightweight NLP modules (TODO)
+* Output modules: 
+    - STDOUT
+    - Alternative TTS modules (TODO)
+
+Contributions are welcome!  Clone the repo, make your changes, and submit 
+a pull request.
