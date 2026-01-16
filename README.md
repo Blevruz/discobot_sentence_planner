@@ -38,17 +38,17 @@ source venv/bin/activate
 ```
 you can run the main file with
 ```bash
-python main.py --help
+python chatbot/main.py --help
 ```
 
 You can either provide a simple, input-middle-output pipeline using command
 line arguments, for instance
 ```bash
-python main.py --input-module input_modules/stdin.py --middle-module middle_modules/repeater.py --output-module output_modules/stdout.py
+python chatbot/main.py --input-module input_modules/stdin.py --middle-module middle_modules/repeater.py --output-module output_modules/stdout.py
 ```
 or use a configuration file, for instance
 ```bash
-python main.py --config basic_config.json
+python chatbot/main.py --config basic_config.json
 ```
 
 Config files are json files containing a list of modules and links between 
