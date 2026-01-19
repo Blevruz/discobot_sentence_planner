@@ -23,8 +23,8 @@ class PyAudioOutput(DummyOutput):
 
     def module_start(self):
         if utils.config.verbose:
-            print(f"[DEBUG] Starting PyAudioInput loop for {self.name}")
-            print(f"[DEBUG] PyAudioInput loop for {self.name}: {self.format}, {self.channels}, {self.rate}, {self.frames_per_buffer}")
+            utils.config.debug_print(f"Starting PyAudioInput loop for {self.name}")
+            utils.config.debug_print(f"PyAudioInput loop for {self.name}: {self.format}, {self.channels}, {self.rate}, {self.frames_per_buffer}")
         self.pyaudio = pyaudio.PyAudio()
         self._stream = self.pyaudio.open(
                     format=self.format,

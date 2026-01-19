@@ -16,13 +16,10 @@ class VoskTranscriber(DummyMiddle):
             if self.recognizer.AcceptWaveform(audio_data):
                 result = json.loads(self.recognizer.Result())
                 if utils.config.verbose:
-                    #print(f"[BIGDEBUG] result is: {result}")
                     if result.get('result'):
-                        #print(f"[BIGDEBUG] looking inside of result")
                         for word in result['result']:
-                            #print(f"[BIGDEBUG] word is: {word}")
                             if 'conf' in word:
-                                print(f"[BIGDEBUG] word {word} confidence is: {word['conf']}")
+                                utils.config.debug_print(f"word {word} confidence is: {word['conf']}")
 
                 self.output_queue.put(result.get("text", ""))
         except queue.Empty:
@@ -38,11 +35,11 @@ class VoskTranscriber(DummyMiddle):
         self._loop_type = "thread"
         self.datatype_in = "audio"
         self.datatype_out = "string"
-        self.model_path = args.get('model_path', None)
+        self.model_path = args.get('model_path', "models/vosk/en")
 
         # Initialize Vosk
         self.model = vosk.Model(self.model_path) if self.model_path else vosk.Model(lang="en-us")
         self.recognizer = vosk.KaldiRecognizer(self.model, self.samplerate)
         self.recognizer.SetWords(True)
 
-middle_modules_class['vosk'] = lambda n: VoskTranscriber(n, model_path="models/vosk/en")
+middle_modules_class['vosk'] = VoskTranscriber

@@ -9,9 +9,9 @@ from utils.config import load_config
 
 def manual_module_specification(args, input_modules, middle_modules, output_modules):
     if utils.config.verbose:
-        print(f"[DEBUG] Input module: {args.input}")
-        print(f"[DEBUG] Middle modules: {args.middle}")
-        print(f"[DEBUG] Output module: {args.output}")
+        utils.config.debug_print(" Input module: {args.input}")
+        utils.config.debug_print(" Middle modules: {args.middle}")
+        utils.config.debug_print(" Output module: {args.output}")
 
     loaded_modules = dict()
     output_module = importlib.import_module(output_modules[args.output])
@@ -38,10 +38,10 @@ def manual_module_specification(args, input_modules, middle_modules, output_modu
         input_module.link_to(output_module)
 
     if utils.config.verbose:
-        print(f"[DEBUG] Input module: {input_module.name}, input module's output queue: {input_module.output_queue}")
+        utils.config.debug_print(" Input module: {input_module.name}, input module's output queue: {input_module.output_queue}")
         for m in middle_module_list:
-            print(f"[DEBUG] Middle module: {m.name}, middle module's input queue: {m.input_queue}, middle module's output queue: {m.output_queue}")
-        print(f"[DEBUG] Output module: {output_module.name}, output module's input queue: {output_module.input_queue}")
+            utils.config.debug_print(" Middle module: {m.name}, middle module's input queue: {m.input_queue}, middle module's output queue: {m.output_queue}")
+        utils.config.debug_print(" Output module: {output_module.name}, output module's input queue: {output_module.input_queue}")
 
     loaded_modules[input_module.name] = input_module
     for m in middle_module_list:
@@ -59,7 +59,7 @@ def main():
     parser.add_argument(
         '--config', dest='config',
         required=False,
-        default='config.json',
+        default=None,
         help=f"Configuration file for the chatbot")
     parser.add_argument(
         '--verbose', dest='verbose',
@@ -92,10 +92,23 @@ def main():
         config = load_config(args.config)
         loaded_modules = load_modules_from_config(config)
         if utils.config.verbose:
-            print(f"[DEBUG] Loaded modules: {loaded_modules.keys()}")
+            utils.config.debug_print(f"Loaded modules: {loaded_modules.keys()}")
+            for m in loaded_modules.values():
+                for i_qs, i_qs_key in zip(m.input_queues.values(), m.input_queues.keys()):
+                    utils.config.debug_print(f"Input slot {i_qs_key} of module {m.name} has {len(i_qs)} queues")
+                    if type(i_qs) is str:
+                        continue
+                    for i_q in i_qs._queues:
+                        utils.config.debug_print(f"Input queue {i_q.name} in slot {i_qs_key} of module {m.name} goes from {i_q.mod_from.name} to {i_q.mod_to.name}")
+                for o_qs, o_qs_key in m.output_queues.values(), list(m.output_queues.keys()):
+                    utils.config.debug_print(f"Output slot {o_qs_key} of module {m.name} has {len(o_qs)} queues")
+                    if type(o_qs) is str:
+                        continue
+                    for o_q in o_qs:
+                        utils.config.debug_print(f"Input queue {o_q.name} in slot {o_qs_key} of module {m.name} goes from {o_q.mod_from.name} to {o_q.mod_to.name}")
 
     if utils.config.verbose:
-        print(f"[DEBUG] Starting loops")
+        utils.config.debug_print(" Starting loops")
 
     for m in loaded_modules.values():
         m.start_loop()
@@ -111,7 +124,7 @@ def main():
         m.stop_loop()
 
     if utils.config.verbose:
-        print(f"[DEBUG] Done")
+        utils.config.debug_print(" Done")
 
 
 if __name__ == '__main__':

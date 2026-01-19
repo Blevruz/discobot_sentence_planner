@@ -24,7 +24,7 @@ class QueueWrapper:
 
     def bind_from(self, from_module, slot="default"):
         if utils.config.verbose:
-            print(f"[DEBUG] Binding {self.name} from {from_module.name}")
+            utils.config.debug_print(f"Binding {self.name} from {from_module.name}")
         from_module.add_output_queue(self, slot)
 
 
@@ -34,7 +34,7 @@ class QueueWrapper:
 
     def bind_to(self, to_module, slot="default"):
         if utils.config.verbose:
-            print(f"[DEBUG] Binding {self.name} to {to_module.name}")
+            utils.config.debug_print(f"Binding {self.name} to {to_module.name}")
         to_module.add_input_queue(self, slot)
 
 
@@ -48,7 +48,7 @@ class QueueWrapper:
         if self._mod_to is not None:
             self._queue.put(item)
         else:
-            raise ValueError(f"No output module linked to this queue: {self.name}, {self._mod_from} -> {self._mod_to}")
+            raise ValueError(f"No output module linked to this queue: {self.name}, {self._mod_from.name} -> {self._mod_to}")
 
     def empty(self):
         return self._queue.empty()
@@ -60,6 +60,7 @@ class QueueSlot:
     def __init__(self, module, direction, datatype="any", size=-1):
         self._module = module
         self._direction = direction
+        assert direction in ['input', 'output'], f"Direction must be 'input' or 'output', not {direction}"
         self._datatype = datatype
         self._size = size
         self._queues = []
@@ -75,6 +76,9 @@ class QueueSlot:
     def __getitem__(self, key):
         return self._queues[key]
 
+    def __len__(self):
+        return len(self._queues)
+
     def add_queue(self, queue):
         if self._datatype == "any" or queue.datatype == "any" \
                 or self._datatype == queue.datatype:
@@ -82,13 +86,19 @@ class QueueSlot:
                 self._queues.append(queue)
                 if self._direction == 'input':
                     queue._mod_to = self._module
+                    if utils.config.verbose:
+                        utils.config.debug_print(f"Setting {self._module.name} to {queue.name}'s mod_to: {queue._mod_to.name}")
                 elif self._direction == 'output':
                     queue._mod_from = self._module
+                    if utils.config.verbose:
+                        utils.config.debug_print(f"Setting {self._module.name} to {queue.name}'s mod_from: {queue._mod_from.name}")
 
             else:
                 raise ValueError(f"Queue slot is full, cannot add queue {queue.name}")
         else:
             raise ValueError(f"Datatype mismatch between queue and queue slot, with datatypes {self.datatype} and {queue.datatype}")
+        if utils.config.verbose:
+            utils.config.debug_print(f"Queue slot {self._direction} of {self._module.name} now has {len(self._queues)} queues")
 
     def remove_queue(self, queue):
         if queue in self._queues:
