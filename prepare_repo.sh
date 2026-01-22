@@ -3,6 +3,7 @@
 # et installation des dépendances
 UV_INSTALLED=false
 PYENV_INSTALLED=false
+PYTHON=python
 if uv --version > /dev/null; then
     echo "uv is installed"
     UV_INSTALLED=true
@@ -11,21 +12,33 @@ if pyenv --version > /dev/null; then
     echo "pyenv is installed"
     PYENV_INSTALLED=true
 fi
+if python --version > /dev/null; then
+    echo "python is installed"
+    PYTHON_INSTALLED=true
+elif
+    python3 --version > /dev/null; then
+    echo "python3 is installed"
+    PYTHON_INSTALLED=true
+    PYTHON=python3
+else
+    echo "python is not installed!"
+    exit 1
+fi
 
 if $UV_INSTALLED; then
 # En utilisant uv:
-    uv python install 3.11
+    uv $PYTHON install 3.11
     uv venv venv
     source venv/bin/activate && uv pip install -r requirements.txt
 # En utilisant pyenv:
 else
     if $PYENV_INSTALLED; then
     	pyenv init && pyenv local 3.11.2
-    	pyenv exec python3 -m venv venv 
+    	pyenv exec $PYTHON -m venv venv 
     else
-	python3 -m venv venv
+	$PYTHON -m venv venv
     fi
-    source venv/bin/activate && python -m pip install -r requirements.txt
+    source venv/bin/activate && $PYTHON -m pip install -r requirements.txt
 fi
 
 
