@@ -14,9 +14,7 @@ class SamTTS(DummyOutput):
     def action(self, i):
         if not self.input_queue.empty():
             text = self.input_queue.get()
-            print(f"Text to speak: ", end="")
             for t in text.split(" "):
-                print(t, end=" ")
                 subprocess.run([f"{self.path_to_sam}/sam", t ])
 
 
