@@ -1,6 +1,7 @@
 # chatbot/middle_modules/spacy_nei.py
 from middle_modules.dummy import DummyMiddle, middle_modules_class
 import utils.config
+import utils.spacy
 
 import spacy
 
@@ -9,8 +10,9 @@ class SpacyNEI(DummyMiddle):
     def __init__(self, name="spacy_nei", **args):
         DummyMiddle.__init__(self, name, **args)
         self._loop_type = 'process'
+        self.datatype_in = 'string'
         self.model = args.get('model', "en_core_web_sm")
-        self.nlp = spacy.load(self.model)
+        self.nlp = utils.spacy.load_model(self.model)
 
     def action(self, i):
         if not self.input_queue.empty():
