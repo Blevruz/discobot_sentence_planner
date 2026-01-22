@@ -65,6 +65,8 @@ class LLMRequest(DummyMiddle):
                 }
 
         payload['messages'].append({"role": "developer", "content": self._initial_prompt})
+        for c in self._context:
+            payload['messages'].append({"role": c["role"], "content": c["content"]})
         return headers, payload
 
     def _handle_user_input(self, user_input):
