@@ -16,6 +16,7 @@ class RepeatRemover(DummyMiddle):
         self._input_queues['muted'] = QueueSlot(self, 'input', datatype='string')
         self.datatype_out = 'string'
         self.threshold = args.get('threshold', 0.8)
+        self.min_size = args.get('min_size', 3)
         self.memory = []
         if utils.config.verbose:
             for name, queue in self._input_queues.items():
@@ -29,6 +30,8 @@ class RepeatRemover(DummyMiddle):
 
         if not self.input_queue.empty():
             text = self.input_queue.get()
+            if len(text) < self.min_size:
+                return
             # If we have previous inputs stored:
             if len(self.memory) > 0:
                 # We check if current input is too similar to any previous input

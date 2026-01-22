@@ -9,7 +9,7 @@ class SamTTS(DummyOutput):
         DummyOutput.__init__(self, name, **args)
         self._loop_type = 'process'
         self.datatype_in = 'string'
-        self.path_to_sam = args.get('path_to_sam', "./misc/sam")
+        self.path_to_sam = args.get('path_to_sam', "./misc")
 
     def action(self, i):
         if not self.input_queue.empty():
