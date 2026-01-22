@@ -14,6 +14,7 @@ class HelloWorldInput(DummyInput):
 
     def __init__(self, name="helloworld", **args):
         DummyInput.__init__(self, name, **args)
+        self._loop_type = 'thread'
         self.datatype_out = "string"
         self.delay = args.get('delay', 1.0)
         self.timeout = args.get('timeout', 1.0)
