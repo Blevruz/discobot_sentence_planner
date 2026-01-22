@@ -9,12 +9,15 @@ class QueueConcat(DummyMiddle):
         for k, v in zip(self._input_queues.keys(), self._input_queues.values()):
             for q in v:
                 while not q.empty():
-                    self.wip_text = self.wip_text.replace(f"{{{k}}}", q.get())
+                    self.buffer[k] = q.get()
 
         if not self.input_queue.empty():
+            for k, v in zip(self.buffer.keys(), self.buffer.values()):
+                self.wip_text = self.wip_text.replace(f"{{{k}}}", v)
             if utils.config.verbose:
                 utils.config.debug_print(f"QueueConcat: {self.wip_text}")
             self.output_queue.put(self.wip_text)
+            self.buffer = {}
             self.wip_text = self.format
 
     def __init__(self, name="queue_concat", **args):
@@ -26,6 +29,7 @@ class QueueConcat(DummyMiddle):
         self.input_queue_names = args.get('input_queues', ['input'])
         self.format = args.get('format', "{"+"} {".join(self.input_queues)+"}")
         self.wip_text = self.format
+        self.buffer = {}
 
         for i in self.input_queue_names:
             self._input_queues[i] = QueueSlot(self, 'input', datatype='string')
