@@ -5,9 +5,11 @@ import utils.spacy
 
 import spacy
 
-class SpacyNEI(DummyMiddle):
+class SpacyNER(DummyMiddle):
+    """Named Entity Recognition using spaCy.
+    """
 
-    def __init__(self, name="spacy_nei", **args):
+    def __init__(self, name="spacy_ner", **args):
         DummyMiddle.__init__(self, name, **args)
         self._loop_type = 'process'
         self.datatype_in = 'string'
@@ -28,4 +30,4 @@ class SpacyNEI(DummyMiddle):
             entities.append((ent.text, ent.label_))
         return entities
 
-middle_modules_class['spacy_nei'] = SpacyNEI
+middle_modules_class['spacy_ner'] = SpacyNER

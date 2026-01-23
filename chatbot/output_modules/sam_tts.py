@@ -5,7 +5,13 @@ import os
 import utils.config
 
 class SamTTS(DummyOutput):
+    """Uses SAM (Software Automatic Mouth) to output text to speech.
+    """
     def __init__(self, name="sam_tts", **args):
+        """Arguments:
+            path_to_sam : str
+                Path to the SAM executable
+        """
         DummyOutput.__init__(self, name, **args)
         self._loop_type = 'process'
         self.datatype_in = 'string'

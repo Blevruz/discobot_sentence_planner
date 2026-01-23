@@ -4,6 +4,12 @@ from utils.queues import QueueWrapper, QueueSlot
 import utils.config
 
 class QueueConcat(DummyMiddle):
+    """Concatenates multiple input queues into a single output queue following
+    a pre-defined, fstring-like format.
+    String input to be concatenated go to the user-defined queues.
+    The generated string is only output on receiving any input in the trigger
+    queue.
+    """
 
     def action(self, i):
         for k, v in zip(self._input_queues.keys(), self._input_queues.values()):
@@ -21,6 +27,15 @@ class QueueConcat(DummyMiddle):
             self.wip_text = self.format
 
     def __init__(self, name="queue_concat", **args):
+        """Initializes the module.
+        Arguments:
+            input_queues : list
+                List of input queues to be created
+            format : str
+                Format string to use for concatenation
+        """
+            
+
         DummyMiddle.__init__(self, name, **args)
         self._loop_type = 'thread'
         del self._input_queues['input']
@@ -32,6 +47,9 @@ class QueueConcat(DummyMiddle):
         self.buffer = {}
 
         for i in self.input_queue_names:
+            if i == "trigger":
+                raise ValueError("Queue \"trigger\" cannot be used as a",\
+                    "concatenation string queue.")
             self._input_queues[i] = QueueSlot(self, 'input', datatype='string')
 
 

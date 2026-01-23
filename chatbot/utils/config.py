@@ -16,14 +16,18 @@ def stack_size2a(size=2):
             return size
 
 def debug_spaces():
+    """Return a string of spaces equal to the depth of the call stack
+    """
     return " " * stack_size2a(3)
 
 def debug_print(*args, **kwargs):
+    """fancy print for debugging"""
     print("[DEBUG]"+debug_spaces(), *args, **kwargs)
 
 verbose = False
 
 def load_config(filename):
+    """Load a JSON config file"""
     with open(filename, 'r') as f:
         return json.load(f)
 

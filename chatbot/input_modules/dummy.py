@@ -7,6 +7,9 @@ import time
 
 
 class DummyInput(DummyModule):
+    """Dummy input module. Probably shouldn't be used in anything.
+    Other input modules inherit from this.
+    """
 
     # Input queue is not used
     @property
@@ -23,6 +26,7 @@ class DummyInput(DummyModule):
 
 
     def action(self, i):
+        """No action"""
         return
 
     def get_input(self):

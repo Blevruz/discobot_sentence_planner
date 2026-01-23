@@ -4,6 +4,8 @@ from output_modules.dummy import DummyOutput, output_modules_class
 import navel
 
 class NavelTTS(DummyOutput):
+    """Uses the Navel TTS engine to output the input.
+    """
 
     def action(self, i):
         while not self.input_queue.empty():

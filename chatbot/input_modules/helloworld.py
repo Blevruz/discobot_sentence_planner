@@ -7,8 +7,10 @@ import time
 
 
 class HelloWorldInput(DummyInput):
+    """Hello World module. Outputs a string at regular intervals"""
 
     def action(self, i):
+        """Output a numbered string, then sleeps"""
         self.output_queue.put(f"Hello world! {i}")
         time.sleep(self.delay)
 

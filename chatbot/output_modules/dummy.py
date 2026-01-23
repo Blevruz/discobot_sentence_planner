@@ -7,6 +7,8 @@ import time
 
 
 class DummyOutput(DummyModule):
+    """Dummy output module. Probably shouldn't be used in anything.
+    Other output modules should inherit from this."""
 
     # Output queue is not used
     @property
@@ -22,6 +24,7 @@ class DummyOutput(DummyModule):
         raise "Attempted to add output queue on output module"
 
     def action(self, i):
+        """No action"""
         return
 
     def put_output(self, message):

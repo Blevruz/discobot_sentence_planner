@@ -7,7 +7,11 @@ from utils.module_management import get_modules, load_modules_from_config
 import utils.config
 from utils.config import load_config
 
-def manual_module_specification(args, input_modules, middle_modules, output_modules):
+def manual_module_specification(args, input_modules: str, middle_modules: list, output_modules: str) -> dict:
+    """Specify what modules to use. 
+    Expects one input, one output, and any number of middle modules
+    """
+
     if utils.config.verbose:
         utils.config.debug_print(" Input module: {args.input}")
         utils.config.debug_print(" Middle modules: {args.middle}")

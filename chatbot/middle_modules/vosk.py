@@ -8,8 +8,14 @@ import utils.config
 # Important to keep in mind working with VOSK:
 # - The model expects a sampling freq of 16kHz and a mono format
 
+# TODO: output in-progress transcription, output confidence
+
 
 class VoskTranscriber(DummyMiddle):
+    """Uses Vosk to transcribe audio to text.
+    
+    """
+
     def action(self, i):
         try:
             audio_data = self.input_queue.get()
@@ -29,6 +35,15 @@ class VoskTranscriber(DummyMiddle):
             print(f"Error processing audio: {e}")
 
     def __init__(self, name="vosk_transcriber", **args):
+        """Arguments:
+            model_path : str
+                Path to the Vosk model to use
+            samplerate : int
+                Sampling rate of the audio
+            timeout : int
+                Timeout for the recognizer
+        """
+
         DummyMiddle.__init__(self, name, **args)
         self.samplerate = args.get('samplerate', 16000)
         self.timeout = args.get('timeout', 1)

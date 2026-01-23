@@ -2,6 +2,8 @@
 from middle_modules.dummy import DummyMiddle, middle_modules_class
 
 class Repeater(DummyMiddle):
+    """Repeats the input queue to the output queue.
+    """
 
     def action(self, i):
         self.output_queue.put(self.input_queue.get())

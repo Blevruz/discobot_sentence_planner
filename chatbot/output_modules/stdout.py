@@ -3,6 +3,8 @@ from output_modules.dummy import DummyOutput, output_modules_class
 import sys
 
 class StdoutOutput(DummyOutput):
+    """Outputs the input to stdout.
+    """
 
     def action(self, i):
         #out_next = self.input_queue.get()

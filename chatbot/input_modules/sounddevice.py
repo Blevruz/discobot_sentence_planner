@@ -6,7 +6,10 @@ import multiprocessing
 import time
 
 class SoundDeviceInput(DummyInput):
+    """Audio input via sounddevice."""
+
     def __init__(self, name="sound_input", **args):
+        """TODO: move parameters to kwargs"""
         DummyInput.__init__(self, name, **args)
         self._loop_type = "process"  # Use multiprocessing
         self.datatype_out = "audio"

@@ -6,6 +6,8 @@ from utils.queues import QueueWrapper, QueueSlot
 
 
 class DummyModule:
+    """Dummy module. Probably shouldn't be used in anything.
+    Other modules should inherit from this."""
     def __init__(self, name = "dummy", **args):
         self._type = 'dummy'
         self._name = name

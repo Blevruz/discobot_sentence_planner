@@ -4,11 +4,23 @@ import utils.config
 import pyaudio
 
 class PyAudioOutput(DummyOutput):
+    """Uses PyAudio to output audio.
+    """
 
     def action(self, i):
         self._stream.write(self.input_queue.get())
 
     def __init__(self, name="pyaudio_output", **args):
+        """Arguments:
+            format : pyaudio types (default pyaudio.paInt16)
+                Format of the audio
+            channels : int
+                Number of channels of the audio
+            rate : int
+                Sampling rate of the audio
+            frames_per_buffer : int
+                Number of frames per buffer
+        """
         DummyOutput.__init__(self, name, **args)
         self._loop_type = "process"
         self.datatype_in = "audio"

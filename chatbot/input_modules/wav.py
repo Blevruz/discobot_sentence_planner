@@ -4,12 +4,23 @@ import utils.config
 import wave
 
 class WavInput(DummyInput):
+    """Audio input from a wav file"""
 
     def action(self, i):
+        """Reads frames from the wav file and puts them in the output queue"""
         if len(data := self.wf.readframes(self.frames_per_buffer)):
             self.output_queue.put(data)
 
     def __init__(self, name="wav_input", **args):
+        """Initializes the module.
+        Arguments:
+            file_path : str
+                Path to the wav file to read
+            frames_per_buffer : int
+                Number of frames to read at a time
+            rate : int
+                Sample rate to use for the input
+        """
         DummyInput.__init__(self, name, **args)
         self.frames_per_buffer = args.get('frames_per_buffer', 48000)
         self.rate = args.get('rate', 16000)

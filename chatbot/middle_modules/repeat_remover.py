@@ -8,8 +8,16 @@ import Levenshtein
 # We don't pass on any input that is too similar to any previous input
 
 class RepeatRemover(DummyMiddle):
+    """Removes any input that is too similar to any previous input.
+    """
 
     def __init__(self, name="repeat_remover", **args):
+        """Arguments:
+            threshold : float
+                Threshold for similarity, between 0 and 1
+            min_size : int
+                Minimum size of input to be checked for similarity
+        """
         DummyMiddle.__init__(self, name, **args)
         self._loop_type = 'thread'
         self.datatype_in = 'string'

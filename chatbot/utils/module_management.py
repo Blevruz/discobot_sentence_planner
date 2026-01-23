@@ -4,6 +4,7 @@ import importlib
 import utils.config
 
 def get_modules(module_type):
+    """Get a list of modules of a given type within the adequate folder"""
     file_folder = '/'.join(__file__.split('/')[:-1])
     
     modules_dir = ''
@@ -20,6 +21,7 @@ def get_modules(module_type):
 
 
 def load_modules_from_config(config):
+    """Load modules from a json config"""
     # Config ought to be a dictionary from a json
     # TODO: ensure proper formatting
     # [{"name": <name>, 
