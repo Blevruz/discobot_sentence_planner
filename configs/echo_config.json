@@ -1,0 +1,23 @@
+[
+    {
+        "name": "pyaudio_input",
+        "module": "input_modules.pyaudio",
+        "args": {
+            "frames_per_buffer": 2400
+        },
+        "links": [
+            {
+                "name": "pyaudio_input_to_pyaudio_output",
+                "from_slot": "default",
+                "target_name": "pyaudio_output",
+                "to_slot": "default"
+            }
+        ]
+    },
+    {
+        "name": "pyaudio_output",
+        "module": "output_modules.pyaudio",
+        "args": {},
+        "links": []
+    }
+]

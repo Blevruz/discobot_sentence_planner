@@ -24,7 +24,7 @@ class RepeatRemover(DummyMiddle):
         self._input_queues['muted'] = QueueSlot(self, 'input', datatype='string')
         self.datatype_out = 'string'
         self.threshold = args.get('threshold', 0.8)
-        self.min_size = args.get('min_size', 3)
+        self.min_size = args.get('min_size', 5)
         self.memory = []
         if utils.config.verbose:
             for name, queue in self._input_queues.items():

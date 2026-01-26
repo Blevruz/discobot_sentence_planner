@@ -53,3 +53,9 @@ curl -o models/vosk/vosk-model-small-en-us-0.15.zip https://alphacephei.com/vosk
 unzip models/vosk/vosk-model-small-en-us-0.15.zip -d models/vosk/
 rm models/vosk/en
 ln -s $SCRIPT_DIR/models/vosk/vosk-model-small-en-us-0.15/ models/vosk/en
+
+# Gestion des modèles de TTS Piper
+#
+mkdir -p $SCRIPT_DIR/models/piper/
+#curl -o models/piper/piper-models.zip https://github.com/rhasspy/piper/releases/download/v0.1.0/piper-models.zip
+cd $SCRIPT_DIR/models/piper/ && python3 -m piper.download_voices en_US-lessac-medium

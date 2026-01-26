@@ -13,9 +13,9 @@ def manual_module_specification(args, input_modules: str, middle_modules: list, 
     """
 
     if utils.config.verbose:
-        utils.config.debug_print(" Input module: {args.input}")
-        utils.config.debug_print(" Middle modules: {args.middle}")
-        utils.config.debug_print(" Output module: {args.output}")
+        utils.config.debug_print(f" Input module: {args.input}")
+        utils.config.debug_print(f" Middle modules: {args.middle}")
+        utils.config.debug_print(f" Output module: {args.output}")
 
     loaded_modules = dict()
     output_module = importlib.import_module(output_modules[args.output])
@@ -47,10 +47,10 @@ def manual_module_specification(args, input_modules: str, middle_modules: list, 
             utils.config.debug_print(" Middle module: {m.name}, middle module's input queue: {m.input_queue}, middle module's output queue: {m.output_queue}")
         utils.config.debug_print(" Output module: {output_module.name}, output module's input queue: {output_module.input_queue}")
 
-    loaded_modules[input_module.name] = input_module
+    loaded_modules[f"input_{input_module.name}"] = input_module
     for m in middle_module_list:
-        loaded_modules[m.name] = m
-    loaded_modules[output_module.name] = output_module
+        loaded_modules[f"middle_{m.name}"] = m
+    loaded_modules[f"output_{output_module.name}"] = output_module
     return loaded_modules
 
 
@@ -95,21 +95,22 @@ def main():
     else:
         config = load_config(args.config)
         loaded_modules = load_modules_from_config(config)
-        if utils.config.verbose:
-            utils.config.debug_print(f"Loaded modules: {loaded_modules.keys()}")
-            for m in loaded_modules.values():
-                for i_qs, i_qs_key in zip(m.input_queues.values(), m.input_queues.keys()):
-                    utils.config.debug_print(f"Input slot {i_qs_key} of module {m.name} has {len(i_qs)} queues")
-                    if type(i_qs) is str:
-                        continue
-                    for i_q in i_qs._queues:
-                        utils.config.debug_print(f"Input queue {i_q.name} in slot {i_qs_key} of module {m.name} goes from {i_q.mod_from.name} to {i_q.mod_to.name}")
-                for o_qs, o_qs_key in m.output_queues.values(), list(m.output_queues.keys()):
-                    utils.config.debug_print(f"Output slot {o_qs_key} of module {m.name} has {len(o_qs)} queues")
-                    if type(o_qs) is str:
-                        continue
-                    for o_q in o_qs:
-                        utils.config.debug_print(f"Input queue {o_q.name} in slot {o_qs_key} of module {m.name} goes from {o_q.mod_from.name} to {o_q.mod_to.name}")
+
+    if utils.config.verbose:
+        utils.config.debug_print(f"Loaded modules: {loaded_modules.keys()}")
+        for m in loaded_modules.values():
+            for i_qs, i_qs_key in zip(m.input_queues.values(), m.input_queues.keys()):
+                utils.config.debug_print(f"Input slot {i_qs_key} of module {m.name} has {len(i_qs)} queues")
+                if type(i_qs) is str:
+                    continue
+                for i_q in i_qs._queues:
+                    utils.config.debug_print(f"Input queue {i_q.name} in slot {i_qs_key} of module {m.name} goes from {i_q.mod_from.name} to {i_q.mod_to.name}")
+            for o_qs, o_qs_key in m.output_queues.values(), list(m.output_queues.keys()):
+                utils.config.debug_print(f"Output slot {o_qs_key} of module {m.name} has {len(o_qs)} queues")
+                if type(o_qs) is str:
+                    continue
+                for o_q in o_qs:
+                    utils.config.debug_print(f"Input queue {o_q.name} in slot {o_qs_key} of module {m.name} goes from {o_q.mod_from.name} to {o_q.mod_to.name}")
 
     if utils.config.verbose:
         utils.config.debug_print(" Starting loops")

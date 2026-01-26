@@ -1,0 +1,121 @@
+[
+    {
+        "name": "pyaudio_in",
+        "module": "input_modules.pyaudio",
+        "args": {
+            "channels": 1,
+            "rate": 16000,
+            "frames_per_buffer": 400
+        },
+        "links": [
+            {
+                "name": "pyaudio_in_to_mux_in",
+                "from_slot": "default",
+                "target_name": "mux_in",
+                "to_slot": "default"
+            }
+        ]
+    },
+    {
+        "name": "wav_in",
+        "module": "input_modules.wav",
+        "args": {
+            "file_path": "fitnessgram_mono.wav"
+        },
+        "links": [
+            {
+                "name": "wav_in_to_mux_in",
+                "from_slot": "default",
+                "target_name": "mux_in",
+                "to_slot": "default"
+            }
+        ]
+    },
+    {
+        "name": "mux_in",
+        "module": "middle_modules.multiplexer",
+        "args": {},
+        "links": [
+            {
+                "name": "mux_in_to_demux",
+                "from_slot": "default",
+                "target_name": "demux",
+                "to_slot": "default"
+            }
+        ]
+    },
+
+
+
+
+    {
+        "name": "demux",
+        "module": "middle_modules.demultiplexer",
+        "args": {},
+        "links": [
+            {
+                "name": "demux_to_vosk_fr",
+                "from_slot": "default",
+                "target_name": "vosk_fr",
+                "to_slot": "default"
+            },
+            {
+                "name": "demux_to_vosk_en",
+                "from_slot": "default",
+                "target_name": "vosk_en",
+                "to_slot": "default"
+            }
+        ]
+    },
+    {
+        "name": "vosk_fr",
+        "module": "middle_modules.vosk",
+        "args": {
+            "model_path": "models/vosk/fr"
+        },
+        "links": [
+            {
+                "name": "vosk_fr_to_mux_out",
+                "from_slot": "default",
+                "target_name": "mux_out",
+                "to_slot": "default"
+            }
+        ]
+    },
+    {
+        "name": "vosk_en",
+        "module": "middle_modules.vosk",
+        "args": {
+            "model_path": "models/vosk/en"
+        },
+        "links": [
+            {
+                "name": "vosk_en_to_mux_out",
+                "from_slot": "default",
+                "target_name": "mux_out",
+                "to_slot": "default"
+            }
+        ]
+    },
+
+    {
+        "name": "mux_out",
+        "module": "middle_modules.multiplexer",
+        "args": {},
+        "links": [
+            {
+                "name": "mux_out_to_console_out",
+                "from_slot": "default",
+                "target_name": "console_out",
+                "to_slot": "default"
+            }
+        ]
+    },
+
+    {
+        "name": "console_out",
+        "module": "output_modules.console",
+        "args": {},
+        "links": []
+    }
+]
