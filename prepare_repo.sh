@@ -47,12 +47,21 @@ SCRIPT_DIR=$( cd -- "$( dirname -- "${BASH_SOURCE[0]}" )" &> /dev/null && pwd )
 mkdir -p $SCRIPT_DIR/models/vosk/
 curl -o models/vosk/vosk-model-small-fr-0.22.zip https://alphacephei.com/vosk/models/vosk-model-small-fr-0.22.zip
 tar -xvf models/vosk/vosk-model-small-fr-0.22.zip -C models/vosk/ || unzip models/vosk/vosk-model-small-fr-0.22.zip -d models/vosk/
-rm models/vosk/fr
-ln -s $SCRIPT_DIR/models/vosk/vosk-model-small-fr-0.22/ models/vosk/fr
+rm models/vosk/fr_sm
+ln -s $SCRIPT_DIR/models/vosk/vosk-model-small-fr-0.22/ models/vosk/fr_sm
 curl -o models/vosk/vosk-model-small-en-us-0.15.zip https://alphacephei.com/vosk/models/vosk-model-small-en-us-0.15.zip || tar -xvf models/vosk/vosk-model-small-en-us-0.15.zip -C models/vosk/
 unzip models/vosk/vosk-model-small-en-us-0.15.zip -d models/vosk/
+rm models/vosk/en_sm
+ln -s $SCRIPT_DIR/models/vosk/vosk-model-small-en-us-0.15/ models/vosk/en_sm
+
+curl -o models/vosk/vosk-model-fr-0.22.zip https://alphacephei.com/vosk/models/vosk-model-fr-0.22.zip
+tar -xvf models/vosk/vosk-model-fr-0.22.zip -C models/vosk/ || unzip models/vosk/vosk-model-fr-0.22.zip -d models/vosk/
+rm models/vosk/fr
+ln -s $SCRIPT_DIR/models/vosk/vosk-model-fr-0.22/ models/vosk/fr
+curl -o models/vosk/vosk-model-en-us-0.22.zip https://alphacephei.com/vosk/models/vosk-model-en-us-0.22.zip || tar -xvf models/vosk/vosk-model-en-us-0.22.zip -C models/vosk/
+unzip models/vosk/vosk-model-en-us-0.22.zip -d models/vosk/
 rm models/vosk/en
-ln -s $SCRIPT_DIR/models/vosk/vosk-model-small-en-us-0.15/ models/vosk/en
+ln -s $SCRIPT_DIR/models/vosk/vosk-model-en-us-0.22/ models/vosk/en
 
 # Gestion des modèles de TTS Piper
 #
