@@ -1,10 +1,15 @@
-# chatbot/output_modules/espeak-ng.py
-from output_modules.dummy import DummyOutput, output_modules_class
+# chatbot/middle_modules/espeak-ng.py
+from middle_modules.dummy import DummyMiddle, middle_modules_class
 import utils.config
 import subprocess
 
-class EspeakNG(DummyOutput):
-    """Uses espeak-ng to output text to speech.
+class EspeakNG(DummyMiddle):
+    """Uses espeak-ng to middle text to speech.
+    Queues:
+        input: string
+            Text to output
+        output: signal (int)
+            1 if currently outputting, 0 otherwise
     """
     def __init__(self, name="espeakng", **args):
         """Arguments:
@@ -13,9 +18,10 @@ class EspeakNG(DummyOutput):
             speed : int
                 Speed of the speech. See espeak-ng documentation.
         """
-        DummyOutput.__init__(self, name, **args)
+        DummyMiddle.__init__(self, name, **args)
         self._loop_type = 'process'
         self.datatype_in = 'string'
+        self.datatype_out = 'int'
         self.voice = args.get('voice', 'en')
         self.speed = args.get('speed', 150)
 
@@ -23,8 +29,10 @@ class EspeakNG(DummyOutput):
         if not self.input_queue.empty():
             text = self.input_queue.get()
             command = f"espeak-ng -v {self.voice} -s {self.speed} \"{text}\""
+            self.output_queue.put(1)
             subprocess.call(command, shell=True)
+            self.output_queue.put(0)
 
 
-output_modules_class['espeak-ng'] = EspeakNG
+middle_modules_class['espeak-ng'] = EspeakNG
 

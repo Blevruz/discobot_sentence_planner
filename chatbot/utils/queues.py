@@ -73,7 +73,7 @@ class QueueWrapper:
 class QueueSlot:
     """Manages the variable number of queues that can be linked to a module's
     input or output."""
-    def __init__(self, module, direction, datatype="any", size=-1):
+    def __init__(self, module, direction, datatype="any", name="", size=-1):
         """
         Arguments:
             module: module that owns this queue slot

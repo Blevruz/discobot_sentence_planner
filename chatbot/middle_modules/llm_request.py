@@ -73,7 +73,7 @@ class LLMRequest(DummyMiddle):
 
         if utils.config.verbose:
             for name, queue in self._input_queues.items():
-                utils.config.debug_print(f"Input queue {name}: {queue.datatype} belongs to {queue._module.name}")
+                utils.config.debug_print(f"[{self.name}]Input queue {name}: {queue.datatype} belongs to {queue._module.name}")
 
         self._initial_prompt = args.get('prompt', 'You are a friendly robot assistant.  Have a pleasant chat with your interlocutor, and keep your answers short.')
         self._context = args.get('context', [])
@@ -109,7 +109,7 @@ class LLMRequest(DummyMiddle):
 
     def call_llm(self, headers, payload):
         if utils.config.verbose:
-            utils.config.debug_print(f"Sending request to {self._url}{self._api} with headers {headers} and payload {payload}")
+            utils.config.debug_print(f"[{self.name}]Sending request to {self._url}{self._api} with headers {headers} and payload {payload}")
 
         start_time = time.time()
         resp = requests.post(f"{self._url}{self._api}", headers=headers, json=payload)
@@ -118,7 +118,7 @@ class LLMRequest(DummyMiddle):
         generation_time = end_time - start_time
 
         if utils.config.verbose:
-            utils.config.debug_print(f"Received response {resp} with status code {resp.status_code} and content {resp.json()} in {generation_time} seconds")
+            utils.config.debug_print(f"[{self.name}]Received response {resp} with status code {resp.status_code} and content {resp.json()} in {generation_time} seconds")
 
         if self._max_tokens_total > 0:
             r = resp.json()
@@ -142,7 +142,7 @@ class LLMRequest(DummyMiddle):
 
 
     def _handle_prefix_input(self, prefix_input):
-        self.prefix_input.append("\nprefix_input")
+        self.prefix_input += "\n" + prefix_input
 
 
     def _handle_system_input(self, system_input):

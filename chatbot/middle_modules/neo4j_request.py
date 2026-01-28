@@ -113,7 +113,7 @@ class Neo4jRequest(DummyMiddle):
                     RETURN s, o
                     """
                     if utils.config.verbose:
-                        utils.config.debug_print(f"Sending query {query} with params {subject}, {obj}, {predicate}")
+                        utils.config.debug_print(f"[{self.name}]Sending query {query} with params {subject}, {obj}, {predicate}")
                     self.neo4j_manager.execute_query(query, {
                         "subject": subject,
                         "object": obj,

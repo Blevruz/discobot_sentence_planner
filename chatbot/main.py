@@ -105,7 +105,7 @@ def main():
                     continue
                 for i_q in i_qs._queues:
                     utils.config.debug_print(f"Input queue {i_q.name} in slot {i_qs_key} of module {m.name} goes from {i_q.mod_from.name} to {i_q.mod_to.name}")
-            for o_qs, o_qs_key in m.output_queues.values(), list(m.output_queues.keys()):
+            for o_qs, o_qs_key in zip(m.output_queues.values(), list(m.output_queues.keys())):
                 utils.config.debug_print(f"Output slot {o_qs_key} of module {m.name} has {len(o_qs)} queues")
                 if type(o_qs) is str:
                     continue

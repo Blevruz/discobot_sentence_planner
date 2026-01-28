@@ -31,11 +31,11 @@ class WavInput(DummyInput):
 
     def module_start(self):
         if utils.config.verbose:
-            utils.config.debug_print(f"Starting WavInput loop for {self.name}")
+            utils.config.debug_print(f"[{self.name}]Starting WavInput loop for {self.name}")
         self.wf = wave.open(f"{self.file_path}", 'rb')
         self.ratio = self.wf.getframerate()/self.rate
         if utils.config.verbose:
-            utils.config.debug_print(f"Loaded file \"{self.file_path}\" with " \
+            utils.config.debug_print(f"[{self.name}]Loaded file \"{self.file_path}\" with " \
                     f"{self.wf.getnchannels()} channels, " \
                     f"{self.wf.getsampwidth()} sample width, " \
                     f"{self.wf.getnframes()} audio frames, " \
@@ -45,7 +45,7 @@ class WavInput(DummyInput):
 
     def module_stop(self):
         if utils.config.verbose:
-            utils.config.debug_print(f"Stopping WavInput loop for {self.name}")
+            utils.config.debug_print(f"[{self.name}]Stopping WavInput loop for {self.name}")
         self.wf.close()
 
 input_modules_class['wav'] = WavInput

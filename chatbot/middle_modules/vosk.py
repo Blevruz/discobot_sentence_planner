@@ -1,5 +1,6 @@
 # chatbot/middle_modules/vosk.py
 from middle_modules.dummy import DummyMiddle, middle_modules_class
+from utils.queues import QueueSlot
 import queue
 import json
 import vosk
@@ -7,8 +8,6 @@ import utils.config
 
 # Important to keep in mind working with VOSK:
 # - The model expects a sampling freq of 16kHz and a mono format
-
-# TODO: output in-progress transcription, output confidence
 
 
 class VoskTranscriber(DummyMiddle):
@@ -19,20 +18,32 @@ class VoskTranscriber(DummyMiddle):
     def action(self, i):
         try:
             audio_data = self.input_queue.get()
+    
             if self.recognizer.AcceptWaveform(audio_data):
                 result = json.loads(self.recognizer.Result())
+    
+                words = result.get('result', [])
+                text = result.get("text", "")
+    
+                # --- Compute confidence ---
+                if words:
+                    confs = [w.get("conf", 0.0) for w in words if "conf" in w]
+                    avg_conf = sum(confs) / len(confs) if confs else 0.0
+                else:
+                    avg_conf = 0.0
+    
                 if utils.config.verbose:
-                    if result.get('result'):
-                        for word in result['result']:
-                            if 'conf' in word:
-                                utils.config.debug_print(f"word {word} confidence is: {word['conf']}")
+                    utils.config.debug_print(f"[{self.name}][{self.name}] TEXT='{text}' CONF={avg_conf:.3f}")
+    
+                # --- Output streams ---
+                self._output_queues['text'][0].put(text)
+                self._output_queues['confidence'][0].put(avg_conf)
 
-                self.output_queue.put(result.get("text", ""))
         except queue.Empty:
-            # Handle timeout
             pass
         except Exception as e:
-            print(f"Error processing audio: {e}")
+            print(f"[{self.name}] Error processing audio: {e}")
+
 
     def __init__(self, name="vosk_transcriber", **args):
         """Arguments:
@@ -46,11 +57,15 @@ class VoskTranscriber(DummyMiddle):
 
         DummyMiddle.__init__(self, name, **args)
         self.samplerate = args.get('samplerate', 16000)
-        self.timeout = args.get('timeout', 1)
+        self.timeout = args.get('timeout', 100)
         self._loop_type = "thread"
         self.datatype_in = "audio"
         self.datatype_out = "string"
         self.model_path = args.get('model_path', "models/vosk/en")
+
+        self._output_queues['text'] = QueueSlot(self, 'output', datatype='string')
+        self._output_queues['confidence'] = QueueSlot(self, 'output', datatype='float')
+        self._output_queues['default'] = self._output_queues['text']
 
         # Initialize Vosk
         self.model = vosk.Model(self.model_path) if self.model_path else vosk.Model(lang="en-us")

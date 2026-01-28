@@ -28,7 +28,7 @@ class RepeatRemover(DummyMiddle):
         self.memory = []
         if utils.config.verbose:
             for name, queue in self._input_queues.items():
-                utils.config.debug_print(f"Input queue {name}: {queue.datatype} belongs to {queue._module.name}")
+                utils.config.debug_print(f"[{self.name}]Input queue {name}: {queue.datatype} belongs to {queue._module.name}")
 
     def action(self, i):
         if len(self._input_queues['muted']) > 0:
@@ -46,7 +46,7 @@ class RepeatRemover(DummyMiddle):
                 for m in self.memory:
                     ratio = Levenshtein.ratio(text, m)
                     if utils.config.verbose:
-                        utils.config.debug_print(f"Ratio between {m} and {text}: {ratio}")
+                        utils.config.debug_print(f"[{self.name}]Ratio between {m} and {text}: {ratio}")
                     if ratio > self.threshold:
                         # If so, we discard it
                         return

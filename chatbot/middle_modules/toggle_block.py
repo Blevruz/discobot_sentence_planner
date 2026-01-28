@@ -1,6 +1,7 @@
-# chatbot/middle_modules/time_block.py
+# chatbot/middle_modules/toggle_block.py
 from middle_modules.dummy import DummyMiddle, middle_modules_class
 from utils.queues import QueueSlot
+import utils.config
 import time
 
 class ToggleBlock(DummyMiddle):
@@ -17,10 +18,16 @@ class ToggleBlock(DummyMiddle):
         while not self._input_queues['block'][0].empty():
             self._input_queues['block'][0].get()
             self._block = not self._block
+            if utils.config.verbose:
+                utils.config.debug_print(f"[{self.name}]Toggled blocking: {self._block}")
 
         while self._block:
             while not self.input_queue.empty():
-                self.input_queue.get()
+                dump = self.input_queue.get()
+                #If utils.config.verbose:
+                #    utils.config.debug_print(f"[{self.name}]Dumping input: {dump}")
+
+
             time.sleep(0.1)
             return
         else:
