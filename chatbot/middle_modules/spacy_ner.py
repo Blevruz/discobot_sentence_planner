@@ -17,7 +17,8 @@ class SpacyNER(DummyMiddle):
         self.nlp = utils.spacy.load_model(self.model)
 
     def action(self, i):
-        if not self.input_queue.empty():
+        text = self.input_queue.get()
+        if text:
             text = self.input_queue.get()
             entities = self.extract_entities(text)
             if utils.config.verbose:

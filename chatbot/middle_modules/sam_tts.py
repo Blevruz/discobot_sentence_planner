@@ -24,8 +24,8 @@ class SamTTS(DummyMiddle):
         self.path_to_sam = args.get('path_to_sam', "./misc")
 
     def action(self, i):
-        if not self.input_queue.empty():
-            text = self.input_queue.get()
+        text = self.input_queue.get()
+        if text:
             for t in text.split(" "):
                 self.output_queue.put(1)
                 subprocess.run([f"{self.path_to_sam}/sam", f"{t}." ])

@@ -101,8 +101,8 @@ class Neo4jRequest(DummyMiddle):
     def action(self, i):
         if len(self._input_queues['triplets']) > 0:
             # --- Handle triplets ---
-            if not self._input_queues['triplets'][0].empty():
-                triplet = self._input_queues['triplets'][0].get()
+            triplet = self._input_queues['triplets'][0].get()
+            if triplet is not None:
                 if len(triplet) == 3: 
                     subject, predicate, obj = triplet
 
@@ -122,8 +122,8 @@ class Neo4jRequest(DummyMiddle):
 
         if len(self._input_queues['query']) > 0:
             # --- Handle fulltext search queries ---
-            if not self._input_queues['query'][0].empty():
-                search_string = self._input_queues['query'][0].get()
+            search_string = self._input_queues['query'][0].get()
+            if search_string is not None:
                 results = self.neo4j_manager.fulltext_search(search_string)
 
                 # Push results to output queue

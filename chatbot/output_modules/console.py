@@ -7,8 +7,9 @@ class ConsoleOutput(DummyOutput):
     """
 
     def action(self, i):
-        while not self.input_queue.empty():
-            print(f"{self._prefix}{self.input_queue.get()}")
+        instr = self.input_queue.get()
+        if instr:
+            print(f"{self._prefix}{instr}")
         return
 
     def __init__(self, name = "console_output", **args):

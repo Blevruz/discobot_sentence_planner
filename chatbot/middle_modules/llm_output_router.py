@@ -17,10 +17,11 @@ class LLMOutputRouter(DummyModule):
         self._output_queues['control'] = QueueSlot(self, 'output', datatype='dict')
 
     def action(self, i):
-        if self.input_queue.empty():
-            return
 
         msg = self.input_queue.get()
+
+        if msg is None:
+            return
 
         if utils.config.verbose:
             utils.config.debug_print(f"[{self.name}] Routing message: {msg}")

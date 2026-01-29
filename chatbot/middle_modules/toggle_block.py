@@ -15,24 +15,23 @@ class ToggleBlock(DummyMiddle):
     """
 
     def action(self, i):
-        while not self._input_queues['block'][0].empty():
-            self._input_queues['block'][0].get()
+        block = self._input_queues['block'][0].get()
+        if block is not None:
             self._block = not self._block
             if utils.config.verbose:
                 utils.config.debug_print(f"[{self.name}]Toggled blocking: {self._block}")
 
         while self._block:
-            while not self.input_queue.empty():
-                dump = self.input_queue.get()
-                #If utils.config.verbose:
-                #    utils.config.debug_print(f"[{self.name}]Dumping input: {dump}")
-
+            while True:
+                self.input_queue.get()
 
             time.sleep(0.1)
             return
         else:
-            while not self.input_queue.empty():
-                self.output_queue.put(self.input_queue.get())
+            while True:
+                out = self.input_queue.get()
+                if out is not None:
+                    self.output_queue.put(out)
 
     def __init__(self, name="toggle_block", **args):
         """Initializes the module.

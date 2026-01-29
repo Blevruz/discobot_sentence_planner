@@ -26,8 +26,8 @@ class EspeakNG(DummyMiddle):
         self.speed = args.get('speed', 150)
 
     def action(self, i):
-        if not self.input_queue.empty():
-            text = self.input_queue.get()
+        text = self.input_queue.get()
+        if text:
             command = f"espeak-ng -v {self.voice} -s {self.speed} \"{text}\""
             self.output_queue.put(1)
             subprocess.call(command, shell=True)

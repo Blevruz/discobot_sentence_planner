@@ -30,10 +30,10 @@ class LLMService(DummyMiddle):
 
     def action(self, i):
         q = self.input_queue
-        if q.empty():
-            return
 
         cmd = q.get()
+        if not cmd:
+            return
         if utils.config.verbose:
             utils.config.debug_print(f"[{self.name}] Received command: {cmd}")
 

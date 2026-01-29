@@ -8,8 +8,9 @@ class NavelTTS(DummyOutput):
     """
 
     def action(self, i):
-        while not self.input_queue.empty():
-            navel.run(lambda r: r.say(self.input_queue.get()))
+        speech = self.input_queue.get()
+        if speech:
+            navel.run(lambda r: r.say(speech))
         return
 
 

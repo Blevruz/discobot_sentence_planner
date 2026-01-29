@@ -8,8 +8,8 @@ class StdoutOutput(DummyOutput):
 
     def action(self, i):
         #out_next = self.input_queue.get()
-        while not self.input_queue.empty():
-            out_next = self.input_queue.get()
+        out_next = self.input_queue.get()
+        if out_next is not None:
             if type(out_next) is bytes:
                 sys.stdout.buffer.write(out_next)
             elif type(out_next) is str:

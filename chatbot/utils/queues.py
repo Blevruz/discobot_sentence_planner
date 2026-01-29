@@ -1,6 +1,7 @@
 # chatbot/utils/queues.py
 import multiprocessing
 import utils.config
+from queue import Empty
 
 
 def datatype_match(datatype1, datatype2):
@@ -50,10 +51,13 @@ class QueueWrapper:
 
     def get(self):
         """Get an item from the queue"""
-        if self._mod_from is not None:
-            return self._queue.get()
-        else:
-            raise ValueError(f"No input module linked to this queue: {self.name}, {self._mod_from} -> {self._mod_to}")
+        try:
+            if self._mod_from is not None:
+                return self._queue.get_nowait()
+            else:
+                raise ValueError(f"No input module linked to this queue: {self.name}, {self._mod_from} -> {self._mod_to}")
+        except Empty:
+            return None
 
     def put(self, item):
         """Put an item in the queue"""

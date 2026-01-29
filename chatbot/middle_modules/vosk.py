@@ -19,7 +19,7 @@ class VoskTranscriber(DummyMiddle):
         try:
             audio_data = self.input_queue.get()
     
-            if self.recognizer.AcceptWaveform(audio_data):
+            if audio_data and self.recognizer.AcceptWaveform(audio_data):
                 result = json.loads(self.recognizer.Result())
     
                 words = result.get('result', [])
@@ -39,8 +39,6 @@ class VoskTranscriber(DummyMiddle):
                 self._output_queues['text'][0].put(text)
                 self._output_queues['confidence'][0].put(avg_conf)
 
-        except queue.Empty:
-            pass
         except Exception as e:
             print(f"[{self.name}] Error processing audio: {e}")
 

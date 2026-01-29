@@ -22,8 +22,8 @@ class StringToLLMAppend(DummyModule):
     def action(self, i):
         # Handle LLM responses
         if len(self._input_queues['control']) > 0:
-            if not self._input_queues['control'][0].empty():
-                resp = self._input_queues['control'][0].get()
+            resp = self._input_queues['control'][0].get()
+            if resp is not None:
                 if utils.config.verbose:
                     utils.config.debug_print(f"[{self.name}] Got control response: {resp}")
                 if resp.get("type") == "response" and resp["id"] in self.pending:
@@ -43,8 +43,8 @@ class StringToLLMAppend(DummyModule):
 
         # Handle new strings
         if len(self._input_queues['text']) > 0:
-            if not self._input_queues['text'][0].empty():
-                text = self._input_queues['text'][0].get()
+            text = self._input_queues['text'][0].get()
+            if text is not None:
                 if utils.config.verbose:
                     utils.config.debug_print(f"[{self.name}] New text received: {text}")
                 cmd_id = str(uuid.uuid4())

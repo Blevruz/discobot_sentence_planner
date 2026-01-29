@@ -8,8 +8,8 @@ class StringSplitter(DummyMiddle):
     """
 
     def action(self, i):
-        if not self.input_queue.empty():
-            text = self.input_queue.get()
+        text = self.input_queue.get()
+        if text:
             for s in text.split(self.splitter):
                 self.output_queue.put(s)
 

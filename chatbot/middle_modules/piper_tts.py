@@ -20,8 +20,8 @@ class PiperTTS(DummyMiddle):
         self.voice = piper.PiperVoice.load(self.model)
 
     def action(self, i):
-        if not self.input_queue.empty():
-            text = self.input_queue.get()
+        text = self.input_queue.get()
+        if text is not None:
             for chunk in self.voice.synthesize(text, speed=self.speed):
                 self.output_queue.put(chunk)
 

@@ -29,9 +29,6 @@ class DummyInput(DummyModule):
         """No action"""
         return
 
-    def get_input(self):
-        return self.output_queue.get()
-
     def __init__(self, name="dummy_input", **args):
         DummyModule.__init__(self, name, **args)
         self.type = "input"

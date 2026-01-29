@@ -38,9 +38,9 @@ class ASRConfidenceSelector(DummyMiddle):
             tq = self.text_queues[idx][0]
             cq = self.conf_queues[idx][0]
 
-            if not tq.empty() and not cq.empty():
-                text = tq.get()
-                conf = cq.get()
+            text = tq.get()
+            conf = cq.get()
+            if text and conf:
                 candidates.append((conf, text, idx))
 
         if not candidates:
@@ -54,9 +54,9 @@ class ASRConfidenceSelector(DummyMiddle):
             tq = self.text_queues[idx][0]
             cq = self.conf_queues[idx][0]
 
-            while not tq.empty() and not cq.empty():
-                text = tq.get()
-                conf = cq.get()
+            text = tq.get()
+            conf = cq.get()
+            if text and conf:
                 candidates.append((conf, text, idx))
 
         # Select best

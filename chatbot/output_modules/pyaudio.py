@@ -8,7 +8,9 @@ class PyAudioOutput(DummyOutput):
     """
 
     def action(self, i):
-        self._stream.write(self.input_queue.get())
+        audio = self.input_queue.get()
+        if audio is not None:
+            self._stream.write(audio)
 
     def __init__(self, name="pyaudio_output", **args):
         """Arguments:

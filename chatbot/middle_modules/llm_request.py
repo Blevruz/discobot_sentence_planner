@@ -21,18 +21,18 @@ class LLMRequest(DummyMiddle):
         """
 
         if len(self._input_queues['prefix']) > 0:
-            if not self._input_queues['prefix'][0].empty():
-                prefix_input = self._input_queues['prefix'][0].get()
+            prefix_input = self._input_queues['prefix'][0].get()
+            if prefix_input:
                 self._handle_prefix_input(prefix_input)
 
         if len(self._input_queues['system']) > 0:
-            if not self._input_queues['system'][0].empty():
-                system_input = self._input_queues['system'][0].get()
+            system_input = self._input_queues['system'][0].get()
+            if system_input:
                 self.output_queue.put(self._handle_system_input(system_input))
 
-        if not self.input_queue.empty():
-            user_input = self.input_queue.get()
-            self.output_queue.put(self._handle_user_input(user_input))
+        user_input = self.input_queue.get()
+            if user_input:
+                self.output_queue.put(self._handle_user_input(user_input))
 
 
     def __init__(self, name="llm_request", **args):

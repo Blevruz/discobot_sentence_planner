@@ -32,8 +32,10 @@ class LengthBlock(DummyMiddle):
             )
 
     def action(self, i):
-        while not self.input_queue.empty():
+        while True:
             item = self.input_queue.get()
+            if item is None:
+                return
 
             if not isinstance(item, str):
                 if utils.config.verbose:

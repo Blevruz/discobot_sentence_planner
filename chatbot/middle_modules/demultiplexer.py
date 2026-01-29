@@ -5,8 +5,8 @@ class Demultiplexer(DummyMiddle):
     """Demultiplexer module. Takes input from one queue and outputs to many"""
 
     def action(self, i):
-        if not self.input_queue.empty():
-            v = self.input_queue.get()
+        v = self.input_queue.get()
+        if v:
             for oq in self._output_queues['output']:
                 oq.put(v)
 

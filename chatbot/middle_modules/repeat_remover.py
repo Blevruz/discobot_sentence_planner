@@ -33,11 +33,15 @@ class RepeatRemover(DummyMiddle):
     def action(self, i):
         if len(self._input_queues['muted']) > 0:
             for m in self._input_queues['muted']:
-                while not m.empty():
-                    self.memory.append(m.get())
+                while True:
+                    g = m.get()
+                    if g is not None:
+                        self.memory.append(m.get())
+                    else:
+                        break
 
-        if not self.input_queue.empty():
-            text = self.input_queue.get()
+        text = self.input_queue.get()
+        if text:
             if len(text) < self.min_size:
                 return
             # If we have previous inputs stored:

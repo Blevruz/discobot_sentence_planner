@@ -9,8 +9,8 @@ class StrSub(DummyMiddle):
     """
 
     def action(self, i):
-        if not self.input_queue.empty():
-            self.wip_text = self.input_queue.get()
+        self.wip_text = self.input_queue.get()
+        if self.wip_text:
             for k, v in self.subs.items():
                 if type(v) == list:
                     v = random.choice(v)

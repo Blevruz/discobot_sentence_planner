@@ -9,8 +9,9 @@ class Multiplexer(DummyMiddle):
         #self.output_queue.put(self.input_queue.get())
         # check if any of the input queues are not empty
         for queue in self._input_queues['input']:
-            if not queue.empty():
-                self.output_queue.put(queue.get())
+            i = queue.get()
+            if i is not None:
+                self.output_queue.put(i)
 
     def __init__(self, name="multiplexer", **args):
         """Initializes the module, no arguments required.

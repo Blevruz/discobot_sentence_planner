@@ -13,11 +13,15 @@ class QueueConcat(DummyMiddle):
 
     def action(self, i):
         for k, v in zip(self._input_queues.keys(), self._input_queues.values()):
+            if k == "trigger" or k == "default":
+                continue
             for q in v:
-                while not q.empty():
-                    self.buffer[k] = q.get()
+                g = q.get()
+                if g is not None:
+                    self.buffer[k] = g
 
-        if not self.input_queue.empty():
+        trig = self.input_queue.get()
+        if trig is not None:
             for k, v in zip(self.buffer.keys(), self.buffer.values()):
                 self.wip_text = self.wip_text.replace(f"{{{k}}}", v)
             if utils.config.verbose:

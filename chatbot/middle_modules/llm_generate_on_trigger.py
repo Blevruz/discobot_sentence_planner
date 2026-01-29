@@ -23,24 +23,25 @@ class LLMGenerateOnTrigger(DummyModule):
     def action(self, i):
         # Start generation
         if len(self._input_queues['trigger']) > 0:
-            if not self._input_queues['trigger'][0].empty() and not self.active:
-                if utils.config.verbose:
-                    utils.config.debug_print(f"[{self.name}] Starting generation")
-                self._input_queues['trigger'][0].get()
-                cmd = {
-                    "id": str(uuid.uuid4()),
-                    "from": self.name,
-                    "op": "GENERATE",
-                    "payload": {}
-                }
-                self.active = True
-                self.buffer = ""
-                self._output_queues['cmd'][0].put(cmd)
+            if not self.active:
+                t = self._input_queues['trigger'][0].get()
+                if t:
+                    if utils.config.verbose:
+                        utils.config.debug_print(f"[{self.name}] Starting generation")
+                    cmd = {
+                        "id": str(uuid.uuid4()),
+                        "from": self.name,
+                        "op": "GENERATE",
+                        "payload": {}
+                    }
+                    self.active = True
+                    self.buffer = ""
+                    self._output_queues['cmd'][0].put(cmd)
 
         # Handle streaming tokens
         if len(self._input_queues['events']) > 0:
-            if not self._input_queues['events'][0].empty():
-                evt = self._input_queues['events'][0].get()
+            evt = self._input_queues['events'][0].get()
+            if evt:
                 if utils.config.verbose:
                     utils.config.debug_print(f"[{self.name}] Event received: {evt}")
 
