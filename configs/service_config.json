@@ -1,0 +1,113 @@
+[
+    {
+        "name": "text_input",
+        "module": "input_modules.keyboard",
+        "args": {},
+        "links": [
+            {
+                "name": "text_to_append",
+                "from_slot": "default",
+                "target_name": "string_to_llm_append",
+                "to_slot": "text"
+            }
+        ]
+    },
+
+    {
+        "name": "string_to_llm_append",
+        "module": "middle_modules.string_to_llm_append",
+        "args": {"role": "user"},
+        "links": [
+            {
+                "name": "append_cmd_to_llm_mux",
+                "from_slot": "cmd",
+                "target_name": "llm_cmd_mux",
+                "to_slot": "default"
+            },
+            {
+                "name": "append_trigger_to_generate",
+                "from_slot": "trigger",
+                "target_name": "llm_generate_on_trigger",
+                "to_slot": "trigger"
+            }
+        ]
+    },
+    {
+        "name": "llm_cmd_mux",
+        "module": "middle_modules.multiplexer",
+        "args": {},
+        "links": [
+            {
+                "name": "mux_to_llm",
+                "from_slot": "default",
+                "target_name": "llm_service",
+                "to_slot": "cmd"
+            }
+        ]
+    },
+    {
+        "name": "llm_service",
+        "module": "middle_modules.llm_service",
+        "args": {
+            "url": "http://localhost:8000",
+            "temperature": 0.3,
+            "max_tokens": 256
+        },
+        "links": [
+            {
+                "name": "llm_out_to_router",
+                "from_slot": "default",
+                "target_name": "llm_output_router",
+                "to_slot": "default"
+            }
+        ]
+    },
+
+    {
+        "name": "llm_output_router",
+        "module": "middle_modules.llm_output_router",
+        "args": {},
+        "links": [
+            {
+                "name": "router_control_to_append",
+                "from_slot": "control",
+                "target_name": "string_to_llm_append",
+                "to_slot": "control"
+            },
+            {
+                "name": "router_text_to_generate",
+                "from_slot": "text",
+                "target_name": "llm_generate_on_trigger",
+                "to_slot": "events"
+            }
+        ]
+    },
+
+    {
+        "name": "llm_generate_on_trigger",
+        "module": "middle_modules.llm_generate_on_trigger",
+        "args": {},
+        "links": [
+            {
+                "name": "generate_cmd_to_llm_mux",
+                "from_slot": "cmd",
+                "target_name": "llm_cmd_mux",
+                "to_slot": "default"
+            },
+            {
+                "name": "final_text_out",
+                "from_slot": "text_out",
+                "target_name": "console",
+                "to_slot": "default"
+            }
+        ]
+    },
+
+    {
+        "name": "console",
+        "module": "output_modules.console",
+        "args": {},
+        "links": []
+    }
+]
+
