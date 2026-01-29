@@ -29,9 +29,11 @@ class EspeakNG(DummyMiddle):
         text = self.input_queue.get()
         if text:
             command = f"espeak-ng -v {self.voice} -s {self.speed} \"{text}\""
-            self.output_queue.put(1)
+            if len(self._output_queues["default"]) > 0:
+                self.output_queue.put(1)
             subprocess.call(command, shell=True)
-            self.output_queue.put(0)
+            if len(self._output_queues["default"]) > 0:
+                self.output_queue.put(0)
 
 
 middle_modules_class['espeak-ng'] = EspeakNG

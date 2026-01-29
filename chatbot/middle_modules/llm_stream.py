@@ -35,7 +35,7 @@ class LLMStream(DummyMiddle):
                 self.output_queue.put(self._handle_system_input(system_input))
 
         user_input = self.input_queue.get()
-            if user_input:
+        if user_input:
             self.output_queue.put(self._handle_user_input(user_input))
 
 

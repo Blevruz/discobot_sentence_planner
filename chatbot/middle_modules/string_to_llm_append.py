@@ -27,9 +27,9 @@ class StringToLLMAppend(DummyModule):
                 if utils.config.verbose:
                     utils.config.debug_print(f"[{self.name}] Got control response: {resp}")
                 if resp.get("type") == "response" and resp["id"] in self.pending:
-                    if utils.config.verbose:
-                        utils.config.debug_print(f"[{self.name}] Append confirmed, triggering generatsion.")
                     if len(self._output_queues['trigger']) > 0:
+                        if utils.config.verbose:
+                            utils.config.debug_print(f"[{self.name}] Append confirmed, triggering generation.")
                         self._output_queues['trigger'][0].put({
                             "type": "trigger",
                             "reason": "append_done",

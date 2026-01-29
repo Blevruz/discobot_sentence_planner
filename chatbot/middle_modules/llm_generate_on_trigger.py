@@ -16,7 +16,8 @@ class LLMGenerateOnTrigger(DummyModule):
         self._input_queues['events'] = QueueSlot(self, 'input', datatype='dict')
 
         self._output_queues['cmd'] = QueueSlot(self, 'output', datatype='dict')
-        self._output_queues['text_out'] = QueueSlot(self, 'output', datatype='string')
+        self._output_queues['text'] = QueueSlot(self, 'output', datatype='string')
+        self._output_queues['stream'] = QueueSlot(self, 'output', datatype='string')
 
         self.buffer = ""
 
@@ -45,15 +46,21 @@ class LLMGenerateOnTrigger(DummyModule):
                 if utils.config.verbose:
                     utils.config.debug_print(f"[{self.name}] Event received: {evt}")
 
-                if evt.get("event") == "token":
-                    self.buffer += evt["data"]["text"]
+                if evt.get("event") == "token" and len(self._output_queues['stream']) > 0:
+                     if utils.config.verbose:
+                        utils.config.debug_print(f"[{self.name}] Token received: {evt['data']['text']}")
+                     self._output_queues['stream'][0].put(evt["data"]["text"])
 
-                elif evt.get("event") == "generation_done":
+                if evt.get("event") == "generation_done":
+                    self.active = False
                     self.buffer = evt["data"]["text"]
                     if utils.config.verbose:
                         utils.config.debug_print(f"[{self.name}] Generation done: {self.buffer}")
-                    self._output_queues['text_out'][0].put(self.buffer)
-                    self.active = False
+                    if len(self._output_queues['text']) > 0:
+                        self._output_queues['text_out'][0].put(self.buffer)
+                if utils.config.verbose:
+                    utils.config.debug_print(f"[{self.name}] Finished processing evt {evt}")
+
 
 middle_modules_class['llm_generate_on_trigger'] = LLMGenerateOnTrigger
 

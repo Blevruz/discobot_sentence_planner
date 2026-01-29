@@ -37,13 +37,17 @@ class LLMService(DummyMiddle):
         if utils.config.verbose:
             utils.config.debug_print(f"[{self.name}] Received command: {cmd}")
 
-        responses = self.dispatcher.handle(cmd)
-
         out_q = self.output_queue
-        for r in responses:
+        for r in self.dispatcher.handle(cmd):
             if utils.config.verbose:
                 utils.config.debug_print(f"[{self.name}] Emitting: {r}")
-            out_q.put(r)
+            if type(r) is list:
+                for ri in r:
+                    out_q.put(ri)
+            else:
+                out_q.put(r)
+        if utils.config.verbose:
+            utils.config.debug_print(f"[{self.name}] Finished processing cmd {cmd}")
 
 middle_modules_class['llm_service'] = LLMService
 
