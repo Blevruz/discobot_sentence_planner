@@ -2,9 +2,9 @@
 from middle_modules.dummy import DummyMiddle, middle_modules_class
 from utils.queues import QueueSlot
 
-from middle_modules._llm_service.context_store import ContextStore
-from middle_modules._llm_service.generator import LLMGenerator
-from middle_modules._llm_service.dispatcher import CommandDispatcher
+from utils.llm_service.context_store import ContextStore
+from utils.llm_service.generator import LLMGenerator
+from utils.llm_service.dispatcher import CommandDispatcher
 
 import utils.config
 
