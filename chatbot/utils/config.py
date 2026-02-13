@@ -4,6 +4,7 @@ import json
 # stolen wholesale from https://stackoverflow.com/questions/34115298/how-do-i-get-the-current-depth-of-the-python-interpreter-stack
 from itertools import count
 import sys
+import os
 
 def stack_size2a(size=2):
     """Get stack size for caller's frame.
@@ -31,4 +32,26 @@ def load_config(filename):
     with open(filename, 'r') as f:
         return json.load(f)
 
+def process_config_args(args : dict):
+    """Process arguments from a config file
+        - If arg value begins with '$', it's an environment variable
+        - If arg value begins with '@', it's a file
+    """
+    for key, value in args.items():
+        if isinstance(value, str):
+            if value.startswith('$'):
+                args[key] = os.environ[value[1:]]
+                # Shouldn't crash if empty but we should say something about it
+                if verbose:
+                    if not args[key]:
+                        debug_print(f"Environment variable {value[1:]} is empty")
+            elif value.startswith('@'):
+                # If it's a json file, load it as a json
+                if value.endswith('.json'):
+                    with open(value[1:], 'r') as f:
+                        args[key] = json.load(f)
+                # Else, assume it's a text file, load it as a string
+                else:
+                        with open(value[1:], 'r') as f:
+                            args[key] = f.read()
 

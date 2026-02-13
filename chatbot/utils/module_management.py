@@ -73,6 +73,9 @@ def load_modules_from_config(config):
         if module['name'] in loaded_modules:
             raise Exception(f"Module with name {module['name']} already loaded")
 
+        # Process arguments
+        utils.config.process_config_args(module['args'])
+
         # Add module to loaded modules
         loaded_modules[module['name']] = class_list[mod_split[1]]( \
                 module['name'], \

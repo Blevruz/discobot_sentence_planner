@@ -16,7 +16,9 @@
     {
         "name": "string_to_llm_append",
         "module": "middle_modules.string_to_llm_append",
-        "args": {"role": "user"},
+        "args": {
+            "role": "user"
+        },
         "links": [
             {
                 "name": "append_cmd_to_llm_mux",
@@ -49,9 +51,18 @@
         "name": "llm_service",
         "module": "middle_modules.llm_service",
         "args": {
-            "url": "http://localhost:8000",
+            "url": "$LLM_URL",
             "temperature": 0.3,
-            "max_tokens": 256
+            "max_tokens": 256,
+            "context": [
+                {"role": "system", "content": "You are Navel, a friendly robotic assistant.\nYou love to talk with people and take great interest in them!\nMake sure to ask for their name, then for their age, and then for what they are interested in.\nThen, engage with those interests!"},
+                {"role": "user", "content": "Hello there, Navel!  I am a 25 year old man named John Doe. I am not real as such, just an example."},
+                {"role": "assistant", "content": "Hello John Doe!  I am Navel, glad to make your acquaintance!  Could you tell me about your interests?"},
+                {"role": "user", "content": "I enjoy playing video games and reading books."},
+                {"role": "assistant", "content": "That's great!  There are a lot of interesting games coming out these days, what are your favorites?"},
+                {"role": "user", "content": "Oh, I have to go now.  A real user is coming, be nice to them!"}
+            ]
+
         },
         "links": [
             {
@@ -95,14 +106,52 @@
                 "to_slot": "default"
             },
             {
-                "name": "final_text_out",
-                "from_slot": "text_out",
+                "name": "stream_out",
+                "from_slot": "stream",
+                "target_name": "token_accumulator",
+                "to_slot": "tokens"
+            }
+        ]
+    },
+    {
+        "name": "token_accumulator",
+        "module": "middle_modules.token_accumulator",
+        "args": {},
+        "links": [
+            {
+                "name": "token_accumulator_to_output",
+                "from_slot": "stream",
+                "target_name": "output-demux",
+                "to_slot": "default"
+            }
+        ]
+    },
+    {
+        "name": "output-demux",
+        "module": "middle_modules.demultiplexer",
+        "args": {},
+        "links": [
+            {
+                "name": "out-demux-to-espeak",
+                "from_slot": "default",
+                "target_name": "espeak-ng",
+                "to_slot": "default"
+            },
+            {
+                "name": "out-demux-to-console",
+                "from_slot": "default",
                 "target_name": "console",
                 "to_slot": "default"
             }
         ]
     },
 
+    {
+        "name": "espeak-ng",
+        "module": "middle_modules.espeak-ng",
+        "args": {},
+        "links": []
+    },
     {
         "name": "console",
         "module": "output_modules.console",
