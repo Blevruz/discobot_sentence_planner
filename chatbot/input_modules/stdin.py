@@ -12,7 +12,7 @@ class StdinInput(DummyInput):
 
     def __init__(self, name="stdin_input", **args):
         """Initializes the module. No parameters"""
-        DummyInput.__init__(self, name, **args)
+        super().__init__(name, **args)
         self._loop_type = "thread"
         self.datatype_out = "any"
 

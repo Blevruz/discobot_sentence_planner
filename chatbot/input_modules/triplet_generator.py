@@ -17,7 +17,7 @@ class TripletGenerator(DummyInput):
             triplets : list
                 Lists of entries to make triplets to send to the output queue
         """
-        DummyInput.__init__(self, name, **args)
+        super().__init__(name, **args)
         self._loop_type = 'process'
         self.datatype_out = 'triplet'
         self._triplets = args.get('triplets', [["Foo", "Bar", "Baz"], 

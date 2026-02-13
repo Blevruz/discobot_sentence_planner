@@ -12,7 +12,7 @@ class PiperTTS(DummyMiddle):
             speed : float
                 Speed of the speech. See Piper documentation.
         """
-        DummyMiddle.__init__(self, name, **args)
+        super().__init__(name, **args)
         self._loop_type = 'process'
         self.datatype_in = 'string'
         self.model = args.get('model', "./models/piper/en_US-lessac-medium.onnx")

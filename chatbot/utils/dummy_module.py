@@ -138,12 +138,14 @@ class DummyModule:
         if utils.config.verbose:
             utils.config.debug_print(f"Starting {self.type} loop for {self.name}")
         self.module_start()
+        self.stopped = None
         self.stopped = threading.Event()
         if self._loop_type == 'blocking':
             return
         if self._loop_type == 'thread':
             self.loop = threading.Thread(target=self._loop)
         elif self._loop_type == 'process':
+            self.stopped = multiprocessing.Event()
             self.loop = multiprocessing.Process(target=self._loop)
         self.loop.start()
 
@@ -157,12 +159,46 @@ class DummyModule:
             utils.config.debug_print(f"Stopping {self.type} loop for {self.name}")
         self.stopped.set()
         if self._loop_type == 'thread':
-            self.loop.join(self._loop_timeout)
+            self.loop.join(timeout=self._loop_timeout)
+            if self.loop.is_alive():
+                if utils.config.verbose:
+                    utils.config.debug_print(f"Thread {self.name} did not",\
+                            f"stop after {self._loop_timeout} seconds")
         elif self._loop_type == 'process':
-            self.loop.terminate()
+            self.loop.join(timeout=self._loop_timeout)
+            if self.loop.is_alive():
+                if utils.config.verbose:
+                    utils.config.debug_print(f"Process {self.name} did not",\
+                            f"stop after {self._loop_timeout} seconds")
+                self.loop.terminate()
+                self.loop.join()
+
+            if self.loop.is_alive():
+                # Nuclear option
+                if utils.config.verbose:
+                    utils.config.debug_print(f"Error: Process {self.name} did not terminate, killing...")
+                self.loop.kill()
+                self.loop.join()
+
+            self.loop.close()
+
         self.module_stop()
+
+        self._cleanup_queues()
 
     def is_stopped(self):
         return self.stopped.is_set()
 
-
+    def _cleanup_queues(self):
+        # Drain all queues to prevent blocking and ensure clean state
+        for slot in self._input_queues.values():
+            if isinstance(slot, str):
+                continue
+            for q in slot._queues:
+                q._drain_queue()
+                
+        for slot in self._output_queues.values():
+            if isinstance(slot, str):
+                continue
+            for q in slot:
+                q._drain_queue()

@@ -17,7 +17,7 @@ class ConsoleOutput(DummyOutput):
             prefix : str
                 Prefix to print before the input
         """
-        DummyOutput.__init__(self, name, **args)
+        super().__init__(name, **args)
         self._prefix = args.get('prefix', "SYS> ")
         self._loop_type = 'thread'
         self.datatype_in = 'string'

@@ -23,7 +23,7 @@ class PyAudioOutput(DummyOutput):
             frames_per_buffer : int
                 Number of frames per buffer
         """
-        DummyOutput.__init__(self, name, **args)
+        super().__init__(name, **args)
         self._loop_type = "process"
         self.datatype_in = "audio"
         self.datatype_out = "audio"

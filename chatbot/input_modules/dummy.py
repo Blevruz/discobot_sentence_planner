@@ -30,7 +30,7 @@ class DummyInput(DummyModule):
         return
 
     def __init__(self, name="dummy_input", **args):
-        DummyModule.__init__(self, name, **args)
+        super().__init__(name, **args)
         self.type = "input"
 
         # An input module is the end point of the pipeline, so it has no need

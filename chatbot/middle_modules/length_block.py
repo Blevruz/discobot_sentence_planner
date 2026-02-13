@@ -18,7 +18,7 @@ class LengthBlock(DummyMiddle):
     """
 
     def __init__(self, name="length_block", **args):
-        DummyMiddle.__init__(self, name, **args)
+        super().__init__(name, **args)
         self._loop_type = 'process'
         self.datatype_in = 'string'
 

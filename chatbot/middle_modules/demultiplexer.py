@@ -12,7 +12,7 @@ class Demultiplexer(DummyMiddle):
 
     def __init__(self, name="demultiplexer", **args):
         """Initializes the module. No parameters"""
-        DummyMiddle.__init__(self, name, **args)
+        super().__init__(name, **args)
         self._loop_type = 'process'
         self._output_queues['output']._size = -1
 

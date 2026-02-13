@@ -9,7 +9,7 @@ class Repeater(DummyMiddle):
         self.output_queue.put(self.input_queue.get())
 
     def __init__(self, name="repeater", **args):
-        DummyMiddle.__init__(self, name, **args)
+        super().__init__(name, **args)
         self._loop_type = 'process'
 
 middle_modules_class['repeater'] = Repeater

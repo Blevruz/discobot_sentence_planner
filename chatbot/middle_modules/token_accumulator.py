@@ -16,7 +16,7 @@ class TokenAccumulator(DummyMiddle):
     """
 
     def __init__(self, name="token_accumulator", **args):
-        DummyMiddle.__init__(self, name, **args)
+        super().__init__(name, **args)
         self._loop_type = 'process'
 
         # Remove default 'input' slot and define ours

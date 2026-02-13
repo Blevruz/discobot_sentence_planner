@@ -17,7 +17,7 @@ class SamTTS(DummyMiddle):
             path_to_sam : str
                 Path to the SAM executable
         """
-        DummyMiddle.__init__(self, name, **args)
+        super().__init__(name, **args)
         self._loop_type = 'process'
         self.datatype_in = 'string'
         self.datatype_out = 'int'

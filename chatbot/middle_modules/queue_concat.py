@@ -40,7 +40,7 @@ class QueueConcat(DummyMiddle):
         """
             
 
-        DummyMiddle.__init__(self, name, **args)
+        super().__init__(name, **args)
         self._loop_type = 'thread'
         del self._input_queues['input']
         self._input_queues['trigger'] = QueueSlot(self, 'input', datatype='any')

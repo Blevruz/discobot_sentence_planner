@@ -21,7 +21,7 @@ class WavInput(DummyInput):
             rate : int
                 Sample rate to use for the input
         """
-        DummyInput.__init__(self, name, **args)
+        super().__init__(name, **args)
         self.frames_per_buffer = args.get('frames_per_buffer', 48000)
         self.rate = args.get('rate', 16000)
         self._loop_type = "thread"  # Use threading

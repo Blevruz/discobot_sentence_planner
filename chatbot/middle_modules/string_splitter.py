@@ -18,7 +18,7 @@ class StringSplitter(DummyMiddle):
             splitter : str
                 Splitter to use for splitting the string
         """
-        DummyMiddle.__init__(self, name, **args)
+        super().__init__(name, **args)
         self._loop_type = 'process'
         self.splitter = args.get('splitter', " ")
         self.datatype_in = 'string'

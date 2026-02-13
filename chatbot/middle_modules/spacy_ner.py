@@ -10,7 +10,7 @@ class SpacyNER(DummyMiddle):
     """
 
     def __init__(self, name="spacy_ner", **args):
-        DummyMiddle.__init__(self, name, **args)
+        super().__init__(name, **args)
         self._loop_type = 'process'
         self.datatype_in = 'string'
         self.model = args.get('model', "en_core_web_sm")

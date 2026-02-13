@@ -17,7 +17,7 @@ class Multiplexer(DummyMiddle):
         """Initializes the module, no arguments required.
         """
 
-        DummyMiddle.__init__(self, name, **args)
+        super().__init__(name, **args)
         self._loop_type = 'process'
         self._input_queues['input']._size = -1
 

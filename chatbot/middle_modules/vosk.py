@@ -56,7 +56,7 @@ class VoskTranscriber(DummyMiddle):
                 Timeout for the recognizer
         """
 
-        DummyMiddle.__init__(self, name, **args)
+        super().__init__(name, **args)
         self.samplerate = args.get('samplerate', 16000)
         self.timeout = args.get('timeout', 100)
         self._loop_type = "thread"
@@ -72,5 +72,6 @@ class VoskTranscriber(DummyMiddle):
         self.model = vosk.Model(self.model_path) if self.model_path else vosk.Model(lang="en-us")
         self.recognizer = vosk.KaldiRecognizer(self.model, self.samplerate)
         self.recognizer.SetWords(True)
+
 
 middle_modules_class['vosk'] = VoskTranscriber

@@ -18,7 +18,7 @@ class EspeakNG(DummyMiddle):
             speed : int
                 Speed of the speech. See espeak-ng documentation.
         """
-        DummyMiddle.__init__(self, name, **args)
+        super().__init__(name, **args)
         self._loop_type = 'process'
         self.datatype_in = 'string'
         self.datatype_out = 'int'

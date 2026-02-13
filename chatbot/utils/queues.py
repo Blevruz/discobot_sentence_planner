@@ -74,6 +74,22 @@ class QueueWrapper:
         """Check if the queue is full"""
         return self._queue.full()
 
+    def _drain_queue(self):
+        q = self._queue
+        try:
+            while True:
+                q.get_nowait()
+        except:
+            pass
+        
+        # Only do the multiprocessing-specific cleanup for mp.Queue
+        if isinstance(q, multiprocessing.queues.Queue):
+            try:
+                q.close()
+                q.join_thread()  # Wait for background thread
+            except:
+                pass
+
 class QueueSlot:
     """Manages the variable number of queues that can be linked to a module's
     input or output."""
@@ -132,5 +148,4 @@ class QueueSlot:
         """Remove a queue from this queue slot"""
         if queue in self._queues:
             self._queues.remove(queue)
-
 

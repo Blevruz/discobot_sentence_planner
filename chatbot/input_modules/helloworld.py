@@ -15,7 +15,7 @@ class HelloWorldInput(DummyInput):
         time.sleep(self.delay)
 
     def __init__(self, name="helloworld", **args):
-        DummyInput.__init__(self, name, **args)
+        super().__init__(name, **args)
         self._loop_type = 'thread'
         self.datatype_out = "string"
         self.delay = args.get('delay', 1.0)

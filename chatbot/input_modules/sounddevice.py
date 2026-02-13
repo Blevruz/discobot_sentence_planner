@@ -10,7 +10,7 @@ class SoundDeviceInput(DummyInput):
 
     def __init__(self, name="sound_input", **args):
         """TODO: move parameters to kwargs"""
-        DummyInput.__init__(self, name, **args)
+        super().__init__(name, **args)
         self._loop_type = "process"  # Use multiprocessing
         self.datatype_out = "audio"
         self.args = args

@@ -11,7 +11,7 @@ class Neo4jRequest(DummyMiddle):
     """Handles triplet insertions and fulltext search queries."""
 
     def __init__(self, name="neo4j_request", **args):
-        DummyMiddle.__init__(self, name, **args)
+        super().__init__(name, **args)
         self._neo4j_uri = args.get('neo4j_uri', "bolt://127.0.0.1:7687")
         self._neo4j_auth = args.get('neo4j_auth', ("neo4j", "neo4j"))
         self._neo4j_auth = (self._neo4j_auth[0], self._neo4j_auth[1])

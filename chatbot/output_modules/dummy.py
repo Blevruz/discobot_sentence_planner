@@ -31,7 +31,7 @@ class DummyOutput(DummyModule):
         self.input_queue.put(message)
 
     def __init__(self, name = "dummy_output", **args):
-        DummyModule.__init__(self, name, **args)
+        super().__init__(name, **args)
         self.type = "output"
         # An output module is the end point of the pipeline, so it doesn't
         # need an output queue

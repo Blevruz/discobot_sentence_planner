@@ -11,7 +11,7 @@ import utils.config
 
 class LLMService(DummyMiddle):
     def __init__(self, name="llm_service", **args):
-        DummyMiddle.__init__(self, name, **args)
+        super().__init__(name, **args)
         self._loop_type = 'process'
 
         del self._input_queues['input']

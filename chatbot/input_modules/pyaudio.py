@@ -34,7 +34,7 @@ class PyAudioInput(DummyInput):
             frames_per_buffer : int 
                 number of frames per buffer (default: 4800)
         """
-        DummyInput.__init__(self, name, **args)
+        super().__init__(name, **args)
         self._loop_type = "blocking"  # We use a callback so it's fine to use blocking
         self.datatype_out = "audio"
         self.format = args.get('format', pyaudio.paInt16)

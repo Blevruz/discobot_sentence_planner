@@ -16,7 +16,7 @@ class StdoutOutput(DummyOutput):
                 sys.stdout.write(out_next)
 
     def __init__(self, name="stdout_output", **args):
-        DummyOutput.__init__(self, name, **args)
+        super().__init__(name, **args)
         self._loop_type = "thread"
         self.datatype_in = "any"
 

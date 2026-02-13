@@ -36,7 +36,7 @@ class ToggleBlock(DummyMiddle):
     def __init__(self, name="toggle_block", **args):
         """Initializes the module.
         """
-        DummyMiddle.__init__(self, name, **args)
+        super().__init__(name, **args)
         self._loop_type = 'process'
         self.datatype_in = 'any'
         self._block = 0

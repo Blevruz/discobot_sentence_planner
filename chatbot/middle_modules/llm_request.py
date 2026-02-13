@@ -59,7 +59,7 @@ class LLMRequest(DummyMiddle):
                 Language of the LLM. Defaults to English.
         """
 
-        DummyMiddle.__init__(self, name, **args)
+        super().__init__(name, **args)
         self._loop_type = 'process'
 
         del self._input_queues['input']

@@ -18,7 +18,7 @@ class RepeatRemover(DummyMiddle):
             min_size : int
                 Minimum size of input to be checked for similarity
         """
-        DummyMiddle.__init__(self, name, **args)
+        super().__init__(name, **args)
         self._loop_type = 'thread'
         self.datatype_in = 'string'
         self._input_queues['muted'] = QueueSlot(self, 'input', datatype='string')

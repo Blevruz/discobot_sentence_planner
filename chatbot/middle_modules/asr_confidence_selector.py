@@ -9,7 +9,7 @@ class ASRConfidenceSelector(DummyMiddle):
     """Selects the transcription from multiple ASR modules based on confidence."""
 
     def __init__(self, name="asr_selector", **args):
-        DummyMiddle.__init__(self, name, **args)
+        super().__init__(name, **args)
         self._loop_type = "thread"
 
         self.num_models = args.get("num_models", 2)
