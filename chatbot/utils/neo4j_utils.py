@@ -21,7 +21,6 @@ class Neo4jManager:
             print(f"Exception raised connecting to Neo4j: {e}")
 
     def _check_fulltext_index(self, index_name = "test_index", labels = ["test_node"], props = ["name"]):
-        print("XXX GREEDY HOG XXX")
         query = f"""
             CREATE FULLTEXT INDEX `{index_name}` IF NOT EXISTS
             FOR (n:{'|'.join(labels)}) ON EACH [n.{', n.'.join(props)}]
