@@ -39,11 +39,13 @@ class VoskTranscriber(DummyMiddle):
                     utils.config.debug_print(f"[{self.name}][{self.name}] TEXT='{text}' CONF={avg_conf:.3f} TIME={time.time() - start_time:.3f}")
     
                 # --- Output streams ---
-                self._output_queues['text'][0].put(text)
-                self._output_queues['confidence'][0].put(avg_conf)
+                if len(self._output_queues['text']) > 0:
+                    self._output_queues['text'][0].put(text)
+                if len(self._output_queues['confidence']) > 0:
+                    self._output_queues['confidence'][0].put(avg_conf)
 
         except Exception as e:
-            print(f"[{self.name}] Error processing audio: {e}")
+            utils.config.debug_print(f"[{self.name}] Error processing audio: {e}")
 
 
     def __init__(self, name="vosk_transcriber", **args):
