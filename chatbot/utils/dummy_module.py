@@ -156,8 +156,10 @@ class DummyModule:
 
     def stop_loop(self):
         if utils.config.verbose:
-            utils.config.debug_print(f"Stopping {self.type} loop for {self.name}")
+            utils.config.debug_print(f"Stopping {self.type} loop {self._loop_type} for {self.name}")
         self.stopped.set()
+        if not self.stopped.is_set():
+            raise ValueError(f"Failed to set stop event for {self.name}")
         if self._loop_type == 'thread':
             self.loop.join(timeout=self._loop_timeout)
             if self.loop.is_alive():

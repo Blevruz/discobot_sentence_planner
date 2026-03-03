@@ -39,7 +39,7 @@ class Neo4jManager:
 
     def execute_query(self, query, params={}):
         if not self.neo4j_available:
-            logging.warning("Neo4j not available.  Returning empty result.")
+            print("Neo4j not available.  Returning empty result.")
             return []
         try:
             if utils.config.verbose:
@@ -50,7 +50,7 @@ class Neo4jManager:
                     utils.config.debug_print(f"[NEO4J] Executed query {result.data()}")
                 return result.data()
         except Exception as e:
-            logging.error(f"Error executing query: {e}")
+            print(f"Error executing query: {e}")
             return []
 
     def _add_params(self, params={}, prefix=""):
