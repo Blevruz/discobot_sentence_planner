@@ -22,16 +22,17 @@ class ToggleBlock(DummyMiddle):
                 utils.config.debug_print(f"[{self.name}]Toggled blocking: {self._block}")
 
         while self._block:
-            while True:
-                self.input_queue.get()
-
-            time.sleep(0.1)
-            return
-        else:
-            while True:
-                out = self.input_queue.get()
-                if out is not None:
-                    self.output_queue.put(out)
+            out = self.input_queue.get()
+            if out is None:
+                time.sleep(self.delay)
+                return
+        while not self._block:
+            out = self.input_queue.get()
+            if out is not None:
+                self.output_queue.put(out)
+            else:
+                time.sleep(self.delay)
+                return
 
     def __init__(self, name="toggle_block", **args):
         """Initializes the module.
@@ -40,6 +41,7 @@ class ToggleBlock(DummyMiddle):
         self._loop_type = 'process'
         self.datatype_in = 'any'
         self._block = 0
+        self.delay = args.get('delay', 0.0)
         self._input_queues['block'] = QueueSlot(self, 'input', 'any')
 
 middle_modules_class['toggle_block'] = ToggleBlock

@@ -1,4 +1,4 @@
-# chatbot/output_modules/sam_tts.py
+# chatbot/middle_modules/sam_tts.py
 from middle_modules.dummy import DummyMiddle, middle_modules_class
 import subprocess
 import os
