@@ -26,8 +26,7 @@ class RepeatRemover(DummyMiddle):
         self.threshold = args.get('threshold', 0.8)
         self.min_size = args.get('min_size', 5)
         self.memory = []
-        if utils.config.verbose:
-            for name, queue in self._input_queues.items():
+        for name, queue in self._input_queues.items():
                 utils.config.debug_print(f"[{self.name}]Input queue {name}: {queue.datatype} belongs to {queue._module.name}")
 
     def action(self, i):
@@ -49,8 +48,7 @@ class RepeatRemover(DummyMiddle):
                 # We check if current input is too similar to any previous input
                 for m in self.memory:
                     ratio = Levenshtein.ratio(text, m)
-                    if utils.config.verbose:
-                        utils.config.debug_print(f"[{self.name}]Ratio between {m} and {text}: {ratio}")
+                    utils.config.debug_print(f"[{self.name}]Ratio between {m} and {text}: {ratio}")
                     if ratio > self.threshold:
                         # If so, we discard it
                         return

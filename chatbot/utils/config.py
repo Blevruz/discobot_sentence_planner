@@ -5,6 +5,11 @@ import json
 from itertools import count
 import sys
 import os
+import time
+
+verbose = False
+
+log_file = ""
 
 def stack_size2a(size=2):
     """Get stack size for caller's frame.
@@ -21,11 +26,20 @@ def debug_spaces():
     """
     return " " * stack_size2a(3)
 
+start_time = time.time()
+
+def truncate_float(f, n=3):
+    """Truncate a float to n decimal places"""
+    return float(f"{f:.{n}f}")
+
+
 def debug_print(*args, **kwargs):
     """fancy print for debugging"""
-    print("[DEBUG]"+debug_spaces(), *args, **kwargs)
-
-verbose = False
+    if verbose:
+        print(f"[DEBUG] {truncate_float(time.time()-start_time)}s\t"+debug_spaces(), *args, **kwargs)
+    if log_file:
+        with open(log_file, 'a') as f:
+            print(f"[DEBUG] {truncate_float(time.time()-start_time)}s\t"+debug_spaces(), *args, file=f, **kwargs)
 
 def load_config(filename):
     """Load a JSON config file"""

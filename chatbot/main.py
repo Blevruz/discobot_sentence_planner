@@ -70,6 +70,11 @@ def main():
         action='store_true',
         help='Print debug information')
     parser.add_argument(
+        '--log', dest='log',
+        required=False,
+        default=None,
+        help=f"Store debug information to a file")
+    parser.add_argument(
         '--input', dest='input',
         required=False,
         default='dummy',
@@ -88,6 +93,9 @@ def main():
     args = parser.parse_args()
 
     utils.config.verbose = args.verbose
+    utils.config.log_file = args.log
+    if utils.config.log_file:
+        utils.config.debug_print(f"Logging to {utils.config.log_file}")
 
     loaded_modules = None
     if args.config is None:

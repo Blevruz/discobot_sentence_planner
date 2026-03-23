@@ -27,8 +27,7 @@ class AudioCallbackHandler(qi.Object):
             audio_array = np.frombuffer(inputBuffer, dtype=np.int16)
             self.output_queue.put(audio_array.tobytes())
         except Exception as e:
-            if utils.config.verbose:
-                utils.config.debug_print(f"[{self.owner.name}] Callback error: {e}")
+            utils.config.debug_print(f"[{self.owner.name}] Callback error: {e}")
 
 class NaoAudioInput(DummyInput):
     """NAO microphone input module using ALAudioDevice."""
@@ -71,8 +70,7 @@ class NaoAudioInput(DummyInput):
         self.audio_device.subscribe(self.subscriber_name)
 
 
-        if utils.config.verbose:
-            utils.config.debug_print(f"[{self.name}]Connected to NAO at {self.ip}:{self.port}")
+        utils.config.debug_print(f"[{self.name}]Connected to NAO at {self.ip}:{self.port}")
 
     def _disconnect(self):
         try:
@@ -85,11 +83,9 @@ class NaoAudioInput(DummyInput):
             if self.session is not None:
                 utils.nao.disconnect(self.ip, self.port)
 
-            if utils.config.verbose:
-                utils.config.debug_print(f"[{self.name}]Disconnected from NAO at {self.ip}:{self.port}")
+            utils.config.debug_print(f"[{self.name}]Disconnected from NAO at {self.ip}:{self.port}")
         except Exception as e:
-            if utils.config.verbose:
-                utils.config.debug_print(f"[{self.name}]Error in disconnect: {e}")
+            utils.config.debug_print(f"[{self.name}]Error in disconnect: {e}")
 
 
 

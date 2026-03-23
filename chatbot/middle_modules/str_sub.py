@@ -16,8 +16,7 @@ class StrSub(DummyMiddle):
                     v = random.choice(v)
                     self.wip_text = self.wip_text.replace(k, v)
                 self.wip_text = self.wip_text.replace(k, v)
-            if utils.config.verbose:
-                utils.config.debug_print(f"[{self.name}]StrSub: {self.wip_text}")
+            utils.config.debug_print(f"[{self.name}]StrSub: {self.wip_text}")
             self.output_queue.put(self.wip_text)
 
     def __init__(self, name="str_sub", **args):

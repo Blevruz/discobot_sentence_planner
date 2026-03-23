@@ -62,8 +62,7 @@ class ASRConfidenceSelector(DummyMiddle):
         # Select best
         best_conf, best_text, best_idx = max(candidates, key=lambda x: x[0])
 
-        if utils.config.verbose:
-            utils.config.debug_print(
+        utils.config.debug_print(
                 f"[ASRSelector] Chose model {best_idx} with conf={best_conf:.3f}: '{best_text}'"
             )
 

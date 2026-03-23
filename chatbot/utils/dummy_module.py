@@ -24,8 +24,9 @@ class DummyModule:
         self._loop_type = 'blocking'
         self._loop_timeout = 1
 
-        if utils.config.verbose:
-            utils.config.debug_print(f"Module {name} initializing with args: {args}")
+        self.verbose = args.get("verbose", False)
+
+        utils.config.debug_print(f"Module {name} initializing with args: {args}")
 
 
     @property
@@ -76,8 +77,7 @@ class DummyModule:
         self._output_queues['default'].datatype = datatype
 
     def _create_input_queue(self, slot="default", name="input_queue"): 
-        if utils.config.verbose:
-            utils.config.debug_print(f"Creating input queue {name} for {self.name}",\
+        utils.config.debug_print(f"Creating input queue {name} for {self.name}",\
                     f"slot {slot}")
         queue = QueueWrapper(datatype=self._input_queues[slot].datatype, \
                 name=name)
@@ -85,8 +85,7 @@ class DummyModule:
         return queue
 
     def _create_output_queue(self, slot="default", name="output_queue"): 
-        if utils.config.verbose:
-            utils.config.debug_print(f"Creating output queue {name} for {self.name}",\
+        utils.config.debug_print(f"Creating output queue {name} for {self.name}",\
                     f"slot {slot}")
         queue = QueueWrapper(datatype=self._output_queues[slot].datatype, \
                 name=name)
@@ -100,8 +99,7 @@ class DummyModule:
         self._output_queues[slot].add_queue(queue)
 
     def link_to(self, other, from_slot="default", to_slot="default", name=None):
-        if utils.config.verbose:
-            utils.config.debug_print(f"Setting {self.name}'s output queue as", \
+        utils.config.debug_print(f"Setting {self.name}'s output queue as", \
                     f"{other.name}'s input queue,", \
                     f"of types {self._output_queues[from_slot].datatype}",\
                     f"and {other._input_queues[to_slot].datatype}")
@@ -112,8 +110,7 @@ class DummyModule:
         new_queue.bind_to(other, slot=to_slot)
 
     def link_from(self, other, from_slot="default", to_slot="default", name=None):
-        if utils.config.verbose:
-            utils.config.debug_print(f"Setting {self.name}'s input queue as", \
+        utils.config.debug_print(f"Setting {self.name}'s input queue as", \
                     f"{other.name}'s output queue,", \
                     f"of types {self._input_queues[to_slot].datatype}",\
                     f"and {other._output_queues[from_slot].datatype}")
@@ -131,12 +128,10 @@ class DummyModule:
 
     # Overwrite this module if you want to do something when the loop starts
     def module_start(self):
-        if utils.config.verbose:
-            utils.config.debug_print(f"Called empty module_start() for {self.name}")
+        utils.config.debug_print(f"Called empty module_start() for {self.name}")
 
     def start_loop(self):
-        if utils.config.verbose:
-            utils.config.debug_print(f"Starting {self.type} loop for {self.name}")
+        utils.config.debug_print(f"Starting {self.type} loop for {self.name}")
         self.module_start()
         self.stopped = None
         self.stopped = threading.Event()
@@ -151,34 +146,29 @@ class DummyModule:
 
     # Overwrite this module if you want to do something when the loop ends
     def module_stop(self):
-        if utils.config.verbose:
-            utils.config.debug_print(f"Called empty module_stop() for {self.name}")
+        utils.config.debug_print(f"Called empty module_stop() for {self.name}")
 
     def stop_loop(self):
-        if utils.config.verbose:
-            utils.config.debug_print(f"Stopping {self.type} loop {self._loop_type} for {self.name}")
+        utils.config.debug_print(f"Stopping {self.type} loop {self._loop_type} for {self.name}")
         self.stopped.set()
         if not self.stopped.is_set():
             raise ValueError(f"Failed to set stop event for {self.name}")
         if self._loop_type == 'thread':
             self.loop.join(timeout=self._loop_timeout)
             if self.loop.is_alive():
-                if utils.config.verbose:
-                    utils.config.debug_print(f"Thread {self.name} did not",\
+                utils.config.debug_print(f"Thread {self.name} did not",\
                             f"stop after {self._loop_timeout} seconds")
         elif self._loop_type == 'process':
             self.loop.join(timeout=self._loop_timeout)
             if self.loop.is_alive():
-                if utils.config.verbose:
-                    utils.config.debug_print(f"Process {self.name} did not",\
+                utils.config.debug_print(f"Process {self.name} did not",\
                             f"stop after {self._loop_timeout} seconds")
                 self.loop.terminate()
                 self.loop.join()
 
             if self.loop.is_alive():
                 # Nuclear option
-                if utils.config.verbose:
-                    utils.config.debug_print(f"Error: Process {self.name} did not terminate, killing...")
+                utils.config.debug_print(f"Error: Process {self.name} did not terminate, killing...")
                 self.loop.kill()
                 self.loop.join()
 

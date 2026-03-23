@@ -26,8 +26,7 @@ class LengthBlock(DummyMiddle):
         self.min_len = args.get("min_len", 1)
         self.max_len = args.get("max_len", 200)
 
-        if utils.config.verbose:
-            utils.config.debug_print(
+        utils.config.debug_print(
                 f"[{self.name}] LengthBlock initialized (min={self.min_len}, max={self.max_len})"
             )
 
@@ -38,8 +37,7 @@ class LengthBlock(DummyMiddle):
                 return
 
             if not isinstance(item, str):
-                if utils.config.verbose:
-                    utils.config.debug_print(f"[{self.name}][{self.name}] Dropped non-string input: {item}")
+                utils.config.debug_print(f"[{self.name}][{self.name}] Dropped non-string input: {item}")
                 continue
 
             length = len(item.strip())
@@ -47,8 +45,7 @@ class LengthBlock(DummyMiddle):
             if self.min_len <= length <= self.max_len:
                 self.output_queue.put(item)
             else:
-                if utils.config.verbose:
-                    utils.config.debug_print(
+                utils.config.debug_print(
                         f"[{self.name}] Blocked string (len={length}): '{item}'"
                     )
 

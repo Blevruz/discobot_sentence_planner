@@ -24,12 +24,10 @@ class StringToLLMAppend(DummyModule):
         if len(self._input_queues['control']) > 0:
             resp = self._input_queues['control'][0].get()
             if resp is not None:
-                if utils.config.verbose:
-                    utils.config.debug_print(f"[{self.name}] Got control response: {resp}")
+                utils.config.debug_print(f"[{self.name}] Got control response: {resp}")
                 if resp.get("type") == "response" and resp["id"] in self.pending:
                     if len(self._output_queues['trigger']) > 0:
-                        if utils.config.verbose:
-                            utils.config.debug_print(f"[{self.name}] Append confirmed, triggering generation.")
+                        utils.config.debug_print(f"[{self.name}] Append confirmed, triggering generation.")
                         self._output_queues['trigger'][0].put({
                             "type": "trigger",
                             "reason": "append_done",
@@ -38,15 +36,14 @@ class StringToLLMAppend(DummyModule):
                         del self.pending[resp["id"]]
                     else:
                         raise Exception(f"Module {self.name} has no trigger output queue")
-        else:
-            raise Exception(f"Module {self.name} has no control queue")
+        #else:
+        #    raise Exception(f"Module {self.name} has no control queue")
 
         # Handle new strings
         if len(self._input_queues['text']) > 0:
             text = self._input_queues['text'][0].get()
             if text is not None:
-                if utils.config.verbose:
-                    utils.config.debug_print(f"[{self.name}] New text received: {text}")
+                utils.config.debug_print(f"[{self.name}] New text received: {text}")
                 cmd_id = str(uuid.uuid4())
 
                 cmd = {
@@ -62,8 +59,7 @@ class StringToLLMAppend(DummyModule):
                 }
 
                 self.pending[cmd_id] = True
-                if utils.config.verbose:
-                    utils.config.debug_print(f"[{self.name}] Sending APPEND command: {cmd}")
+                utils.config.debug_print(f"[{self.name}] Sending APPEND command: {cmd}")
                 if len(self._output_queues['cmd']) > 0:
                     self._output_queues['cmd'][0].put(cmd)
                 else:

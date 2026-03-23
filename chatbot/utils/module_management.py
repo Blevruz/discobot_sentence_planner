@@ -43,8 +43,7 @@ def load_modules_from_config(config):
         class_list = None
         # Load module library if it isn't already loaded
         if mod_lib not in module_libs:
-            if utils.config.verbose:
-                utils.config.debug_print(f"Loading module library {mod_lib}")
+            utils.config.debug_print(f"Loading module library {mod_lib}")
             if mod_split[0] == 'input_modules':
                 module_libs[mod_lib] = importlib.import_module( \
                         input_modules[mod_split[1]])
@@ -67,8 +66,7 @@ def load_modules_from_config(config):
                 class_list = module_libs[mod_lib].middle_modules_class
             elif mod_split[0] == 'output_modules':
                 class_list = module_libs[mod_lib].output_modules_class
-        if utils.config.verbose:
-            utils.config.debug_print(f"Loading module {module['name']} from {mod_lib}")
+        utils.config.debug_print(f"Loading module {module['name']} from {mod_lib}")
 
         if module['name'] in loaded_modules:
             raise Exception(f"Module with name {module['name']} already loaded")

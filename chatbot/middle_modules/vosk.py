@@ -35,8 +35,7 @@ class VoskTranscriber(DummyMiddle):
                 else:
                     avg_conf = 0.0
     
-                if utils.config.verbose:
-                    utils.config.debug_print(f"[{self.name}][{self.name}] TEXT='{text}' CONF={avg_conf:.3f} TIME={time.time() - start_time:.3f}")
+                utils.config.debug_print(f"[{self.name}] TEXT='{text}' CONF={avg_conf:.3f} TIME={time.time() - start_time:.3f}")
     
                 # --- Output streams ---
                 if len(self._output_queues['text']) > 0:

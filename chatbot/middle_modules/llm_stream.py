@@ -82,8 +82,7 @@ class LLMStream(DummyMiddle):
                 'output', datatype='string')
 
 
-        if utils.config.verbose:
-            for name, queue in self._input_queues.items():
+        for name, queue in self._input_queues.items():
                 utils.config.debug_print(f"[{self.name}]Input queue {name}: {queue.datatype} belongs to {queue._module.name}")
 
         self._initial_prompt = args.get('prompt', 'You are a friendly robot assistant.  Have a pleasant chat with your interlocutor, and keep your answers short.')
@@ -120,8 +119,7 @@ class LLMStream(DummyMiddle):
 
     def call_llm(self, headers, payload, stream=False):
 
-        if utils.config.verbose:
-            utils.config.debug_print(f"[{self.name}]Sending request to {self._url}{self._api} with headers {headers} and payload {payload}")
+        utils.config.debug_print(f"[{self.name}]Sending request to {self._url}{self._api} with headers {headers} and payload {payload}")
 
         start_time = time.time()
         resp = requests.post(f"{self._url}{self._api}",
@@ -132,8 +130,7 @@ class LLMStream(DummyMiddle):
         end_time = time.time()
         generation_time = end_time - start_time
 
-        if utils.config.verbose:
-            utils.config.debug_print(f"[{self.name}]Received response {resp} with status code {resp.status_code} in {generation_time} seconds")
+        utils.config.debug_print(f"[{self.name}]Received response {resp} with status code {resp.status_code} in {generation_time} seconds")
 
         if self._max_tokens_total > 0:
             r = resp.json()

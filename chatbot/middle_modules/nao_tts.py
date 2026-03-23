@@ -27,8 +27,10 @@ class NaoTTS(DummyMiddle):
         speech = self.input_queue.get()
         if speech:
             self.output_queue.put(1)
+            utils.config.debug_print(f"[{self.name}] Speaking: {speech}")
             self.session.service("ALTextToSpeech").say(speech)
-            self.output_queue.put(0)
+            utils.config.debug_print(f"[{self.name}] Finished speaking")
+            self.output_queue.put(2)
         return
 
 
@@ -49,12 +51,10 @@ class NaoTTS(DummyMiddle):
     def module_start(self):
         self.session.service("ALTextToSpeech").setLanguage(self.language)
 
-        #if utils.config.verbose:
-        #    utils.config.debug_print(f"Initialized NAO TTS module {name} with ip {self.ip} and port {self.port}")
+        ##    utils.config.debug_print(f"Initialized NAO TTS module {name} with ip {self.ip} and port {self.port}")
 
     def module_stop(self):
-        if utils.config.verbose:
-            utils.config.debug_print(f"Stopping NAO TTS module {self.name} with ip {self.ip} and port {self.port}")
+        utils.config.debug_print(f"Stopping NAO TTS module {self.name} with ip {self.ip} and port {self.port}")
         utils.nao.disconnect(self.ip, self.port)
 
 middle_modules_class['nao_tts'] = NaoTTS

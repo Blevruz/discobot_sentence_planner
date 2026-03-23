@@ -24,8 +24,7 @@ class QueueConcat(DummyMiddle):
         if trig is not None:
             for k, v in zip(self.buffer.keys(), self.buffer.values()):
                 self.wip_text = self.wip_text.replace(f"{{{k}}}", v)
-            if utils.config.verbose:
-                utils.config.debug_print(f"[{self.name}]QueueConcat: {self.wip_text}")
+            utils.config.debug_print(f"[{self.name}]QueueConcat: {self.wip_text}")
             self.output_queue.put(self.wip_text)
             self.buffer = {}
             self.wip_text = self.format

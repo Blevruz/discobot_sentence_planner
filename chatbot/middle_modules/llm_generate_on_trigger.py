@@ -27,8 +27,7 @@ class LLMGenerateOnTrigger(DummyModule):
             if not self.active:
                 t = self._input_queues['trigger'][0].get()
                 if t:
-                    if utils.config.verbose:
-                        utils.config.debug_print(f"[{self.name}] Starting generation")
+                    utils.config.debug_print(f"[{self.name}] Starting generation")
                     cmd = {
                         "id": str(uuid.uuid4()),
                         "from": self.name,
@@ -43,23 +42,19 @@ class LLMGenerateOnTrigger(DummyModule):
         if len(self._input_queues['events']) > 0:
             evt = self._input_queues['events'][0].get()
             if evt:
-                if utils.config.verbose:
-                    utils.config.debug_print(f"[{self.name}] Event received: {evt}")
+                utils.config.debug_print(f"[{self.name}] Event received: {evt}")
 
                 if evt.get("event") == "token" and len(self._output_queues['stream']) > 0:
-                     if utils.config.verbose:
-                        utils.config.debug_print(f"[{self.name}] Token received: {evt['data']['text']}")
+                     utils.config.debug_print(f"[{self.name}] Token received: {evt['data']['text']}")
                      self._output_queues['stream'][0].put(evt["data"]["text"])
 
                 if evt.get("event") == "generation_done":
                     self.active = False
                     self.buffer = evt["data"]["text"]
-                    if utils.config.verbose:
-                        utils.config.debug_print(f"[{self.name}] Generation done: {self.buffer}")
+                    utils.config.debug_print(f"[{self.name}] Generation done: {self.buffer}")
                     if len(self._output_queues['text']) > 0:
                         self._output_queues['text_out'][0].put(self.buffer)
-                if utils.config.verbose:
-                    utils.config.debug_print(f"[{self.name}] Finished processing evt {evt}")
+                utils.config.debug_print(f"[{self.name}] Finished processing evt {evt}")
 
 
 middle_modules_class['llm_generate_on_trigger'] = LLMGenerateOnTrigger

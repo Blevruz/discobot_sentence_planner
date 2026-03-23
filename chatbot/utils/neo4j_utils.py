@@ -42,12 +42,10 @@ class Neo4jManager:
             print("Neo4j not available.  Returning empty result.")
             return []
         try:
-            if utils.config.verbose:
-                utils.config.debug_print(f"[NEO4J] Sending query {query} with params {params}")
+            utils.config.debug_print(f"[NEO4J] Sending query {query} with params {params}")
             with self.driver.session() as session:
                 result = session.run(query, **params)
-                if utils.config.verbose:
-                    utils.config.debug_print(f"[NEO4J] Executed query {result.data()}")
+                utils.config.debug_print(f"[NEO4J] Executed query {result.data()}")
                 return result.data()
         except Exception as e:
             print(f"Error executing query: {e}")

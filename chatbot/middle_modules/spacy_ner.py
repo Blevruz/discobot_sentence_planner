@@ -21,8 +21,7 @@ class SpacyNER(DummyMiddle):
         if text:
             text = self.input_queue.get()
             entities = self.extract_entities(text)
-            if utils.config.verbose:
-                utils.config.debug_print(f"[{self.name}]Extracted entities {entities} from text {text}")
+            utils.config.debug_print(f"[{self.name}]Extracted entities {entities} from text {text}")
             self.output_queue.put(entities)
 
     def extract_entities(self, text):

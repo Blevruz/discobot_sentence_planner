@@ -33,8 +33,7 @@ class QueueWrapper:
 
     def bind_from(self, from_module, slot="default"):
         """Assigns this queue as an output queue for the given module"""
-        if utils.config.verbose:
-            utils.config.debug_print(f"Binding {self.name} from {from_module.name}")
+        utils.config.debug_print(f"Binding {self.name} from {from_module.name}")
         from_module.add_output_queue(self, slot)
 
 
@@ -44,8 +43,7 @@ class QueueWrapper:
 
     def bind_to(self, to_module, slot="default"):
         """Assigns this queue as an input queue for the given module"""
-        if utils.config.verbose:
-            utils.config.debug_print(f"Binding {self.name} to {to_module.name}")
+        utils.config.debug_print(f"Binding {self.name} to {to_module.name}")
         to_module.add_input_queue(self, slot)
 
 
@@ -130,19 +128,16 @@ class QueueSlot:
                 self._queues.append(queue)
                 if self._direction == 'input':
                     queue._mod_to = self._module
-                    if utils.config.verbose:
-                        utils.config.debug_print(f"Setting {self._module.name} to {queue.name}'s mod_to: {queue._mod_to.name}")
+                    utils.config.debug_print(f"Setting {self._module.name} to {queue.name}'s mod_to: {queue._mod_to.name}")
                 elif self._direction == 'output':
                     queue._mod_from = self._module
-                    if utils.config.verbose:
-                        utils.config.debug_print(f"Setting {self._module.name} to {queue.name}'s mod_from: {queue._mod_from.name}")
+                    utils.config.debug_print(f"Setting {self._module.name} to {queue.name}'s mod_from: {queue._mod_from.name}")
 
             else:
                 raise ValueError(f"Queue slot is full, cannot add queue {queue.name}")
         else:
             raise ValueError(f"Datatype mismatch between queue and queue slot, with datatypes {self.datatype} and {queue.datatype}")
-        if utils.config.verbose:
-            utils.config.debug_print(f"Queue slot {self._direction} of {self._module.name} now has {len(self._queues)} queues")
+        utils.config.debug_print(f"Queue slot {self._direction} of {self._module.name} now has {len(self._queues)} queues")
 
     def remove_queue(self, queue):
         """Remove a queue from this queue slot"""
