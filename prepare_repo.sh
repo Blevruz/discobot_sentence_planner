@@ -27,13 +27,15 @@ fi
 
 if $UV_INSTALLED; then
 # En utilisant uv:
-    uv $PYTHON install 3.11
-    uv venv venv
+
+    echo "Installating using uv..."
+    uv venv venv -p 3.11
     source venv/bin/activate && uv pip install -r requirements.txt
 # En utilisant pyenv:
 else
     if $PYENV_INSTALLED; then
-    	pyenv init && pyenv local 3.11.2
+	echo "Installating using pyenv..."
+    	pyenv init && pyenv local 3.11
     	pyenv exec $PYTHON -m venv venv 
     else
 	$PYTHON -m venv venv
