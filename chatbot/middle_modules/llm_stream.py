@@ -187,26 +187,31 @@ class LLMStream(DummyMiddle):
         full_text = ""
         segment = ""
 
-        for line in resp.iter_lines(decode_unicode=True):
-            if not line:
-                continue
-            if line.startswith("data: "):
-                data_str = line[6:]
-
-                if data_str.strip() == "[DONE]":
-                    break
-
-                data = json.loads(data_str)
-                delta = data["choices"][0].get("delta", {})
-                token = delta.get("content")
-
-                if token:
-                    full_text += token
-                    segment += token
-                    if self._is_end_of_word_token(token) and self._should_stream():
-                        self._output_queues["stream"][0].put(segment)
-                        segment = ""
-
+        buffer = b""
+        for chunk in resp.iter_content(chunk_size=None):
+            buffer += chunk
+            while b"\n" in buffer:
+                raw_line, buffer = buffer.split(b"\n", 1)
+                line = raw_line.rstrip(b"\r").decode("utf-8")
+        
+                if not line:
+                    continue
+                if line.startswith("data: "):
+                    data_str = line[6:]
+        
+                    if data_str.strip() == "[DONE]":
+                        break
+        
+                    data = json.loads(data_str)
+                    delta = data["choices"][0].get("delta", {})
+                    token = delta.get("content")
+        
+                    if token:
+                        full_text += token
+                        segment += token
+                        if self._is_end_of_word_token(token) and self._should_stream():
+                            self._output_queues["stream"][0].put(segment)
+                            segment = ""
+        
         return full_text
-
 middle_modules_class['llm_stream'] = LLMStream

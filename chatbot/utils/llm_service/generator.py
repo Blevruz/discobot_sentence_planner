@@ -23,14 +23,21 @@ class LLMGenerator:
         resp = requests.post(self.url + self.api, headers=self.headers, json=payload, stream=True)
         resp.raise_for_status()
 
-        for line in resp.iter_lines(decode_unicode=True):
-            if not line or not line.startswith("data: "):
-                continue
-            data = line[6:]
-            if data.strip() == "[DONE]":
-                break
-            chunk = json.loads(data)
-            token = chunk["choices"][0].get("delta", {}).get("content")
-            if token:
-                yield token
+        buffer = ''
+        # using iter_content to avoid splitting unicode
+        for chunk in resp.iter_content(chunk_size=None):
+            buffer += chunk.decode('utf-8')
+            while '\n' in buffer:
+                raw_line, buffer = buffer.split('\n', 1)
+                line = raw_line.rstrip('\r')
+
+                if not line or not line.startswith("data: "):
+                    continue
+                data = line[6:]
+                if data.strip() == "[DONE]":
+                    break
+                chunk = json.loads(data)
+                token = chunk["choices"][0].get("delta", {}).get("content")
+                if token:
+                    yield token
 
