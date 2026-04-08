@@ -35,12 +35,33 @@ def load_modules_from_config(config):
     middle_modules = get_modules("middle")
 
     loaded_modules = dict()
+    loaded_config = list()
     module_libs = dict()
     # First pass: load every module
     for module in config:
+        # If the module is a string, we want to process it same as config args
+        if type(module) is str:
+            utils.config.debug_print(f"Processing string \"{module}\"...")
+            config.append(utils.config.process_config_arg(module))
+            utils.config.debug_print(f"...into {module}")
+            continue
+
+        # If the module is a list, move all its content to the main list
+        if type(module) is list:
+            utils.config.debug_print(f"Popping list...")
+            for m in module:
+                utils.config.debug_print(f"Appending {m} to config")
+                config.append(m)
+            continue
+
+        # Otherwise, the module should be a dictionary
+        if type(module) is not dict:
+            raise Exception(f"Module {module['name']} is not a dictionary")
+
         mod_split = module['module'].split('.')
         mod_lib = module['module']
         class_list = None
+
         # Load module library if it isn't already loaded
         if mod_lib not in module_libs:
             utils.config.debug_print(f"Loading module library {mod_lib}")
@@ -71,6 +92,9 @@ def load_modules_from_config(config):
         if module['name'] in loaded_modules:
             raise Exception(f"Module with name {module['name']} already loaded")
 
+        # Add module's config to loaded config
+        loaded_config.append(module)
+
         # Process arguments
         utils.config.process_config_args(module['args'])
 
@@ -80,7 +104,8 @@ def load_modules_from_config(config):
                 **module['args'])
 
     # Second pass: link modules
-    for module in config:
+    for module in loaded_config:
+        utils.config.debug_print(f"Linking module {module}")
         for link in module['links']:
             if link['target_name'] not in loaded_modules:
                 raise Exception(f"Module {link['target_name']} not loaded")
