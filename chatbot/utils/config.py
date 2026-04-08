@@ -72,6 +72,9 @@ def process_config_arg(arg):
             else:
                 with open(arg[1:], 'r') as f:
                     arg = f.read()
+        else:
+            # Just a string? Then return
+            break
     return arg
 
 
