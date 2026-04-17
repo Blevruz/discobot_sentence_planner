@@ -3,7 +3,7 @@
 import argparse
 import importlib
 import time
-from utils.module_management import get_modules, load_modules_from_config
+from utils.module_management import get_modules, load_modules_from_config, check_config
 import utils.config
 from utils.config import load_config
 
@@ -78,18 +78,23 @@ def main():
         '--input', dest='input',
         required=False,
         default='dummy',
-        help=f"Input module for the chatbot. Use one of {input_modules.keys()}.")
+        help=f"Input module for the chatbot. Use one of {list(input_modules.keys())}.")
     parser.add_argument(
         '--middle', dest='middle',
         nargs='*',
         required=False,
         default=[],
-        help=f"Middle modules for the chatbot. Use entries from {middle_modules.keys()}.")
+        help=f"Middle modules for the chatbot. Use entries from {list(middle_modules.keys())}.")
     parser.add_argument(
         '--output', dest='output',
         required=False,
         default='dummy',
-        help=f"Output module for the chatbot. Use one of {output_modules.keys()}.")
+        help=f"Output module for the chatbot. Use one of {list(output_modules.keys())}.")
+    parser.add_argument(
+        '--test-config', dest='test_config',
+        action='store_true',
+        help='Test config file')
+
     args = parser.parse_args()
 
     utils.config.verbose = args.verbose
@@ -100,8 +105,13 @@ def main():
     loaded_modules = None
     if args.config is None:
         loaded_modules = manual_module_specification(args, input_modules, middle_modules, output_modules)
+        if args.test_config:
+            raise Exception("Asked to test config, but did not specify a config file")
     else:
         config = load_config(args.config)
+        if args.test_config:
+            check_config(config)
+            utils.config.debug_print("Config test successful!")
         loaded_modules = load_modules_from_config(config)
 
     if utils.config.verbose:

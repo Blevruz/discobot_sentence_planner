@@ -27,7 +27,13 @@ def load_modules_from_config(config):
     # [{"name": <name>, 
     #   "module": <input|middle|output>.<module>, 
     #   "args": {},
-    #   "links": [{]
+    #   "links": [{}]
+    #  }, ...]
+    # TODO: meta-module
+    # [{"name": <name>,
+    #   "module": meta.[path],
+    #   "args": {},
+    #   "links": [{}]
     #  }, ...]
 
     input_modules = get_modules("input")
@@ -118,6 +124,40 @@ def load_modules_from_config(config):
     return loaded_modules
 
 
+def check_config(config):
+    """Check that a config file conforms to the format
+        - List of dictionaries representing modules
+        - Each dictionary has a name, module, args and links
+        - args and links are optional
+        - links is a list of dictionaries
+        - args is a dictionary
+        - Each dictionary's name is unique
+        - Each dictionary's module is a string of the form 
+        <input|middle|output>_modules.<module>
+        - Each module must match a module in the appropriate folder
+        - Each dictionary's args is a dictionary
+    """
+    assert isinstance(config, list), "Config must be a list"
+    names = []
+    module_lists = dict()
+    module_lists["input_modules"] = get_modules("input")
+    module_lists["output_modules"] = get_modules("output")
+    module_lists["middle_modules"] = get_modules("middle")
+    for module in config:
+        assert isinstance(module, dict), "Module must be a dictionary"
+        assert 'name' in module, "Module must have a name"
+        assert isinstance(module['name'], str), "Module name must be a string"
+        assert 'module' in module, "Module must have a module identifier string"
+        assert isinstance(module['module'], str), "Module must be a string"
+        if module['name'] in names:
+            raise Exception(f"Module with name {module['name']} already exists")
+        names.append(module['name'])
+        # Does the module name fit the [prefix, suffix] format?
+        assert len(module['module'].split('.')) == 2, f"Module {module['name']}'s module string must be a string of the form <input|middle|output>_modules.<module>, not {module['module']}"
+        # Does the module name match the prefix?
+        assert module['module'].split('.')[0] in module_lists.keys(), f"Module {module['name']}'s module string must be a string of the form <input|middle|output>_modules.<module>, not {module['module']}"
+        # Does the module name match the suffix?
+        assert module['module'].split('.')[1] in module_lists[module['module'].split('.')[0]], f"Module {module['name']} attempts to load module {module['module'].split('.')[1]} which does not exist in {module['module'].split('.')[0]} modules"
 
 
 
