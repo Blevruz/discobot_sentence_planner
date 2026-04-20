@@ -51,8 +51,8 @@ class PyAudioInput(DummyInput):
         Starts the pyaudio stream. Callback replaces the usual loop.
         """
 
-        utils.config.debug_print(f"[{self.name}]Starting PyAudioInput loop for {self.name}")
-            utils.config.debug_print(f"[{self.name}]PyAudioInput loop for {self.name}: {self.format}, {self.channels}, {self.rate}, {self.frames_per_buffer}")
+        utils.config.debug_print(f"[{self.name}] Starting PyAudioInput loop for {self.name}")
+        utils.config.debug_print(f"[{self.name}] PyAudioInput loop for {self.name}: {self.format}, {self.channels}, {self.rate}, {self.frames_per_buffer}")
         self._stream = self.pyaudio.open(
                     format=self.format,
                     channels=self.channels,
@@ -67,7 +67,7 @@ class PyAudioInput(DummyInput):
         """
         Stops the pyaudio stream.
         """
-        utils.config.debug_print(f"[{self.name}]Stopping PyAudioInput loop for {self.name}")
+        utils.config.debug_print(f"[{self.name}] Stopping PyAudioInput loop for {self.name}")
         self._stream.stop_stream()
         self._stream.close()
         self.pyaudio.terminate()

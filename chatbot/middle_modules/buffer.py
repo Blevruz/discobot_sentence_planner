@@ -17,8 +17,8 @@ class Buffer(DummyMiddle):
     def action(self, i):
         try:
             if len(self._input_queues['bypass']) > 0:
-                while not self._input_queues['bypass'][0].empty() :
-                    self._input_queues['bypass'][0].get()
+                while not self._input_queues['bypass'].empty() :
+                    self._input_queues['bypass'].get()
                     self.bypass = not self.bypass
 
             while not self.input_queue.empty():
@@ -33,7 +33,7 @@ class Buffer(DummyMiddle):
                         elif self._buffer_behavior == "overwrite":
                             self._buffer = self._buffer[-self._buffer_size:]
             if len(self._input_queues['flush']) > 0:
-                flush = self._input_queues['flush'][0].get()
+                flush = self._input_queues['flush'].get()
                 if flush:
                     self._flush_buffer()
         except Exception as e:

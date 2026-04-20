@@ -57,7 +57,7 @@ class SileroVAD(DummyMiddle):
             )
 
         if len(self._output_queues['audio']) > 0:
-            self._output_queues['audio'][0].put(utterance)
+            self._output_queues['audio'].put(utterance)
 
     def action(self, i):
         try:

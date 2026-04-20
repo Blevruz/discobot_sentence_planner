@@ -25,12 +25,12 @@ class LLMStream(DummyMiddle):
         """
 
         if len(self._input_queues['prefix']) > 0:
-            prefix_input = self._input_queues['prefix'][0].get()
+            prefix_input = self._input_queues['prefix'].get()
             if prefix_input:
                 self._handle_prefix_input(prefix_input)
 
         if len(self._input_queues['system']) > 0:
-            system_input = self._input_queues['system'][0].get()
+            system_input = self._input_queues['system'].get()
             if system_input:
                 self.output_queue.put(self._handle_system_input(system_input))
 
@@ -210,7 +210,7 @@ class LLMStream(DummyMiddle):
                         full_text += token
                         segment += token
                         if self._is_end_of_word_token(token) and self._should_stream():
-                            self._output_queues["stream"][0].put(segment)
+                            self._output_queues["stream"].put(segment)
                             segment = ""
         
         return full_text

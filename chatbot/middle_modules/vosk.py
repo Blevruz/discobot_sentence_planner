@@ -39,9 +39,9 @@ class VoskTranscriber(DummyMiddle):
     
                 # --- Output streams ---
                 if len(self._output_queues['text']) > 0:
-                    self._output_queues['text'][0].put(text)
+                    self._output_queues['text'].put(text)
                 if len(self._output_queues['confidence']) > 0:
-                    self._output_queues['confidence'][0].put(avg_conf)
+                    self._output_queues['confidence'].put(avg_conf)
 
         except Exception as e:
             utils.config.debug_print(f"[{self.name}] Error processing audio: {e}")

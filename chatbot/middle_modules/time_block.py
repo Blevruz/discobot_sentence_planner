@@ -14,7 +14,7 @@ class TimeBlock(DummyMiddle):
     """
 
     def action(self, i):
-        block = self._input_queues['block'][0].get()
+        block = self._input_queues['block'].get()
         if block is not None:
             self._block_time = block
             self._start_time = time.time()

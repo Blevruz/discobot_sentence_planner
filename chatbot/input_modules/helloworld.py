@@ -4,6 +4,7 @@ from input_modules.dummy import DummyInput, input_modules_class
 import multiprocessing
 import threading
 import time
+import utils.config
 
 
 class HelloWorldInput(DummyInput):
@@ -11,6 +12,7 @@ class HelloWorldInput(DummyInput):
 
     def action(self, i):
         """Output a numbered string, then sleeps"""
+        utils.config.debug_print(f"[{self.name}] Hello world! {i}")
         self.output_queue.put(f"Hello world! {i}")
         time.sleep(self.delay)
 

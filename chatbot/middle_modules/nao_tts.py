@@ -17,7 +17,7 @@ class NaoTTS(DummyMiddle):
     def action(self, i):
 
         if len(self._input_queues['parameters']) > 0:
-            params = self._input_queues['parameters'][0].get()
+            params = self._input_queues['parameters'].get()
             if params:
                 self.voice = params.get("voice", self.voice)
                 self.session.service("ALTextToSpeech").setVoice(self.voice)
@@ -44,17 +44,19 @@ class NaoTTS(DummyMiddle):
         self._input_queues["parameters"] = QueueSlot(self, "input", datatype='dict')
         self.ip = args.get("ip", "127.0.0.1")
         self.port = args.get("port", 9559)
-        self.session = utils.nao.connect(self.ip, self.port)
+        self.session = None
         self.language = args.get("language", "English")
         self.voice = args.get("voice", "Judy")
 
     def module_start(self):
+        self.session = utils.nao.connect(self.ip, self.port)
+
         self.session.service("ALTextToSpeech").setLanguage(self.language)
 
-        ##    utils.config.debug_print(f"Initialized NAO TTS module {name} with ip {self.ip} and port {self.port}")
+        utils.config.debug_print(f"[self.name] Initialized NAO TTS module {self.name} with ip {self.ip} and port {self.port}")
 
     def module_stop(self):
-        utils.config.debug_print(f"Stopping NAO TTS module {self.name} with ip {self.ip} and port {self.port}")
+        utils.config.debug_print(f"[self.name] Stopping NAO TTS module {self.name} with ip {self.ip} and port {self.port}")
         utils.nao.disconnect(self.ip, self.port)
 
 middle_modules_class['nao_tts'] = NaoTTS

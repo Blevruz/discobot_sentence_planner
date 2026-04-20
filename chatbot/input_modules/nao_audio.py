@@ -70,7 +70,7 @@ class NaoAudioInput(DummyInput):
         self.audio_device.subscribe(self.subscriber_name)
 
 
-        utils.config.debug_print(f"[{self.name}]Connected to NAO at {self.ip}:{self.port}")
+        utils.config.debug_print(f"[{self.name}] Connected to NAO at {self.ip}:{self.port}")
 
     def _disconnect(self):
         try:

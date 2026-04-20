@@ -9,7 +9,7 @@ class TripletGenerator(DummyInput):
 
     def action(self, i):
         time.sleep(self.delay)
-        self.output_queue.put(self._triplets[i%len(self._triplets[0])])
+        self.output_queue.put(self._triplets[i%len(self._triplets)])
 
     def __init__(self, name="triplet_generator", **args):
         """Initializes the module.

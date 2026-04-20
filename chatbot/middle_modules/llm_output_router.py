@@ -27,11 +27,11 @@ class LLMOutputRouter(DummyModule):
 
         if msg.get("type") == "event":
             utils.config.debug_print(f"[{self.name}] -> text")
-            self._output_queues['text'][0].put(msg)
+            self._output_queues['text'].put(msg)
 
         elif msg.get("type") == "response":
             utils.config.debug_print(f"[{self.name}] -> control")
-            self._output_queues['control'][0].put(msg)
+            self._output_queues['control'].put(msg)
 
 middle_modules_class['llm_output_router'] = LLMOutputRouter
 

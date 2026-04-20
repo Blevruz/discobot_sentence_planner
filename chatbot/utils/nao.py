@@ -1,6 +1,7 @@
 # chatbot/utils/nao.py
 import qi
 import threading
+import utils.config
 
 # Thread safety because multiple modules may connect at once
 _lock = threading.Lock()
@@ -15,6 +16,8 @@ def connect(ip, port):
     Ensures only one app/session per robot per process.
     """
     connect_str = f"tcp://{ip}:{port}"
+    
+    utils.config.debug_print(f"[nao] Connecting to {connect_str}")
 
     with _lock:
         # Already connected

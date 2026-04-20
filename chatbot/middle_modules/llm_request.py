@@ -21,19 +21,21 @@ class LLMRequest(DummyMiddle):
         """
 
         if len(self._input_queues['prefix']) > 0:
-            prefix_input = self._input_queues['prefix'][0].get()
+            prefix_input = self._input_queues['prefix'].get()
             if prefix_input:
                 self._handle_prefix_input(prefix_input)
 
         if len(self._input_queues['system']) > 0:
-            system_input = self._input_queues['system'][0].get()
+            system_input = self._input_queues['system'].get()
             if system_input:
                 self.output_queue.put(self._handle_system_input(system_input))
 
         user_input = self.input_queue.get()
-            if user_input:
-                self.output_queue.put(self._handle_user_input(user_input))
-
+        if user_input:
+            self.output_queue.put(self._handle_user_input(user_input))
+            utils.config.debug_print(f"[{self.name}] {self.base_prompt}")
+            if (not self._append_new_messages):
+                self.base_prompt = self.make_base_prompt()
 
     def __init__(self, name="llm_request", **args):
         """Initializes the module.
@@ -57,6 +59,8 @@ class LLMRequest(DummyMiddle):
                 creative, lower values make it more conservative.
             language : str
                 Language of the LLM. Defaults to English.
+            append_new_messages : bool
+                Whether to append new messages to the context.
         """
 
         super().__init__(name, **args)
@@ -85,6 +89,7 @@ class LLMRequest(DummyMiddle):
         self._api = args.get('api', '/v1/chat/completions')
         self._headers = args.get('headers', {'Content-Type': 'application/json'})
         self._token = args.get('token', None)
+        self._append_new_messages = args.get('append_new_messages', True)
         self.base_prompt = self.make_base_prompt()
         self.prefix_input = ""
 
@@ -100,7 +105,7 @@ class LLMRequest(DummyMiddle):
                 "stream": False
                 }
 
-        payload['messages'].append({"role": "developer", "content": self._initial_prompt})
+        payload['messages'].append({"role": "system", "content": self._initial_prompt})
         for c in self._context:
             payload['messages'].append({"role": c["role"], "content": c["content"]})
         return headers, payload

@@ -7,10 +7,10 @@ import utils.config
 middle_modules_class = {}
 
 class StringToLLMAppend(DummyModule):
-    def __init__(self, name="string_to_llm_append", role="user", **args):
+    def __init__(self, name="string_to_llm_append", **args):
         super().__init__(name, **args)
         self._loop_type = 'process'
-        self.role = role
+        self.role = args.get("role", "user")
         self.pending = {}
 
         self._input_queues['text'] = QueueSlot(self, 'input', datatype='string')
@@ -22,13 +22,13 @@ class StringToLLMAppend(DummyModule):
     def action(self, i):
         # Handle LLM responses
         if len(self._input_queues['control']) > 0:
-            resp = self._input_queues['control'][0].get()
+            resp = self._input_queues['control'].get()
             if resp is not None:
                 utils.config.debug_print(f"[{self.name}] Got control response: {resp}")
                 if resp.get("type") == "response" and resp["id"] in self.pending:
                     if len(self._output_queues['trigger']) > 0:
                         utils.config.debug_print(f"[{self.name}] Append confirmed, triggering generation.")
-                        self._output_queues['trigger'][0].put({
+                        self._output_queues['trigger'].put({
                             "type": "trigger",
                             "reason": "append_done",
                             "cmd_id": resp["id"]
@@ -41,7 +41,7 @@ class StringToLLMAppend(DummyModule):
 
         # Handle new strings
         if len(self._input_queues['text']) > 0:
-            text = self._input_queues['text'][0].get()
+            text = self._input_queues['text'].get()
             if text is not None:
                 utils.config.debug_print(f"[{self.name}] New text received: {text}")
                 cmd_id = str(uuid.uuid4())
@@ -61,7 +61,7 @@ class StringToLLMAppend(DummyModule):
                 self.pending[cmd_id] = True
                 utils.config.debug_print(f"[{self.name}] Sending APPEND command: {cmd}")
                 if len(self._output_queues['cmd']) > 0:
-                    self._output_queues['cmd'][0].put(cmd)
+                    self._output_queues['cmd'].put(cmd)
                 else:
                     raise Exception(f"Module {self.name} has no cmd output queue")
         else:

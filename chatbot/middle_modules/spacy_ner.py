@@ -19,7 +19,7 @@ class SpacyNER(DummyMiddle):
     def action(self, i):
         text = self.input_queue.get()
         if text:
-            text = self.input_queue.get()
+            utils.config.debug_print(f"[{self.name}]Received text {text}")
             entities = self.extract_entities(text)
             utils.config.debug_print(f"[{self.name}]Extracted entities {entities} from text {text}")
             self.output_queue.put(entities)

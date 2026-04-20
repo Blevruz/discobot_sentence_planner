@@ -27,9 +27,11 @@ class SamTTS(DummyMiddle):
         text = self.input_queue.get()
         if text:
             for t in text.split(" "):
-                self.output_queue.put(1)
+                if len(self._output_queues['output']) > 0:
+                    self.output_queue.put(1)
                 subprocess.run([f"{self.path_to_sam}/sam", f"{t}." ])
-                self.output_queue.put(0)
+                if len(self._output_queues['output']) > 0:
+                    self.output_queue.put(0)
 
 
 middle_modules_class['sam_tts'] = SamTTS

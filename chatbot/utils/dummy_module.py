@@ -51,7 +51,7 @@ class DummyModule:
     # Might be worth gutting for concision/good practices
     @property
     def input_queue(self):
-        return self._input_queues['default'][0]
+        return self._input_queues['default']
     @property
     def input_queues(self):
         return self._input_queues
@@ -65,7 +65,7 @@ class DummyModule:
 
     @property
     def output_queue(self):
-        return self._output_queues['default'][0]
+        return self._output_queues['default']
     @property
     def output_queues(self):
         return self._output_queues

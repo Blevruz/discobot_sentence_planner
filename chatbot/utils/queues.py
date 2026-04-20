@@ -120,6 +120,47 @@ class QueueSlot:
     def __len__(self):
         return len(self._queues)
 
+    def put(self, data):
+        if self._direction == 'input':
+            raise ValueError(f"Attempting to put data in input queue slot")
+        else:
+            # Each queue in the slot gets the data
+            for queue in self._queues:
+                queue.put(data)
+
+    def get(self):
+        """ Get data from one of the queues in this slot."""
+        if self._direction == 'output':
+            raise ValueError(f"Attempting to get data from output queue slot")
+        else:
+            # TODO: Try to order received input chronologically somehow
+            for queue in self._queues:
+                g = queue.get()
+                if g is not None:
+                    return g
+        return None
+
+    def empty(self):
+        for queue in self._queues:
+            if not queue.empty():
+                return False
+        return True
+    
+    def full(self):
+        # Bit harder than empty since it's probably also interesting to know
+        # if we have a single full queue in there
+        # So let's yell at the user not to use this I guess!
+        raise NotImplementedError("QueueSlot.full() is not implemented right now")
+        #for queue in self._queues:
+        #    if not queue.full():
+        #        return False
+        #return True
+
+
+
+
+        """Put data in the queue slot"""
+
     def add_queue(self, queue):
         """Add a queue to this queue slot"""
         if self._datatype == "any" or queue.datatype == "any" \

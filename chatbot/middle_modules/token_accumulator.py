@@ -27,12 +27,16 @@ class TokenAccumulator(DummyMiddle):
         self._output_queues['stream'] = QueueSlot(self, 'output', datatype='string')
         self._output_queues['default'] = self._output_queues['stream']
 
-        self.end_of_word_tokens = args.get("end_of_word_tokens", [' ', '.', '!', '?', ':', '\n'])
+        self.end_of_word_tokens = args.get("end_of_word_tokens", [' ', '.', '"', '!', '?', ':', '\n', '\r'])
 
         self.segment = ""
 
     def _is_end_of_word_token(self, token):
-        return token in self.end_of_word_tokens
+        #return token in self.end_of_word_tokens
+        for t in self.end_of_word_tokens:
+            if t in token[len(token)-len(t):]:
+                return True
+        return False
 
     def action(self, i):
         q = self.input_queue
@@ -48,7 +52,7 @@ class TokenAccumulator(DummyMiddle):
             if self._is_end_of_word_token(token):
                 # Emit segment and reset
                 if len(self._output_queues['stream']) > 0:
-                    self._output_queues['stream'][0].put(self.segment)
+                    self._output_queues['stream'].put(self.segment)
                     utils.config.debug_print(f"[{self.name}] Emitted segment: {self.segment}")
                 self.segment = ""
 

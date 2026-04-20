@@ -34,9 +34,9 @@ class FasterWhisper(DummyMiddle):
                     text += segment.text + " "
                 utils.config.debug_print(f"[{self.name}] TEXT='{text}' CONF={info.language_probability:.3f} TIME={time.time() - start_time:.3f}")
                 if len(self._output_queues['text']) > 0:
-                    self._output_queues['text'][0].put(text)
+                    self._output_queues['text'].put(text)
                 if len(self._output_queues['confidence']) > 0:
-                    self._output_queues['confidence'][0].put(info.language_probability)
+                    self._output_queues['confidence'].put(info.language_probability)
         except Exception as e:
             utils.config.debug_print(f"Error in FasterWhisper: {e}")
 
