@@ -1,0 +1,270 @@
+[
+    {
+        "name": "text_input",
+        "module": "input_modules.keyboard",
+        "args": {},
+        "links": [
+            {
+                "name": "text_to_llm_append",
+                "from_slot": "default",
+                "target_name": "user_string_to_llm_append",
+                "to_slot": "text"
+            }
+        ]
+    },
+    {
+        "name": "nao_audio_input",
+        "module": "input_modules.nao_audio",
+        "args": {
+            "ip": "$NAO_IP"
+        },
+        "links": [
+            {
+                "name": "nao_audio_input_to_vosk",
+                "from_slot": "default",
+                "target_name": "toggle_block",
+                "to_slot": "default"
+            }
+        ]
+    },
+    {
+        "name": "toggle_block",
+        "module": "middle_modules.toggle_block",
+        "args": {},
+        "links": [
+            {
+                "name": "audio_toggle_to_vad",
+                "from_slot": "default",
+                "target_name": "webrtc_vad",
+                "to_slot": "default"
+            }
+        ]
+    },
+    {
+        "name": "webrtc_vad",
+        "module": "middle_modules.webrtc_vad",
+        "args": {
+            "sample_rate": 16000,
+            "aggressiveness": 1,
+            "frame_duration_ms": 30,
+            "padding_duration_ms": 300,
+            "speech_trigger_ratio": 0.9,
+            "silence_trigger_ratio": 0.9,
+            "idle_sleep_s": 0.005
+        },
+        "links": [
+            {
+                "name": "webrtc_vad_to_faster_whisper",
+                "from_slot": "default",
+                "target_name": "faster_whisper",
+                "to_slot": "default"
+            }
+        ]
+    },
+    {
+        "name": "faster_whisper",
+        "module": "middle_modules.faster_whisper",
+        "args": {},
+        "links": [
+            {
+                "name": "faster_whisper_to_console",
+                "from_slot": "text",
+                "target_name": "min_length",
+                "to_slot": "default"
+            }
+        ]
+    },
+    {
+        "name": "min_length",
+        "module": "middle_modules.length_block",
+        "args": {
+            "min_len": 5,
+            "max_len": 500
+        },
+        "links": [
+            {
+                "name": "min_length_to_llm_append",
+                "from_slot": "default",
+                "target_name": "user_string_to_llm_append",
+                "to_slot": "text"
+            }
+        ]
+    },
+    {
+        "name": "user_string_to_llm_append",
+        "module": "middle_modules.string_to_llm_append",
+        "args": {
+            "role": "user"
+        },
+        "links": [
+            {
+                "name": "append_user_cmd_to_llm",
+                "from_slot": "cmd",
+                "target_name": "llm_service",
+                "to_slot": "cmd"
+            },
+            {
+                "name": "append_trigger_to_generate",
+                "from_slot": "trigger",
+                "target_name": "llm_generate_on_trigger",
+                "to_slot": "trigger"
+            }
+        ]
+    },
+    {
+        "name": "assistant_string_to_llm_append",
+        "module": "middle_modules.string_to_llm_append",
+        "args": {
+            "role": "assistant"
+        },
+        "links": [
+            {
+                "name": "append_assistant_cmd_to_llm",
+                "from_slot": "cmd",
+                "target_name": "llm_service",
+                "to_slot": "cmd"
+            }
+        ]
+    },
+    {
+        "name": "llm_service",
+        "module": "middle_modules.llm_service",
+        "args": {
+            "url": "$LLM_URL",
+            "temperature": 0.6,
+            "max_tokens": 256,
+            "context": "@misc/generic_context.json"
+        },
+        "links": [
+            {
+                "name": "llm_out_to_router",
+                "from_slot": "default",
+                "target_name": "llm_output_router",
+                "to_slot": "default"
+            }
+        ]
+    },
+    {
+        "name": "llm_output_router",
+        "module": "middle_modules.llm_output_router",
+        "args": {},
+        "links": [
+            {
+                "name": "router_control_to_append",
+                "from_slot": "control",
+                "target_name": "user_string_to_llm_append",
+                "to_slot": "control"
+            },
+            {
+                "name": "router_text_to_generate",
+                "from_slot": "text",
+                "target_name": "llm_generate_on_trigger",
+                "to_slot": "events"
+            }
+        ]
+    },
+
+    {
+        "name": "llm_generate_on_trigger",
+        "module": "middle_modules.llm_generate_on_trigger",
+        "args": {},
+        "links": [
+            {
+                "name": "generate_cmd_to_llm",
+                "from_slot": "cmd",
+                "target_name": "llm_service",
+                "to_slot": "cmd"
+            },
+            {
+                "name": "stream_out",
+                "from_slot": "stream",
+                "target_name": "token_accumulator",
+                "to_slot": "tokens"
+            }
+        ]
+    },
+    {
+        "name": "token_accumulator",
+        "module": "middle_modules.token_accumulator",
+        "args": {},
+        "links": [
+            {
+                "name": "token_accumulator_to_output",
+                "from_slot": "stream",
+                "target_name": "output-demux",
+                "to_slot": "default"
+            }
+        ]
+    },
+    {
+        "name": "output-demux",
+        "module": "middle_modules.demultiplexer",
+        "args": {},
+        "links": [
+            {
+                "name": "out-demux-to-nao_tts",
+                "from_slot": "default",
+                "target_name": "nao_tts",
+                "to_slot": "default"
+            },
+            {
+                "name": "out-demux-to-console",
+                "from_slot": "default",
+                "target_name": "console",
+                "to_slot": "default"
+            },
+            {
+                "name": "out-demux-to-assistant-buffer",
+                "from_slot": "default",
+                "target_name": "assistant_buffer",
+                "to_slot": "default"
+            }
+        ]
+    },
+
+    {
+        "name": "nao_tts",
+        "module": "middle_modules.nao_tts",
+        "args": {
+            "ip": "$NAO_IP",
+            "language": "English"
+        },
+        "links": [
+            {
+                "name": "nao_tts_to_toggle_block",
+                "from_slot": "default",
+                "target_name": "toggle_block",
+                "to_slot": "block"
+            },
+            {
+                "name": "nao_tts_to_assistant_buffer_flush",
+                "from_slot": "default",
+                "target_name": "assistant_buffer",
+                "to_slot": "flush"
+            }
+        ]
+    },
+    {
+        "name": "assistant_buffer",
+        "module": "middle_modules.buffer",
+        "args": {
+            "datatype_in": "string",
+            "datatype_out": "string"
+        },
+        "links": [
+            {
+                "name": "assistant-buffer-to-assistant-append",
+                "from_slot": "default",
+                "target_name": "assistant_string_to_llm_append",
+                "to_slot": "text"
+            }
+        ]
+    },
+    {
+        "name": "console",
+        "module": "output_modules.console",
+        "args": {},
+        "links": []
+    }
+]
+
