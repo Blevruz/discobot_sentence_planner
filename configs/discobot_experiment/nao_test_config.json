@@ -1,0 +1,70 @@
+[
+    {
+        "name": "text_input",
+        "module": "input_modules.keyboard",
+        "args": {},
+        "links": [
+            {
+                "name": "text_to_llm",
+                "from_slot": "default",
+                "target_name": "llm",
+                "to_slot": "text"
+            }
+        ]
+    },
+    {
+        "name": "stt",
+        "module": "meta.module",
+        "config": "configs/discobot_experiment/utils/stt.json",
+        "links": [
+            {
+                "name": "stt_to_llm_append",
+                "from_slot": "text",
+                "target_name": "llm",
+                "to_slot": "text"
+            }
+        ]
+    },
+    {
+        "name": "llm",
+        "module": "meta.module",
+        "config": "configs/discobot_experiment/utils/llm.json",
+        "links": [
+            {
+                "name": "out-demux-to-nao_tts",
+                "from_slot": "generated_text",
+                "target_name": "nao_tts",
+                "to_slot": "default"
+            },
+            {
+                "name": "out-demux-to-console",
+                "from_slot": "generated_text",
+                "target_name": "console",
+                "to_slot": "default"
+            }
+        ]
+    },
+    {
+        "name": "nao_tts",
+        "module": "middle_modules.nao_tts",
+        "args": {
+            "ip": "$NAO_IP",
+            "language": "English"
+        },
+        "links": [
+            {
+                "name": "nao_tts_to_stt_toggle",
+                "from_slot": "default",
+                "target_name": "stt",
+                "to_slot": "toggle_stt"
+            }
+        ]
+    },
+    {
+        "name": "console",
+        "module": "output_modules.console",
+        "args": {},
+        "links": []
+    }
+]
+
