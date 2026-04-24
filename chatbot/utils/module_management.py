@@ -101,6 +101,27 @@ def unroll_meta_modules(config):
                 for v in link_replacement[m][k]:
                     utils.config.debug_print(f"\t\t\t{v}")
 
+    # Are there any links targets within the replacement list to be replaced?
+    # Proper way to do this would be to make a hierarchy of link replacements
+    # and work from the root, but this is good enough for now
+
+    replaced_a_link = True
+
+    while replaced_a_link:
+        replaced_a_link = False
+
+        for meta in link_replacement:
+            keywords = ['L_IN', 'L_OUT']
+            for ki in range(len(keywords)):
+                for l in link_replacement[meta][keywords[ki]]:
+                    if l['target_name'] in link_replacement:
+                        for li in link_replacement[l['target_name']][keywords[(ki+1)%len(keywords)]]:
+                            li = li.copy()
+                            li['from_slot'] = l['from_slot']
+                            link_replacement[meta]['L_OUT'].append(li)
+                        link_replacement[meta]['L_OUT'].remove(l)
+                        replaced_a_link = True
+
     # Second pass: replace links
     for module in config_buffer:
         meta = None if "meta" not in module else module['meta']
@@ -117,7 +138,6 @@ def unroll_meta_modules(config):
                     module['links'].append(l)
                     utils.config.debug_print(f"Added link {l['name']} to {l['target_name']}")
                 module['links'].remove(link)
-                # Did we actually delete it from the module though
             # Otherwise, we have to be in a meta-module to do any substitution
             if meta:
                 if link['target_name'] in link_replacement[meta]['R_OUT']:
@@ -256,6 +276,7 @@ def check_config(config):
     module_lists["output_modules"] = get_modules("output")
     module_lists["middle_modules"] = get_modules("middle")
     config = unroll_meta_modules(config)
+    utils.config.nice_config_print(config)
     for module in config:
         assert isinstance(module, dict), "Module must be a dictionary"
         assert 'name' in module, "Module must have a name"
@@ -267,14 +288,6 @@ def check_config(config):
         names.append(module['name'])
         # Does the module name fit the [prefix, suffix] format?
         assert len(module['module'].split('.')) >= 2, f"Module {module['name']}'s module string must be a string of the form <input|middle|output>_modules.<module>, not {module['module']}"
-        # Is the prefix "meta" ?
-        #if module['module'].split('.')[0] == 'meta_modules':
-                # Meta-Modules! 
-                # Either "submodule", which requires a config file,
-                # "input", or "output", which require being in a submodule,
-                # and serve to define the input or output of the submodule
-                # (they are replaced on load to directly connect external modules
-                # to those within the submodule)
 
         # Does the module name match the prefix?
         assert module['module'].split('.')[0] in module_lists.keys(), f"Module {module['name']}'s module string must be a string of the form <input|middle|output>_modules.<module>, not {module['module']}"
@@ -298,10 +311,9 @@ def check_config(config):
                 assert 'target_name' in link, f"Module {module['name']} link must have a target_name"
                 assert isinstance(link['target_name'], str), f"Module {module['name']} link target_name must be a string"
                 # Check that we can link to the target module
-                assert link['target_name'] in names, f"Module {module['name']} link target_name {link['target_name']} does not exist in {config}"
+                assert link['target_name'] in names, f"Module {module['name']} attempts to link to {link['target_name']} which does not exist in \n\t{config}"
 
 
     utils.config.debug_print(f"Config is valid")
-    utils.config.nice_config_print(config)
 
 
