@@ -91,32 +91,45 @@ def unroll_meta_modules(config):
         else:
             # Not a meta-module, just copy it to the buffer
             config_buffer.append(module)
-        
+
+    if utils.config.verbose:
+        utils.config.debug_print(f"Link replacement: ")
+        for m in link_replacement:
+            utils.config.debug_print(f"\t{m}: ")
+            for k in link_replacement[m]:
+                utils.config.debug_print(f"\t\t{k}: ")
+                for v in link_replacement[m][k]:
+                    utils.config.debug_print(f"\t\t\t{v}")
+
     # Second pass: replace links
     for module in config_buffer:
         meta = None if "meta" not in module else module['meta']
 
         for link in module['links']:
             # Pointing to a meta-module
-            if link['target_name'] in link_replacement:
+            if link['target_name'] in link_replacement.keys():
+                utils.config.debug_print(f"Replacing link {link['name']} to {link['target_name']}")
                 for l in link_replacement[link['target_name']]['L_IN']:
                     # Keep same 'from_slot' from original link
                     # use replacement 'name', 'target_name', and 'to_slot'
                     l['name'] = f"{link['name']}_to_{l['target_name']}"
                     l['from_slot'] = link['from_slot']
                     module['links'].append(l)
+                    utils.config.debug_print(f"Added link {l['name']} to {l['target_name']}")
                 module['links'].remove(link)
                 # Did we actually delete it from the module though
             # Otherwise, we have to be in a meta-module to do any substitution
             if meta:
                 if link['target_name'] in link_replacement[meta]['R_OUT']:
+                    utils.config.debug_print(f"Replacing link {link['name']} to {link['target_name']}")
                     for l in link_replacement[meta]['L_OUT']:
                         # Keep same 'from_slot' from original link
                         # use replacement 'name', 'target_name', and 'to_slot'
                         l['name'] = f"{link['name']}_to_{l['target_name']}"
                         l['from_slot'] = link['from_slot']
                         module['links'].append(l)
-                module['links'].remove(link)
+                        utils.config.debug_print(f"Added link {l['name']} to {l['target_name']}")
+                    module['links'].remove(link)
 
     return config_buffer
 
@@ -242,6 +255,7 @@ def check_config(config):
     module_lists["input_modules"] = get_modules("input")
     module_lists["output_modules"] = get_modules("output")
     module_lists["middle_modules"] = get_modules("middle")
+    config = unroll_meta_modules(config)
     for module in config:
         assert isinstance(module, dict), "Module must be a dictionary"
         assert 'name' in module, "Module must have a name"
@@ -262,13 +276,32 @@ def check_config(config):
                 # (they are replaced on load to directly connect external modules
                 # to those within the submodule)
 
-
-
         # Does the module name match the prefix?
         assert module['module'].split('.')[0] in module_lists.keys(), f"Module {module['name']}'s module string must be a string of the form <input|middle|output>_modules.<module>, not {module['module']}"
         # Does the module name match the suffix?
-        assert module['module'].split('.')[1] in module_lists[module['module'].split('.')[0]], f"Module {module['name']} attempts to load module {module['module'].split('.')[1]} which does not exist in {module['module'].split('.')[0]} modules"
+        assert module['module'].split('.')[1] in module_lists[module['module'].split('.')[0]], f"Module {module['name']} attempts to load module {module['module'].split('.')[1]} which does not exist"
+
+        # Check that args is a dictionary
+        if 'args' in module:
+            assert isinstance(module['args'], dict), f"Module {module['name']} args must be a dictionary"
+
+    for module in config:
+        # Check that links is a list
+        if 'links' in module:
+            assert isinstance(module['links'], list), f"Module {module['name']} links must be a list"
+            for link in module['links']:
+                assert isinstance(link, dict), f"Module {module['name']} link must be a dictionary"
+                assert 'from_slot' in link, f"Module {module['name']} link must have a from_slot"
+                assert isinstance(link['from_slot'], str), f"Module {module['name']} link from_slot must be a string"
+                assert 'to_slot' in link, f"Module {module['name']} link must have a to_slot"
+                assert isinstance(link['to_slot'], str), f"Module {module['name']} link to_slot must be a string"
+                assert 'target_name' in link, f"Module {module['name']} link must have a target_name"
+                assert isinstance(link['target_name'], str), f"Module {module['name']} link target_name must be a string"
+                # Check that we can link to the target module
+                assert link['target_name'] in names, f"Module {module['name']} link target_name {link['target_name']} does not exist in {config}"
 
 
+    utils.config.debug_print(f"Config is valid")
+    utils.config.nice_config_print(config)
 
 

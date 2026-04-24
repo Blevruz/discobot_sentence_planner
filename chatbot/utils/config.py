@@ -77,3 +77,20 @@ def process_config_arg(arg):
             break
     return arg
 
+def nice_config_print(config):
+    if verbose:
+        for module in config:
+            debug_print(f"Module {module['name']}:")
+            debug_print(f"\tModule: {module['module']}")
+            if 'args' in module:
+                debug_print(f"\tArgs:")
+                for arg in module['args']:
+                    debug_print(f"\t\t{arg}: {module['args'][arg]}")
+            if 'config' in module:
+                debug_print(f"\tConfig: {module['config']}")
+                subconfig = load_config(module['config'])
+                nice_config_print(subconfig)
+            if 'links' in module:
+                debug_print(f"\tLinks:")
+                for link in module['links']:
+                    debug_print(f"\t\t{link['name']}: {link['from_slot']} -> {link['to_slot']} on module {link['target_name']}")
