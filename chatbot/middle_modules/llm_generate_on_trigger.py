@@ -57,7 +57,7 @@ class LLMGenerateOnTrigger(DummyModule):
                     self.buffer = evt["data"]["text"]
                     utils.config.debug_print(f"[{self.name}] Generation done: {self.buffer}")
                     if len(self._output_queues['text']) > 0:
-                        self._output_queues['text_out'].put(self.buffer)
+                        self._output_queues['text'].put(self.buffer)
                 utils.config.debug_print(f"[{self.name}] Finished processing evt {evt}")
 
 
