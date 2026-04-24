@@ -112,6 +112,7 @@ def main():
         if args.test_config:
             check_config(config)
             utils.config.debug_print("Config test successful!")
+            return
         loaded_modules = load_modules_from_config(config)
 
     if utils.config.verbose:
