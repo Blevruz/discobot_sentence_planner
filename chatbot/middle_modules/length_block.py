@@ -43,6 +43,7 @@ class LengthBlock(DummyMiddle):
             length = len(item.strip())
 
             if self.min_len <= length <= self.max_len:
+                utils.config.debug_print(f"[{self.name}] Forwarded string (len={length}): '{item}'")
                 self.output_queue.put(item)
             else:
                 utils.config.debug_print(

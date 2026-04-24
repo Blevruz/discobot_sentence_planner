@@ -2,6 +2,7 @@
 import os
 import importlib
 import utils.config
+import json
 
 def get_modules(module_type):
     """Get a list of modules of a given type within the adequate folder"""
@@ -20,6 +21,106 @@ def get_modules(module_type):
     return modules
 
 
+def unroll_meta_modules(config):
+    """Unroll meta-modules from a config"""
+    # Two types: IO and Module
+    config_buffer = list()
+
+    link_replacement = dict()
+
+    module_file_pairs = dict()
+
+    # First pass: open meta-modules and take note of links to be replaced
+    for module in config:
+        if type(module) is not dict:
+            raise Exception(f"Module {module['name']} is not a dictionary")
+
+        # Is it any sort of meta-module?
+        if module['module'].split('.')[0] == 'meta':
+
+            # Is it an IO module?
+            if module['module'].split('.')[1] == 'io':
+                # Does it have a "meta" attribute?
+                if 'meta' in module:
+                    if module['meta'] in link_replacement:
+                        link_replacement[module['meta']]['R_OUT'].append(module['name'])
+                        for link in module['links']:
+                            link_replacement[module['meta']]['L_IN'].append(link)
+                    else:
+                        raise Exception(f"Meta IO module {module['name']} claims to belong to meta module {module['meta']}, but that meta module is not defined")
+                    
+            # Is it a meta-module?
+            elif module['module'].split('.')[1] == 'module':
+                # Outbound links are copied to `to_replace_with`
+                if module['name'] in link_replacement:
+                    raise Exception(f"Meta-module {module['name']} is already defined")
+                else:
+                    link_replacement[module['name']] = {'R_OUT': list(), 
+                                                        'L_OUT': module['links'],
+                                                        'R_IN': [module['name']],
+                                                        'L_IN': list()}
+                # Does it specify a config file?
+                config_file = ''
+                if 'config' in module:
+                    config_file = module['config']
+                elif 'config' in module['args']:
+                    config_file = module['args']['config']
+                else:
+                    raise Exception(f"Meta-module {module['name']} does not specify a config file!")
+
+                # Recursive import error
+                if "meta" in module:
+                    if module_file_pairs[module['meta']] == config_file:
+                        raise Exception(f"Recursive import detected: meta-module {module['name']} imports itself")
+                # Add to module file pairs
+                module_file_pairs[module['name']] = config_file
+
+                # Load file to buffer
+                with open(config_file, 'r') as f:
+                    temp_config_buffer = json.load(f)
+                    for temp_module in temp_config_buffer:
+                        # Append meta-module name to module name
+                        temp_module['name'] = f"{module['name']}_{temp_module['name']}"
+                        # And to those in the links
+                        for link in temp_module['links']:
+                            link['target_name'] = f"{module['name']}_{link['target_name']}"
+                        # Set "meta" attribute to meta-module name
+                        temp_module['meta'] = module['name']
+                        # Append to config to process later
+                        config.append(temp_module)
+        else:
+            # Not a meta-module, just copy it to the buffer
+            config_buffer.append(module)
+        
+    # Second pass: replace links
+    for module in config_buffer:
+        meta = None if "meta" not in module else module['meta']
+
+        for link in module['links']:
+            # Pointing to a meta-module
+            if link['target_name'] in link_replacement:
+                for l in link_replacement[link['target_name']]['L_IN']:
+                    # Keep same 'from_slot' from original link
+                    # use replacement 'name', 'target_name', and 'to_slot'
+                    l['name'] = f"{link['name']}_to_{l['target_name']}"
+                    l['from_slot'] = link['from_slot']
+                    module['links'].append(l)
+                module['links'].remove(link)
+                # Did we actually delete it from the module though
+            # Otherwise, we have to be in a meta-module to do any substitution
+            if meta:
+                if link['target_name'] in link_replacement[meta]['R_OUT']:
+                    for l in link_replacement[meta]['L_OUT']:
+                        # Keep same 'from_slot' from original link
+                        # use replacement 'name', 'target_name', and 'to_slot'
+                        l['name'] = f"{link['name']}_to_{l['target_name']}"
+                        l['from_slot'] = link['from_slot']
+                        module['links'].append(l)
+                module['links'].remove(link)
+
+    return config_buffer
+
+
 def load_modules_from_config(config):
     """Load modules from a json config"""
     # Config ought to be a dictionary from a json
@@ -29,12 +130,9 @@ def load_modules_from_config(config):
     #   "args": {},
     #   "links": [{}]
     #  }, ...]
-    # TODO: meta-module
-    # [{"name": <name>,
-    #   "module": meta.[path],
-    #   "args": {},
-    #   "links": [{}]
-    #  }, ...]
+
+    # Before we begin, process all meta-modules
+    config = unroll_meta_modules(config)
 
     input_modules = get_modules("input")
     output_modules = get_modules("output")
@@ -124,6 +222,7 @@ def load_modules_from_config(config):
     return loaded_modules
 
 
+
 def check_config(config):
     """Check that a config file conforms to the format
         - List of dictionaries representing modules
@@ -153,7 +252,18 @@ def check_config(config):
             raise Exception(f"Module with name {module['name']} already exists")
         names.append(module['name'])
         # Does the module name fit the [prefix, suffix] format?
-        assert len(module['module'].split('.')) == 2, f"Module {module['name']}'s module string must be a string of the form <input|middle|output>_modules.<module>, not {module['module']}"
+        assert len(module['module'].split('.')) >= 2, f"Module {module['name']}'s module string must be a string of the form <input|middle|output>_modules.<module>, not {module['module']}"
+        # Is the prefix "meta" ?
+        #if module['module'].split('.')[0] == 'meta_modules':
+                # Meta-Modules! 
+                # Either "submodule", which requires a config file,
+                # "input", or "output", which require being in a submodule,
+                # and serve to define the input or output of the submodule
+                # (they are replaced on load to directly connect external modules
+                # to those within the submodule)
+
+
+
         # Does the module name match the prefix?
         assert module['module'].split('.')[0] in module_lists.keys(), f"Module {module['name']}'s module string must be a string of the form <input|middle|output>_modules.<module>, not {module['module']}"
         # Does the module name match the suffix?

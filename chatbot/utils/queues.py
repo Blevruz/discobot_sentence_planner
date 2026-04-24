@@ -105,6 +105,7 @@ class QueueSlot:
         self._datatype = datatype
         self._size = size
         self._queues = []
+        self._offset_get = 0
 
     @property
     def datatype(self):
@@ -134,10 +135,14 @@ class QueueSlot:
             raise ValueError(f"Attempting to get data from output queue slot")
         else:
             # TODO: Try to order received input chronologically somehow
-            for queue in self._queues:
-                g = queue.get()
-                if g is not None:
-                    return g
+            # In the meantime we'll just get the first non-empty queue and
+            # change the offset to not always get the same queue
+            for qi in range(len(self._queues)):
+                queue = self._queues[(self._offset_get + qi) % len(self._queues)]
+                if not queue.empty():
+                    self._offset_get = (self._offset_get + qi + 1) % len(self._queues)
+                    return queue.get()
+
         return None
 
     def empty(self):
