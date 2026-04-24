@@ -72,7 +72,7 @@ class CommandDispatcher:
                     full += token
                     yield make_event("token", {"text": token})
 
-                inserted = self.ctx.append_messages([
+                inserted = self.ctx._prepare_messages([
                     {"role": "assistant", "content": full}
                 ])
 
