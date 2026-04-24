@@ -3,3 +3,4 @@ models
 node-red-chatbot-nodes
 venv
 .python-version
+misc
