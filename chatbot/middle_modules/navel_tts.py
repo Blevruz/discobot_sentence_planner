@@ -44,7 +44,7 @@ class NavelTTS(DummyMiddle):
         self.update_parameters(params = None)
 
     def say(self, text):
-        navel.run(lambda r: r.say(speech))
+        navel.run(lambda r: r.say(text))
 
     def update_parameters(self, params = None):
         if params:
