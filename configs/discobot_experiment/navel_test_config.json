@@ -13,14 +13,13 @@
         ]
     },
     {
-        "name": "nao_audio_input",
-        "module": "input_modules.nao_audio",
+        "name": "audio_input",
+        "module": "input_modules.pyaudio",
         "args": {
-            "ip": "$NAO_IP"
         },
         "links": [
             {
-                "name": "nao_audio_input_to_stt",
+                "name": "audio_input_to_stt",
                 "from_slot": "default",
                 "target_name": "stt",
                 "to_slot": "audio_input"

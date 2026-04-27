@@ -9,19 +9,10 @@
                 "from_slot": "toggle_stt",
                 "target_name": "toggle_block",
                 "to_slot": "block"
-            }
-        ]
-    },
-    {
-        "name": "nao_audio_input",
-        "module": "input_modules.nao_audio",
-        "args": {
-            "ip": "$NAO_IP"
-        },
-        "links": [
+            },
             {
-                "name": "nao_audio_input_to_vosk",
-                "from_slot": "default",
+                "name": "io_audio_input_to_vosk",
+                "from_slot": "audio_input",
                 "target_name": "toggle_block",
                 "to_slot": "default"
             }
