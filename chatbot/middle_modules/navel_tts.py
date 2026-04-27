@@ -1,5 +1,6 @@
 # chatbot/middle_modules/navel_tts.py
 from middle_modules.dummy import DummyMiddle, middle_modules_class
+from utils.queues import QueueSlot
 
 import navel
 
