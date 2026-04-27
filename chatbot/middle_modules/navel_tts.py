@@ -1,10 +1,10 @@
-# chatbot/output_modules/navel_tts.py
-from output_modules.dummy import DummyOutput, output_modules_class
+# chatbot/middle_modules/navel_tts.py
+from middle_modules.dummy import DummyMiddle, middle_modules_class
 
 import navel
 
-class NavelTTS(DummyOutput):
-    """Uses the Navel TTS engine to output the input.
+class NavelTTS(DummyMiddle):
+    """Uses the Navel TTS engine to turn a string into speech.
     Queues:
         input: string
             Text to output
@@ -53,4 +53,4 @@ class NavelTTS(DummyOutput):
 
 
 
-output_modules_class['navel_tts'] = NavelTTS
+middle_modules_class['navel_tts'] = NavelTTS
