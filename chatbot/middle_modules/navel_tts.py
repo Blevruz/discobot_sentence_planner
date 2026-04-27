@@ -1,6 +1,7 @@
 # chatbot/middle_modules/navel_tts.py
 from middle_modules.dummy import DummyMiddle, middle_modules_class
-from utils.queues import QueueSlot
+from utils.queues import QueueWrapper, QueueSlot
+import utils.config
 
 import navel
 
@@ -24,6 +25,7 @@ class NavelTTS(DummyMiddle):
         if speech:
             self.output_queue.put(1)
             utils.config.debug_print(f"[{self.name}] Speaking: {speech}")
+            self.say(speech)
             utils.config.debug_print(f"[{self.name}] Finished speaking")
             self.output_queue.put(2)
         return
