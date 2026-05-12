@@ -30,6 +30,13 @@ def unroll_meta_modules(config):
 
     module_file_pairs = dict()
 
+    def add_links_from(target_module, source_module):
+        for link in target_module['links']:
+            if not link['from_slot'] in source_module:
+                source_module[link['from_slot']] = list()
+            sub = link #{"name": link['name'], "target_name": link['target_name'], "to_slot": link['to_slot']}
+            source_module[link['from_slot']].append(sub)
+
     # First pass: open meta-modules and take note of links to be replaced
     for module in config:
         if type(module) is not dict:
@@ -43,22 +50,31 @@ def unroll_meta_modules(config):
                 # Does it have a "meta" attribute?
                 if 'meta' in module:
                     if module['meta'] in link_replacement:
-                        link_replacement[module['meta']]['R_OUT'].append(module['name'])
-                        for link in module['links']:
-                            link_replacement[module['meta']]['L_IN'].append(link)
+                        # Add it as an option in the link replacement list
+                        link_replacement[module['name']] = dict()
+                        # Add each defined outbound port to the owning meta module's list
+                        add_links_from(module, link_replacement[module['meta']])
+                        # Find the owning meta module
+                        owner = None
+                        for m in config:
+                            if m['name'] == module['meta']:
+                                owner = m
+                                break
+
+                        # Get the owning meta module's outbound links
+                        add_links_from(owner, link_replacement[module['name']])
                     else:
                         raise Exception(f"Meta IO module {module['name']} claims to belong to meta module {module['meta']}, but that meta module is not defined")
                     
             # Is it a meta-module?
             elif module['module'].split('.')[1] == 'module':
-                # Outbound links are copied to `to_replace_with`
+
+                # Add it to the link replacement list
                 if module['name'] in link_replacement:
                     raise Exception(f"Meta-module {module['name']} is already defined")
                 else:
-                    link_replacement[module['name']] = {'R_OUT': list(), 
-                                                        'L_OUT': module['links'],
-                                                        'R_IN': [module['name']],
-                                                        'L_IN': list()}
+                    link_replacement[module['name']] = dict()
+
                 # Does it specify a config file?
                 config_file = ''
                 if 'config' in module:
@@ -81,6 +97,7 @@ def unroll_meta_modules(config):
                     for temp_module in temp_config_buffer:
                         # Append meta-module name to module name
                         temp_module['name'] = f"{module['name']}_{temp_module['name']}"
+                        utils.config.debug_print(f"temp_module: {temp_module}")
                         # And to those in the links
                         for link in temp_module['links']:
                             link['target_name'] = f"{module['name']}_{link['target_name']}"
@@ -92,15 +109,6 @@ def unroll_meta_modules(config):
             # Not a meta-module, just copy it to the buffer
             config_buffer.append(module)
 
-    if utils.config.verbose:
-        utils.config.debug_print(f"Link replacement: ")
-        for m in link_replacement:
-            utils.config.debug_print(f"\t{m}: ")
-            for k in link_replacement[m]:
-                utils.config.debug_print(f"\t\t{k}: ")
-                for v in link_replacement[m][k]:
-                    utils.config.debug_print(f"\t\t\t{v}")
-
     # Are there any links targets within the replacement list to be replaced?
     # Proper way to do this would be to make a hierarchy of link replacements
     # and work from the root, but this is good enough for now
@@ -110,42 +118,45 @@ def unroll_meta_modules(config):
     while replaced_a_link:
         replaced_a_link = False
 
-        for meta in link_replacement:
-            keywords = ['L_IN', 'L_OUT']
-            for ki in range(len(keywords)):
-                for l in link_replacement[meta][keywords[ki]]:
+        for module in link_replacement:
+            for port in link_replacement[module]:
+                for l in link_replacement[module][port]:
+                    utils.config.debug_print(f"Checking if {l['target_name']} is in replacement list")
                     if l['target_name'] in link_replacement:
-                        for li in link_replacement[l['target_name']][keywords[(ki+1)%len(keywords)]]:
-                            li = li.copy()
-                            li['from_slot'] = l['from_slot']
-                            link_replacement[meta]['L_OUT'].append(li)
-                        link_replacement[meta]['L_OUT'].remove(l)
-                        replaced_a_link = True
+                        utils.config.debug_print(f"\t{l['target_name']} is in replacement list, looking at {l['to_slot']}")
+                        if l['to_slot'] in link_replacement[l['target_name']]:
+                            replacements = link_replacement[l['target_name']][l['to_slot']]
+                            utils.config.debug_print(f"Replacing link {l} with {replacements}")
+                            for r in replacements:
+                                r = r.copy()
+                                r['from_slot'] = l['from_slot']
+                                link_replacement[module][port].append(r)
+                            link_replacement[module][port].remove(l)
+                            replaced_a_link = True
+
+    if utils.config.verbose:
+        utils.config.debug_print(f"Link replacement: ")
+        for m in link_replacement:
+            utils.config.debug_print(f"\t{m}: ")
+            for s in link_replacement[m]:
+                utils.config.debug_print(f"\t\t{s}: ")
+                for l in link_replacement[m][s]:
+                    utils.config.debug_print(f"\t\t\t{l}")
 
     # Second pass: replace links
     for module in config_buffer:
         meta = None if "meta" not in module else module['meta']
 
         for link in module['links']:
-            # Pointing to a meta-module
+            # Is the target in the replacement list?
             if link['target_name'] in link_replacement.keys():
-                utils.config.debug_print(f"Replacing link {link['name']} to {link['target_name']}")
-                for l in link_replacement[link['target_name']]['L_IN']:
-                    # Keep same 'from_slot' from original link
-                    # use replacement 'name', 'target_name', and 'to_slot'
-                    l['name'] = f"{link['name']}_to_{l['target_name']}"
-                    l['from_slot'] = link['from_slot']
-                    module['links'].append(l)
-                    utils.config.debug_print(f"Added link {l['name']} to {l['target_name']}")
-                module['links'].remove(link)
-            # Otherwise, we have to be in a meta-module to do any substitution
-            if meta:
-                if link['target_name'] in link_replacement[meta]['R_OUT']:
-                    utils.config.debug_print(f"Replacing link {link['name']} to {link['target_name']}")
-                    for l in link_replacement[meta]['L_OUT']:
+                # If the target slot in the replacement list?
+                if link['to_slot'] in link_replacement[link['target_name']]:
+                    # Add all the replacement links to the module
+                    for l in link_replacement[link['target_name']][link['to_slot']]:
                         # Keep same 'from_slot' from original link
                         # use replacement 'name', 'target_name', and 'to_slot'
-                        l['name'] = f"{link['name']}_to_{l['target_name']}"
+                        l['name'] = f"{link['name']}_to_{l['name']}"
                         l['from_slot'] = link['from_slot']
                         module['links'].append(l)
                         utils.config.debug_print(f"Added link {l['name']} to {l['target_name']}")
