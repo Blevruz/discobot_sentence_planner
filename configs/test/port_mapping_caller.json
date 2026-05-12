@@ -1,0 +1,59 @@
+[
+	{
+		"name": "A",
+		"module": "input_modules.dummy",
+		"args": {},
+		"links": [
+			{
+				"name": "A_to_C",
+				"from_slot": "default",
+				"target_name": "meta",
+				"to_slot": "C"
+			}
+		]
+	},
+	{
+		"name": "B",
+		"module": "input_modules.dummy",
+		"args": {},
+		"links": [
+			{
+				"name": "B_to_D",
+				"from_slot": "default",
+				"target_name": "meta",
+				"to_slot": "D"
+			}
+		]
+	},
+	{
+		"name": "meta",
+		"module": "meta.module",
+		"config": "configs/test/port_mapping_called.json",
+		"links": [
+			{
+				"name": "G_to_I",
+				"from_slot": "G",
+				"target_name": "I",
+				"to_slot": "default"
+			},
+			{
+				"name": "H_to_J",
+				"from_slot": "H",
+				"target_name": "J",
+				"to_slot": "default"
+			}
+		]
+	},
+	{
+		"name": "I",
+		"module": "output_modules.dummy",
+		"args": {},
+		"links": []
+	},
+	{
+		"name": "J",
+		"module": "output_modules.dummy",
+		"args": {},
+		"links": []
+	}
+]

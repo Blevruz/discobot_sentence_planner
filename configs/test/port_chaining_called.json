@@ -1,0 +1,19 @@
+[
+	{
+        "name": "IO_in",
+        "module": "meta.io",
+        "links": [
+            {
+                "name": "B_to_C",
+                "from_slot": "B",
+                "target_name": "IO_out",
+                "to_slot": "C"
+            }
+        ]
+    },
+    {
+        "name": "IO_out",
+        "module": "meta.io",
+        "links": []
+    }
+]   

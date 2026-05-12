@@ -1,0 +1,51 @@
+[
+	{
+		"name": "IO_in",
+		"module": "meta.io",
+		"links": [
+			{
+				"name": "C_to_E",
+				"from_slot": "C",
+				"target_name": "E",
+				"to_slot": "default"
+			},
+			{
+				"name": "D_to_F",
+				"from_slot": "D",
+				"target_name": "F",
+				"to_slot": "default"
+			}
+		]
+	},
+	{
+		"name": "E",
+		"module": "middle_modules.dummy",
+		"args": {},
+		"links": [
+			{
+				"name": "E_to_G",
+				"from_slot": "default",
+				"target_name": "IO_out",
+				"to_slot": "G"
+			}
+		]
+	},
+	{
+		"name": "F",
+		"module": "middle_modules.dummy",
+		"args": {},
+		"links": [
+			{
+				"name": "F_to_H",
+				"from_slot": "default",
+				"target_name": "IO_out",
+				"to_slot": "H"
+			}
+		]
+	},
+	{
+		"name": "IO_out",
+		"module": "meta.io",
+        "links": []
+	}
+]

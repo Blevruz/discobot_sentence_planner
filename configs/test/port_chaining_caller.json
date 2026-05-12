@@ -1,0 +1,34 @@
+[
+    {
+        "name": "A",
+        "module": "input_modules.dummy",
+        "args": {},
+        "links": [
+            {
+                "name": "A_to_B",
+                "from_slot": "default",
+                "target_name": "meta",
+                "to_slot": "B"
+            }
+        ]
+    },
+    {
+        "name": "meta",
+        "module": "meta.module",
+        "config": "configs/test/port_chaining_called.json",
+        "links": [
+            {
+                "name": "C_to_D",
+                "from_slot": "C",
+                "target_name": "D",
+                "to_slot": "default"
+            }
+        ]
+    },
+    {
+        "name": "D",
+        "module": "output_modules.dummy",
+        "args": {},
+        "links": []
+    }
+]
