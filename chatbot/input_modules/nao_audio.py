@@ -7,7 +7,6 @@ import threading
 import numpy as np
 import time
 
-# SO apparently you can't use ALAudioDevice with qi ????
 
 
 class AudioCallbackHandler(qi.Object):
@@ -43,6 +42,8 @@ class NaoAudioInput(DummyInput):
 
         self.ip = args.get("ip", "169.254.254.31")
         self.port = args.get("port", 9559)
+        self.listen_ip = args.get("listen_ip", "0.0.0.0")
+        self.listen_port = args.get("listen_port", 9558)
 
         self.channels = args.get('channels', 1)
         self.rate = args.get('rate', 16000)
@@ -61,7 +62,7 @@ class NaoAudioInput(DummyInput):
 
         self.callback_handler = AudioCallbackHandler(self.output_queue, self)
 
-        self.session.listen("tcp://0.0.0.0:9558")
+        self.session.listen(f"tcp://{self.listen_ip}:{self.listen_port}")
 
         self.session.registerService(self.subscriber_name, self.callback_handler)
 
