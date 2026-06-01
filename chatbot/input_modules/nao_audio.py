@@ -62,7 +62,14 @@ class NaoAudioInput(DummyInput):
 
         self.callback_handler = AudioCallbackHandler(self.output_queue, self)
 
-        self.session.listen(f"tcp://{self.listen_ip}:{self.listen_port}")
+        while self.listen_port:
+            try:
+                self.session.listen(f"tcp://{self.listen_ip}:{self.listen_port}")
+                break
+            except Exception as e:
+                utils.config.debug_print(f"[{self.name}] Error connecting to NAO at {self.ip}:{self.port}: {e}")
+                time.sleep(1)
+                self.listen_port -= 1
 
         self.session.registerService(self.subscriber_name, self.callback_handler)
 

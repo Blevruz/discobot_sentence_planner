@@ -19,8 +19,8 @@ class NaoTTS(DummyMiddle):
         if len(self._input_queues['parameters']) > 0:
             params = self._input_queues['parameters'].get()
             if params:
-                self.voice = params.get("voice", self.voice)
-                self.session.service("ALTextToSpeech").setVoice(self.voice)
+                #self.voice = params.get("voice", self.voice)
+                #self.session.service("ALTextToSpeech").setVoice(self.voice)
                 self.language = params.get("language", self.language)
                 self.session.service("ALTextToSpeech").setLanguage(self.language)
 
