@@ -1,0 +1,25 @@
+[
+	{
+		"name": "http_input",
+		"module": "input_modules.http",
+		"args": {
+			"port": 9876,
+			"default_response": "Input received!",
+			"path": "http_test"
+		},
+		"links": [
+			{
+				"name": "http_to_console",
+				"from_slot": "default",
+				"target_name": "console",
+				"to_slot": "default"
+            }
+		]
+	},
+	{
+		"name": "console",
+		"module": "output_modules.console",
+		"args": {},
+		"links": []
+	}
+]
