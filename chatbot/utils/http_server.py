@@ -57,6 +57,7 @@ class GenericHandler(http.server.BaseHTTPRequestHandler):
 def get_server(ip, port, modules_get = {}, modules_post = {}):
     """Create a new server or return one if it already exists"""
     ip_port = ip_port_to_string(ip, port)
+    port = int(port)
     if ip_port not in servers:
         servers[ip_port] = {
                 "ip": ip,

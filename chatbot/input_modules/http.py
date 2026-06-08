@@ -4,6 +4,7 @@ from utils.http_server import get_server, start_server, stop_server
 import utils.config
 import sys
 import requests
+import json
 
 class HttpInput(DummyInput):
     """Input from http POST requests"""
@@ -16,6 +17,10 @@ class HttpInput(DummyInput):
         if length == 0:
             handler.send_error(400)
             return
+        if self.convert_output == "json":
+            data = json.loads(data)
+        elif self.convert_output == "string":
+            data = str(data)
         self.output_queue.put(data)
         body = self.default_response
         handler.send_response(200)
@@ -39,6 +44,7 @@ class HttpInput(DummyInput):
 
         self.port = args.get("port", 8080)
         self.path = args.get("path", "in")
+        self.convert_output = args.get("convert_output", "no") # One of "no", "json", "string"
 
         self.default_response = args.get("default_response", "ok")
 
