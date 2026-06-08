@@ -48,7 +48,7 @@ class GenericHandler(http.server.BaseHTTPRequestHandler):
     def do_POST(self):
         module = self.path.split("/")[1]
         length = int(self.headers.get("Content-Length", 0))
-        data = json.loads(self.rfile.read(length))
+        data = self.rfile.read(length)
         if module in self.modules_post:
             return self.modules_post[module](self,data)
         else:
