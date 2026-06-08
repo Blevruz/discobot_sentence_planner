@@ -8,6 +8,12 @@
                 "from_slot": "text",
                 "target_name": "user_string_to_llm_append",
                 "to_slot": "text"
+            },
+            {
+                "name": "system_string_to_llm_append",
+                "from_slot": "operator_command",
+                "target_name": "system_string_to_llm_append",
+                "to_slot": "text"
             }
         ]
     },
@@ -29,6 +35,21 @@
                 "from_slot": "trigger",
                 "target_name": "llm_generate_on_trigger",
                 "to_slot": "trigger"
+            }
+        ]
+    },
+    {
+        "name": "system_string_to_llm_append",
+        "module": "middle_modules.string_to_llm_append",
+        "args": {
+            "role": "system"
+        },
+        "links": [
+            {
+                "name": "append_system_cmd_to_llm",
+                "from_slot": "cmd",
+                "target_name": "llm_service",
+                "to_slot": "cmd"
             }
         ]
     },

@@ -1,0 +1,41 @@
+[
+    {
+        "name": "io",
+        "module": "meta.io",
+        "args": {},
+        "links": []
+    },
+    {
+        "name": "operator_command",
+        "module": "input_modules.http",
+        "args": {
+            "port": "$HTTP_PORT",
+            "convert_output": "string",
+            "path": "operator_command"
+        },
+        "links": [
+            {
+                "name": "operator_command_to_io",
+                "from_slot": "default",
+                "target_name": "io",
+                "to_slot": "operator_command"
+            }
+        ]
+    },
+    {
+        "name": "user_website_input",
+        "module": "input_modules.http",
+        "args": {
+            "port": "$HTTP_PORT",
+            "path": "user_website_input"
+        },
+        "links": [
+            {
+                "name": "user_website_input_to_io",
+                "from_slot": "default",
+                "target_name": "io",
+                "to_slot": "user_website_input"
+            }
+        ]
+    }
+]
