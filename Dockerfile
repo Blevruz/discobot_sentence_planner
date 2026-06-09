@@ -35,11 +35,18 @@ WORKDIR /app
 
 # Copy requirements.txt
 COPY requirements.txt .
+COPY download_models.sh .
 
 # Install dependencies using uv
 RUN uv venv venv -p 3.11 && \
     . venv/bin/activate && \
     uv pip install -r requirements.txt
+
+# Download and cache faster-whisper models
+RUN mkdir -p /root/.cache/faster_whisper && chmod +x download_models.sh && ./download_models.sh
+
+# Env variable for the cache
+ENV HF_HOME=/root/.cache/faster_whisper
 
 # Copy the rest of the project files
 COPY . .
