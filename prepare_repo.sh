@@ -43,6 +43,26 @@ else
     source venv/bin/activate && $PYTHON -m pip install -r requirements.txt
 fi
 
+# English Lapsus preprocessing
+# Download (~1.2GB, run from project root)
+wget -O misc/cc.en.300.vec.gz https://dl.fbaipublicfiles.com/fasttext/vectors-crawl/cc.en.300.vec.gz
+gunzip misc/cc.en.300.vec.gz
+
+# Convert to gensim format (run once, takes ~3 minutes)
+source venv/bin/activate
+python -c "
+from gensim.models import KeyedVectors
+m = KeyedVectors.load_word2vec_format('misc/cc.en.300.vec', binary=False, limit=500000)
+m.save('misc/english_fasttext.kv')
+print('Done')
+"
+
+# Delete the large .vec file after conversion (optional, saves 4.3GB)
+rm misc/cc.en.300.vec
+
+# Download CMU dictionary
+python -c "import nltk; nltk.download('cmudict')"
+
 
 # Gestion des modèles de STT Vosk
 SCRIPT_DIR=$( cd -- "$( dirname -- "${BASH_SOURCE[0]}" )" &> /dev/null && pwd )
