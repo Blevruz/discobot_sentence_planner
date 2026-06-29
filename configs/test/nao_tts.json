@@ -1,0 +1,45 @@
+[
+    {
+        "name": "text_input",
+        "module": "input_modules.keyboard",
+        "args": {},
+        "links": [
+            {
+                "name": "keyboard_to_nao_tts",
+                "from_slot": "default",
+                "target_name": "nao_tts",
+                "to_slot": "input"
+            }
+        ]
+    },
+    {
+        "name": "http_input",
+        "module": "input_modules.http",
+        "args": {
+            "port": 8080,
+            "default_response": "Input received!",
+            "path": "nao_tts"
+        },
+        "links": [
+            {
+                "name": "http_to_nao_tts",
+                "from_slot": "default",
+                "target_name": "nao_tts",
+                "to_slot": "parameters"
+            }
+        ]
+    },
+
+
+
+    {
+        "name": "nao_tts",
+        "module": "middle_modules.nao_tts",
+        "args": {
+            "ip": "$NAO_IP"
+        },
+        "links": []
+    }
+]
+
+
