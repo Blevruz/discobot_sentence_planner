@@ -53,10 +53,10 @@ class NaoTTS(DummyMiddle):
 
         self.session.service("ALTextToSpeech").setLanguage(self.language)
 
-        utils.config.debug_print(f"[self.name] Initialized NAO TTS module {self.name} with ip {self.ip} and port {self.port}")
+        utils.config.debug_print(f"[{self.name}] Initialized NAO TTS module {self.name} with ip {self.ip} and port {self.port}")
 
     def module_stop(self):
-        utils.config.debug_print(f"[self.name] Stopping NAO TTS module {self.name} with ip {self.ip} and port {self.port}")
+        utils.config.debug_print(f"[{self.name}] Stopping NAO TTS module {self.name} with ip {self.ip} and port {self.port}")
         utils.nao.disconnect(self.ip, self.port)
 
 middle_modules_class['nao_tts'] = NaoTTS
