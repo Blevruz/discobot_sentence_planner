@@ -34,8 +34,7 @@ def unroll_meta_modules(config):
         for link in target_module['links']:
             if not link['from_slot'] in source_module:
                 source_module[link['from_slot']] = list()
-            sub = link #{"name": link['name'], "target_name": link['target_name'], "to_slot": link['to_slot']}
-            source_module[link['from_slot']].append(sub)
+            source_module[link['from_slot']].append(dict(link))
 
     # First pass: open meta-modules and take note of links to be replaced
     for module in config:
@@ -145,23 +144,27 @@ def unroll_meta_modules(config):
 
     # Second pass: replace links
     for module in config_buffer:
-        meta = None if "meta" not in module else module['meta']
-
+        new_links = []
         for link in module['links']:
-            # Is the target in the replacement list?
-            if link['target_name'] in link_replacement.keys():
-                # If the target slot in the replacement list?
-                if link['to_slot'] in link_replacement[link['target_name']]:
-                    # Add all the replacement links to the module
-                    for l in link_replacement[link['target_name']][link['to_slot']]:
-                        # Keep same 'from_slot' from original link
-                        # use replacement 'name', 'target_name', and 'to_slot'
+            if link['target_name'] in link_replacement:
+                replacements = link_replacement[link['target_name']].get(link['to_slot'])
+                if replacements:
+                    for l in replacements:
+                        l = dict(l)  # copy before mutating
                         l['name'] = f"{link['name']}_to_{l['name']}"
                         l['from_slot'] = link['from_slot']
-                        module['links'].append(l)
+                        new_links.append(l)
                         utils.config.debug_print(f"Added link {l['name']} to {l['target_name']}")
-                    module['links'].remove(link)
-
+                else:
+                    # Target doesn't expose this particular outbound slot
+                    # -> drop it
+                    utils.config.debug_print(
+                        f"{link['target_name']} has no outbound link on slot "
+                        f"'{link['to_slot']}'; dropping unused link "
+                        f"{link['name']} from {module['name']}")
+            else:
+                new_links.append(link)
+        module['links'] = new_links
     return config_buffer
 
 
