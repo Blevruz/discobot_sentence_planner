@@ -56,13 +56,7 @@ class NaoAudioInput(DummyInput):
         self.callback_handler = None
 
     def _connect(self):
-        retries = 10
-        for i in range(retries):
-            try:
-                self.session = utils.nao.connect(self.ip, self.port)
-                break
-            except Exception as e:
-                utils.config.debug_print(f"[{self.name}] Error connecting to NAO at {self.ip}:{self.port}:{e} (attempt {i}/{retries})")
+        self.session = utils.nao.connect(self.ip, self.port)
 
         self.audio_device = self.session.service("ALAudioDevice")
 
