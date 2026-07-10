@@ -5,7 +5,7 @@
 		"args": {
 			"port": 9876,
 			"default_response": "Input received!",
-			"path": "http_test"
+			"path": "http_in"
 		},
 		"links": [
 			{
@@ -15,6 +15,16 @@
 				"to_slot": "default"
             }
 		]
+	},
+	{
+		"name": "http_output",
+		"module": "output_modules.http",
+		"args": {
+			"port": 9876,
+			"template": "<!DOCTYPE html>\n<html>\n  <body>\n    <form method=\"post\" action=\"/http_in\">\n      <input type=\"text\" name=\"data\" placeholder=\"Enter data\">\n      <button type=\"submit\">Send</button>\n    </form>\n  </body>\n</html>",
+			"path": "http_out"
+		},
+		"links": []
 	},
 	{
 		"name": "console",
