@@ -72,21 +72,58 @@ class QueueWrapper:
         """Check if the queue is full"""
         return self._queue.full()
 
-    def _drain_queue(self):
+    def _join_thread_with_timeout(queue, timeout):
+        """Join a multiprocessing.Queue's internal feeder thread, but don't
+        block forever if it's stuck (e.g. after a killed process left its
+        write lock held)."""
+        done = threading.Event()
+    
+        def _joiner():
+            try:
+                queue.join_thread()
+            except Exception:
+                pass
+            finally:
+                done.set()
+    
+        t = threading.Thread(target=_joiner, daemon=True)
+        t.start()
+        finished = done.wait(timeout)
+        return finished  # False means it timed out / is still hung
+
+
+    def _drain_queue(self, force=False):
+        """Drain the queue. If force=True, we know the writing process was
+        killed and may have left the queue in a bad state, so we skip the
+        clean join and just cancel it."""
         q = self._queue
         try:
             while True:
                 q.get_nowait()
-        except:
+        except Exception:
             pass
-        
-        # Only do the multiprocessing-specific cleanup for mp.Queue
+    
         if isinstance(q, multiprocessing.queues.Queue):
-            try:
-                q.close()
-                q.join_thread()  # Wait for background thread
-            except:
-                pass
+            if force:
+                # Don't try to cleanly flush a queue whose writer was killed;
+                # the feeder thread's lock may be stuck forever.
+                try:
+                    q.cancel_join_thread()
+                    q.close()
+                except Exception:
+                    pass
+            else:
+                try:
+                    q.close()
+                    if not self._join_thread_with_timeout(q, timeout=2):
+                        utils.config.debug_print(
+                            f"Queue {self.name} join_thread() timed out, "
+                            f"cancelling instead")
+                        q.cancel_join_thread()
+                except Exception:
+                    pass
+
+
 
 class QueueSlot:
     """Manages the variable number of queues that can be linked to a module's

@@ -145,7 +145,10 @@ def main():
             break
 
     for m in loaded_modules.values():
-        m.stop_loop()
+        try:
+            m.stop_loop()
+        except Exception as e:
+            utils.config.debug_print(f"Error stopping {m.name}: {e}")
 
     if utils.config.verbose:
         utils.config.debug_print(" Done")

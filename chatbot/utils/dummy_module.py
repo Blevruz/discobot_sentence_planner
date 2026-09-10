@@ -138,7 +138,7 @@ class DummyModule:
         if self._loop_type == 'blocking':
             return
         if self._loop_type == 'thread':
-            self.loop = threading.Thread(target=self._loop)
+            self.loop = threading.Thread(target=self._loop, daemon=True)
         elif self._loop_type == 'process':
             self.stopped = multiprocessing.Event()
             self.loop = multiprocessing.Process(target=self._loop)
@@ -153,6 +153,9 @@ class DummyModule:
         self.stopped.set()
         if not self.stopped.is_set():
             raise ValueError(f"Failed to set stop event for {self.name}")
+
+        had_to_force = False # Track probable dead processes
+
         if self._loop_type == 'thread':
             self.loop.join(timeout=self._loop_timeout)
             if self.loop.is_alive():
@@ -164,33 +167,42 @@ class DummyModule:
                 utils.config.debug_print(f"Process {self.name} did not",\
                             f"stop after {self._loop_timeout} seconds")
                 self.loop.terminate()
-                self.loop.join()
+                self.loop.join(timeout=self._loop_timeout)
+                had_to_force = True
 
+            """
             if self.loop.is_alive():
-                # Nuclear option
+                # Try to force kill a process that won't die
                 utils.config.debug_print(f"Error: Process {self.name} did not terminate, killing...")
                 self.loop.kill()
-                self.loop.join()
+                self.loop.join(timeout=self._loop_timeout)
+                had_to_force = True
+            """
 
-            self.loop.close()
+            if self.loop.is_alive():
+                # Can't seem to kill a process, just log it
+                utils.config.debug_print(f"Error: Process {self.name} still alive after kill!")
+            else:
+                self.loop.close()
 
         self.module_stop()
 
-        self._cleanup_queues()
+        self._cleanup_queues(force=had_to_force)
 
     def is_stopped(self):
         return self.stopped.is_set()
 
-    def _cleanup_queues(self):
+    def _cleanup_queues(self, force=False):
         # Drain all queues to prevent blocking and ensure clean state
+        # force=True means we expect the writing process to be dead
         for slot in self._input_queues.values():
             if isinstance(slot, str):
                 continue
             for q in slot._queues:
-                q._drain_queue()
+                q._drain_queue(force=force)
                 
         for slot in self._output_queues.values():
             if isinstance(slot, str):
                 continue
             for q in slot:
-                q._drain_queue()
+                q._drain_queue(force=force)
