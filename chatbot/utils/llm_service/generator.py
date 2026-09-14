@@ -1,6 +1,7 @@
 # chatbot/utils/llm_service/generator.py
 import requests
 import json
+import codecs
 
 class LLMGenerator:
     def __init__(self, url, api, headers, temperature, max_tokens):
@@ -23,10 +24,11 @@ class LLMGenerator:
         resp = requests.post(self.url + self.api, headers=self.headers, json=payload, stream=True)
         resp.raise_for_status()
 
+        decoder = codecs.getincrementaldecoder("utf-8")()
         buffer = ''
         # using iter_content to avoid splitting unicode
         for chunk in resp.iter_content(chunk_size=None):
-            buffer += chunk.decode('utf-8')
+            buffer += decoder.decode(chunk)
             while '\n' in buffer:
                 raw_line, buffer = buffer.split('\n', 1)
                 line = raw_line.rstrip('\r')
@@ -36,8 +38,8 @@ class LLMGenerator:
                 data = line[6:]
                 if data.strip() == "[DONE]":
                     break
-                chunk = json.loads(data)
-                token = chunk["choices"][0].get("delta", {}).get("content")
+                chunk_json = json.loads(data)
+                token = chunk_json["choices"][0].get("delta", {}).get("content")
                 if token:
                     yield token
 

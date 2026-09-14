@@ -36,13 +36,12 @@ class StringToLLMAppend(DummyModule):
                         del self.pending[resp["id"]]
                     else:
                         raise Exception(f"Module {self.name} has no trigger output queue")
-        #else:
-        #    raise Exception(f"Module {self.name} has no control queue")
 
         # Handle new strings
         if len(self._input_queues['text']) > 0:
             text = self._input_queues['text'].get()
             if text is not None:
+                text = str(text)
                 utils.config.debug_print(f"[{self.name}] New text received: {text}")
                 cmd_id = str(uuid.uuid4())
 
