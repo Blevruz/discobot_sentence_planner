@@ -11,7 +11,7 @@
                 "to_slot": "block"
             },
             {
-                "name": "io_audio_input_to_vosk",
+                "name": "io_audio_input_to_stt",
                 "from_slot": "audio_input",
                 "target_name": "toggle_block",
                 "to_slot": "default"
