@@ -22,10 +22,13 @@ class HttpInput(DummyInput):
         elif self.convert_output == "string":
             data = str(data)
         self.output_queue.put(data)
-        body = self.default_response
+
+        body = self.default_response.encode("utf-8")
         handler.send_response(200)
-        handler.send_header("Content-Length", str(len(data)))
+        handler.send_header("Content-Type", "application/json")
+        handler.send_header("Content-Length", str(len(body)))
         handler.end_headers()
+        handler.wfile.write(body)
 
     def action(self, i):
         """All work done in the module_post function."""
