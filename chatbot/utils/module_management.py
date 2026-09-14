@@ -3,6 +3,7 @@ import os
 import importlib
 import utils.config
 import json
+import re
 
 def get_modules(module_type):
     """Get a list of modules of a given type within the adequate folder"""
@@ -91,15 +92,16 @@ def unroll_meta_modules(config):
                 module_file_pairs[module['name']] = config_file
 
                 # Load file to buffer
-                with open(config_file, 'r') as f:
+                with open(config_file, 'r', encoding='utf-8') as f:
                     temp_config_buffer = json.load(f)
                     for temp_module in temp_config_buffer:
                         # Append meta-module name to module name
                         temp_module['name'] = f"{module['name']}_{temp_module['name']}"
                         utils.config.debug_print(f"temp_module: {temp_module}")
                         # And to those in the links
-                        for link in temp_module['links']:
-                            link['target_name'] = f"{module['name']}_{link['target_name']}"
+                        if 'links' in temp_module.keys():
+                            for link in temp_module['links']:
+                                link['target_name'] = f"{module['name']}_{link['target_name']}"
                         # Set "meta" attribute to meta-module name
                         temp_module['meta'] = module['name']
                         # Append to config to process later
@@ -145,25 +147,26 @@ def unroll_meta_modules(config):
     # Second pass: replace links
     for module in config_buffer:
         new_links = []
-        for link in module['links']:
-            if link['target_name'] in link_replacement:
-                replacements = link_replacement[link['target_name']].get(link['to_slot'])
-                if replacements:
-                    for l in replacements:
-                        l = dict(l)  # copy before mutating
-                        l['name'] = f"{link['name']}_to_{l['name']}"
-                        l['from_slot'] = link['from_slot']
-                        new_links.append(l)
-                        utils.config.debug_print(f"Added link {l['name']} to {l['target_name']}")
+        if 'links' in module.keys():
+            for link in module['links']:
+                if link['target_name'] in link_replacement:
+                    replacements = link_replacement[link['target_name']].get(link['to_slot'])
+                    if replacements:
+                        for l in replacements:
+                            l = dict(l)  # copy before mutating
+                            l['name'] = f"{link['name']}_to_{l['name']}"
+                            l['from_slot'] = link['from_slot']
+                            new_links.append(l)
+                            utils.config.debug_print(f"Added link {l['name']} to {l['target_name']}")
+                    else:
+                        # Target doesn't expose this particular outbound slot
+                        # -> drop it
+                        utils.config.debug_print(
+                            f"{link['target_name']} has no outbound link on slot "
+                            f"'{link['to_slot']}'; dropping unused link "
+                            f"{link['name']} from {module['name']}")
                 else:
-                    # Target doesn't expose this particular outbound slot
-                    # -> drop it
-                    utils.config.debug_print(
-                        f"{link['target_name']} has no outbound link on slot "
-                        f"'{link['to_slot']}'; dropping unused link "
-                        f"{link['name']} from {module['name']}")
-            else:
-                new_links.append(link)
+                    new_links.append(link)
         module['links'] = new_links
     return config_buffer
 
@@ -257,14 +260,15 @@ def load_modules_from_config(config):
     # Second pass: link modules
     for module in loaded_config:
         utils.config.debug_print(f"Linking module {module}")
-        for link in module['links']:
-            if link['target_name'] not in loaded_modules:
-                raise Exception(f"Module {link['target_name']} not loaded")
-            loaded_modules[module['name']].link_to( \
-                    loaded_modules[link['target_name']], \
-                    from_slot=link['from_slot'], \
-                    to_slot=link['to_slot'], \
-                    name=link['name'])
+        if 'links' in module.keys():
+            for link in module['links']:
+                if link['target_name'] not in loaded_modules:
+                    raise Exception(f"Module {link['target_name']} not loaded")
+                loaded_modules[module['name']].link_to( \
+                        loaded_modules[link['target_name']], \
+                        from_slot=link['from_slot'], \
+                        to_slot=link['to_slot'], \
+                        name=link['name'])
     
     return loaded_modules
 
