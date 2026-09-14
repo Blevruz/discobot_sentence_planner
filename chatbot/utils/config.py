@@ -57,6 +57,10 @@ def process_config_arg(arg):
         - If arg value begins with '@', it's a file
        If all else fails, return the argument
     """
+    # Is the argument a dict? Then recurse to process_config_args
+    if isinstance(arg, dict):
+        process_config_args(arg)
+
     while isinstance(arg, str):
         if arg.startswith('$'):
             arg = os.environ[arg[1:]]
