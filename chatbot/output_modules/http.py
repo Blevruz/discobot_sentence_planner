@@ -5,6 +5,7 @@ import json
 import utils.config
 import threading
 import queue
+import re
 
 class HttpOutput(DummyOutput):
     """Serves an HTML page via HTTP. The content can be a static string,
@@ -16,10 +17,19 @@ class HttpOutput(DummyOutput):
         with self._lock:
             body = self.current_html
         handler.send_response(200)
-        handler.send_header("Content-Type", "text/html")
+        handler.send_header("Content-Type", "text/html; charset=utf-8")
         handler.send_header("Content-Length", str(len(body)))
         handler.end_headers()
         handler.wfile.write(body.encode('utf-8'))
+
+    def render_template(self, template):
+        def replace(matched):
+            key = matched.group(1)
+            return str(self.variables.get(key, matched.group(0)))
+        return re.sub(r"\{\{\s*(\w+)\s*\}\}", replace, template)
+
+    
+
 
     def action(self, i):
         """Process incoming messages from the input queue to update the HTML content."""
@@ -30,7 +40,8 @@ class HttpOutput(DummyOutput):
                 variables = json.loads(instr)
                 with self._lock:
                     self.variables.update(variables)
-                    self.current_html = self.template.format(**self.variables)
+                    #self.current_html = self.template.format(**self.variables)
+                    self.current_html = self.render_template(self.template)
             except json.JSONDecodeError:
                 # Use as plain HTML content
                 with self._lock:
@@ -45,9 +56,10 @@ class HttpOutput(DummyOutput):
         # Server configuration
         self.port = args.get("port", 8080)
         self.path = args.get("path", "out")
-        self.template = args.get("template", "<html><body>{content}</body></html>")
+        self.template = args.get("template", "<html><body>{{content}}</body></html>")
         self.variables = args.get("variables", {"content":"EMPTY"})
-        self.current_html = self.template.format(**self.variables)
+        #self.current_html = self.template.format(**self.variables)
+        self.current_html = self.render_template(self.template)
 
         self.service_name = args.get("service_name", "output")
         self.server = get_server("0.0.0.0", self.port, modules_get={self.path: self.handle_get})
