@@ -1,0 +1,273 @@
+<!DOCTYPE html>
+<html>
+<head>
+  <meta charset="UTF-8">
+  <title>Timed Number Series Test</title>
+  <style>
+    body {
+      display: grid;
+      place-items: center;
+      min-height: 100vh;
+    }
+
+    #intro, #test, #results {
+      width: 80%;
+      max-width: 600px;
+      margin: 20px;
+      text-align: center;
+    }
+
+    #responses {
+      width: 100%;
+      max-width: 600px;
+      margin: 20px;
+      text-align: left;
+    }
+
+    .big {
+      text-transform: none;
+      font-weight: 500;
+      font-family: "MutatorSans", sans-serif;
+    }
+  </style>
+</head>
+<body>
+  <div id="intro">
+    <h1>Welcome to the Timed Number Series Test</h1>
+    <p>This test will assess your ability to identify the next element in a number series.</p>
+    <p>You will have <span id="maxTime"></span> to complete each task.</p>
+    <button id="startBtn">Start Test</button>
+  </div>
+
+  <div id="test" style="display: none;">
+    <h2>Task <span id="taskNumber"></span></h2>
+    <p>Identify the next element in the series.  Enter either a number or nothing (if you think there is no answer).</p>
+    <p id="series"></p>
+    <input type="text" id="answer" placeholder="Enter your answer">
+    <button id="submitBtn">Submit Answer</button>
+    <p id="timer"></p>
+  </div>
+
+  <div id="results" style="display: none;">
+    <h2>Test Results</h2>
+    <p>You scored <span id="score"></span> out of <span id="totalTasks"></span> tasks.</p>
+    <p id="brailleRep"></p>
+    <p>Total time spent: <span id="totalTime"></span></p>
+    <h3>Task Responses:</h3>
+    <ul id="responses"></ul>
+    <p>Thank you for participating!  Check out the <a href="https://oeis.org">OEIS</a> for more fun integer sequences.</p>
+    <button id="restartBtn">Restart Test</button>
+  </div>
+
+  <script>
+    // Series data embedded directly in the page, updated thru "series" variable
+    // No peeking! ;)
+    const seriesData = {{series}};
+
+    // Target of the POST request
+    const postAddress = "{{postAddress}}";
+
+
+    function loadSeries() {
+      testSeries = seriesData;
+      startTest();
+    }
+
+    // Variables for tracking test progress and timing
+    const maxTime = 60;
+    const idleTimeThreshold = 5;
+    let currentTask = 0;
+    let totalTime = 0;
+    let score = 0;
+    let testSeries;
+    let idleTimeout;
+    let startTime;
+    let taskStartTime;
+    let responses = [];
+    let timerInterval;
+
+    function getBraillePattern(percentage) {
+      const patterns = [
+        "⡀",
+        "⣀",
+        "⣄",
+        "⣤",
+        "⣦",
+        "⣶",
+        "⣷",
+        "⣿"
+      ];
+      const index = Math.floor((percentage*(patterns.length-1))/100);
+      return patterns[index];
+    }
+
+    function generateBrailleRepresentation(responses, maxTime) {
+      let brailleString = "";
+
+      responses.forEach(response => {
+        if (response.isCorrect) {
+          const percentage = (response.responseTime/1000 / maxTime) * 100;
+          brailleString += getBraillePattern(percentage);
+        } else {
+          brailleString += "X";
+        }
+      });
+      return brailleString;
+    }
+
+    // Function to start the test
+    function startTest() {
+      document.getElementById("intro").style.display = "none";
+      document.getElementById("test").style.display = "block";
+      startTime = new Date();
+      showTask();
+    }
+
+    // Function to show the current task
+    function showTask() {
+      const task = testSeries[currentTask];
+      document.getElementById("taskNumber").textContent = currentTask + 1;
+      document.getElementById("series").textContent = task.series;
+      document.getElementById("answer").value = "";
+        // Post data with new task data
+      postData({
+        questionNumber: currentTask,
+        series: task.series,
+        answers: task.answers.map(answer => ({
+          value: answer.value,
+          explanation: answer.explanation
+        })),
+        answerInstruction: task.answer_instruction
+      }, postAddress);
+      startTimer(task.time);
+    }
+
+    // Function to start the timer for each task
+    function startTimer(timeLimit) {
+      taskStartTime = new Date();
+      const timerElement = document.getElementById("timer");
+      let timeLeft = timeLimit;
+      timerElement.textContent = "Time left: " + timeLeft;
+
+      timerInterval = setInterval(function() {
+        timeLeft--;
+        timerElement.textContent = "Time left: " + timeLeft;
+        if (timeLeft === 0) {
+          clearInterval(timerInterval);
+          submitAnswer();
+        }
+      }, 1000);
+    }
+
+    function postData(data, url) {
+      fetch(url, {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json'
+        },
+        body: JSON.stringify(data)
+      })
+      .then(response => response.json())
+      .catch(error => console.error('Error posting data:', error));
+    }
+
+    // Function to submit the user's answer
+    function submitAnswer() {
+      clearInterval(timerInterval);
+
+      const userAnswer = document.getElementById("answer").value;
+      const task = testSeries[currentTask];
+      const responseTime = new Date() - taskStartTime;
+
+      const isCorrect = task.answers.some(answer => answer.value.toLowerCase().replace(/\s/g, '') === userAnswer.toLowerCase().replace(/\s/g, ''));
+
+      if (isCorrect) {
+        score++;
+      }
+
+      responses.push({
+        task: task.series,
+        answers: task.answers.map(answer => ({
+          value: answer.value,
+          explanation: answer.explanation
+        })),
+        userAnswer: userAnswer,
+        responseTime: responseTime,
+        isCorrect: isCorrect
+      });
+
+        // Post data with current question and answers
+      postData({
+        questionNumber: currentTask,
+        series: task.series,
+        answers: task.answers.map(answer => ({
+          value: answer.value,
+          explanation: answer.explanation
+        })),
+        userAnswer: userAnswer,
+        answerInstruction: task.answer_instruction
+      }, postAddress);
+
+      totalTime += responseTime;
+      currentTask++;
+
+      if (currentTask < testSeries.length) {
+        showTask();
+      } else {
+        showResults();
+      }
+
+    }
+
+    // Function to show the test results
+    function showResults() {
+      document.getElementById("test").style.display = "none";
+      document.getElementById("results").style.display = "block";
+      document.getElementById("score").textContent = score;
+      document.getElementById("totalTasks").textContent = testSeries.length;
+      document.getElementById("totalTime").textContent = (totalTime/1000).toFixed(1) + "s";
+      const brailleRepresentation = generateBrailleRepresentation(responses, maxTime);
+      document.getElementById("brailleRep").textContent = brailleRepresentation;
+      const responsesElement = document.getElementById("responses");
+      responses.forEach(response => {
+        const li = document.createElement("li");
+        let answersHtml = "";
+        response.answers.forEach(answer => {
+          answersHtml += "<ul><strong>" + answer.value + "</strong> - " + answer.explanation + "</ul><br>";
+        });
+        li.innerHTML = response.task + "<br><span class=\"big\">Response time:</span> " + (response.responseTime / 1000).toFixed(1) + "s<br>"
+        li.innerHTML += "<span class=\"big\">Your answer:</span> <q>" + response.userAnswer + "</q>"
+        li.innerHTML += "<br><span class=\"big\">Correct answers:</span><br>" + answersHtml ;
+        responsesElement.appendChild(li);
+      });
+    }
+
+    // Event listeners
+    document.getElementById("startBtn").addEventListener("click", loadSeries);
+    document.getElementById("submitBtn").addEventListener("click", submitAnswer);
+    document.getElementById("answer").addEventListener("keypress", function(event) {
+        clearTimeout(idleTimeout);
+        
+        // Reset idle timer on any keypress
+        idleTimeout = setTimeout(function() {
+            const userInput = document.getElementById("answer").value;
+            const currentSeries = testSeries[currentTask].series;
+            postData({
+                userInput: userInput,
+                series: currentSeries
+            }, postAddress);
+        }, idleTimeThreshold);
+
+        if (event.key === "Enter") {
+            submitAnswer();
+            clearTimeout(idleTimeout); // Clear timer when answer is submitted
+        }
+    });
+    document.getElementById("restartBtn").addEventListener("click", function() {
+      location.reload();
+    });
+
+    document.getElementById("maxTime").textContent = maxTime + "s";
+  </script>
+</body>
+</html>

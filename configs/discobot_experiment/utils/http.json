@@ -23,6 +23,20 @@
         ]
     },
     {
+	    "name": "series_webpage",
+	    "module": "output_modules.http",
+	    "args": {
+		    "port": "$HTTP_PORT",
+		    "path": "series",
+		    "template": "@misc/html/series.html",
+		    "variables": {
+                "series": "@misc/series-1.json",
+                "postAddress": "/user_website_input"
+		    }
+	    }
+
+    },
+    {
         "name": "user_website_input",
         "module": "input_modules.http",
         "args": {
