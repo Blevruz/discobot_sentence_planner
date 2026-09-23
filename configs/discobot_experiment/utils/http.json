@@ -34,7 +34,19 @@
                 "postAddress": "/user_website_input"
 		    }
 	    }
-
+    },
+    {
+	    "name": "poems_webpage",
+	    "module": "output_modules.http",
+	    "args": {
+		    "port": "$HTTP_PORT",
+		    "path": "poems",
+		    "template": "@misc/html/poems.html",
+		    "variables": {
+                "poems": "@misc/poems-1.json",
+                "postAddress": "/user_website_input"
+		    }
+	    }
     },
     {
         "name": "user_website_input",
