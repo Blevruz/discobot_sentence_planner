@@ -1,0 +1,74 @@
+[
+    {
+        "title": "Familiarization",
+        "text": "I see the green _,\nThe sun is _ today,\nThe birds _ in the trees,\nThe flowers look like _,\nI love being in nature.",
+        "blanks": [
+            {
+                "answers": ["forest of giants"],
+                "explanation": "Grandiose imagery to describe a forest."
+            },
+            {
+                "answers": ["golden"],
+                "explanation": "Slightly poetic description of the sun."
+            },
+            {
+                "answers": ["sing"],
+                "explanation": "A common action associated with birds."
+            },
+            {
+                "answers": ["stars"],
+                "explanation": "Somewhat unusual flower imagery."
+            }
+        ],
+        "time": 120,
+        "answer_instruction": "Guide the user toward one of the provided answers."
+    },
+    {
+        "title": "Poem 1: Halloween",
+        "text": "It is Halloween night!\nWhat a splendid night!\nThe moon is _ in the sky,\nA little ghost _ nearby.\nI see a _ at the door,\nAnd hear a _ on the floor.\nThe pumpkins look _ tonight,\nA witch is _ in the night.\nA black cat _ past me,\nA bat is flying, looks like _.\nWe knock on doors and say \"_!\",\nThen we get lots of _.\nWe laugh and scream and run.\nIt is Halloween night!",
+        "blanks": [
+            {
+                "answers": ["a giant orange balloon"],
+                "explanation": "A striking image of the moon."
+            },
+            {
+                "answers": ["jumps"],
+                "explanation": "A playful action associated that a little ghost might do."
+            },
+            {
+                "answers": ["three-eyed pumpkin"],
+                "explanation": "A unique Halloween decoration."
+            },
+            {
+                "answers": ["monster laugh"],
+                "explanation": "A spooky sound that might be heard at Halloween."
+            },
+            {
+                "answers": ["like little kings"],
+                "explanation": "Playing on the association of pumpkins with Halloween."
+            },
+            {
+                "answers": ["riding a pizza"],
+                "explanation": "A funny image of a witch."
+            },
+            {
+                "answers": ["wears a tiny crown"],
+                "explanation": "Keeping with the theme of Halloween royalty."
+            },
+            {
+                "answers": ["a party"],
+                "explanation": "A common activity associated with Halloween."
+            },
+            {
+                "answers": ["Open the magic door"],
+                "explanation": "A playful Halloween greeting."
+            },
+            {
+                "answers": ["candy from another planet"],
+                "explanation": "A whimsical take on Halloween treats."
+            }
+        ],
+        "time": 180,
+        "answer_instruction": "Guide the user toward one of the provided answers."
+    }
+]

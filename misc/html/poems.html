@@ -1,0 +1,385 @@
+<!DOCTYPE html>
+<html>
+    <head>
+        <meta charset="UTF-8">
+        <title>Timed Poem Fill-in-the-Blank Test</title>
+        <style>
+body {
+    display: grid;
+    place-items: center;
+    min-height: 100vh;
+}
+
+    #intro, #test, #results {
+        width: 80%;
+        max-width: 600px;
+        margin: 20px;
+        text-align: center;
+    }
+
+    #responses {
+        width: 100%;
+        max-width: 600px;
+        margin: 20px;
+        text-align: left;
+    }
+
+    .big {
+        text-transform: none;
+        font-weight: 500;
+        font-family: "MutatorSans", sans-serif;
+    }
+
+    #poemDisplay {
+        text-align: center;
+        font-size: 1.1em;
+        line-height: 2;
+        white-space: pre-wrap;
+    }
+
+    .poem-line {
+        margin: 4px 0;
+    }
+
+    .blank-input {
+        width: 90px;
+        text-align: center;
+        margin: 0 4px;
+    }
+
+    .blank-result {
+        display: inline-block;
+        margin: 0 2px;
+        padding: 0 4px;
+    }
+
+    .blank-correct {
+        color: green;
+    }
+
+    .blank-incorrect {
+        color: red;
+    }
+        </style>
+    </head>
+    <body>
+        <div id="intro">
+            <h1>Welcome to the Timed Poem Fill-in-the-Blank Test</h1>
+            <p>This test will assess your ability to guess the missing words in a poem.</p>
+            <p>You will have <span id="maxTime"></span> to complete each task.</p>
+            <button id="startBtn">Start Test</button>
+        </div>
+
+        <div id="test" style="display: none;">
+            <h2>Task <span id="taskNumber"></span></h2>
+            <p>Fill in each blank below with the word you think belongs there.</p>
+            <div id="poemDisplay"></div>
+            <button id="submitBtn">Submit Answer</button>
+            <p id="timer"></p>
+        </div>
+
+        <div id="results" style="display: none;">
+            <h2>Test Results</h2>
+            <p>You scored <span id="score"></span> out of <span id="totalTasks"></span> tasks.</p>
+            <p id="brailleRep"></p>
+            <p>Total time spent: <span id="totalTime"></span></p>
+            <h3>Task Responses:</h3>
+            <ul id="responses"></ul>
+            <p>Thank you for participating!</p>
+            <button id="restartBtn">Restart Test</button>
+        </div>
+
+        <script>
+            // Poem data embedded directly in the page, updated thru "poems" variable.
+            // Each task's "text" uses "_" to mark a blank; blanks[] gives the accepted
+            // answers and explanation for each blank, in the order they appear in "text".
+            // No peeking! ;)
+            const poemData = {{poems}};
+
+            let testSeries;
+            const postAddress = "{{postAddress}}";
+
+            // How long (ms) the user can leave every blank untouched before their
+            // current (unsubmitted) guesses are sent as a snapshot. Configurable.
+            const INACTIVITY_TIMEOUT = 5000;
+            let inactivityTimer = null;
+
+            function loadSeries() {
+                testSeries = poemData;
+                startTest();
+            }
+
+            // Variables for tracking test progress and timing
+            let currentTask = 0;
+            let startTime;
+            let totalTime = 0;
+            let score = 0;
+            let taskStartTime;
+            let responses = [];
+            const maxTime = 60;
+            let timerInterval;
+
+            function getBraillePattern(percentage) {
+                const patterns = [
+                    "⡀",
+                    "⣀",
+                    "⣄",
+                    "⣤",
+                    "⣦",
+                    "⣶",
+                    "⣷",
+                    "⣿"
+                ];
+                const index = Math.floor((percentage*(patterns.length-1))/100);
+                return patterns[index];
+            }
+
+            function generateBrailleRepresentation(responses, maxTime) {
+                let brailleString = "";
+
+                responses.forEach(response => {
+                    if (response.isCorrect) {
+                        const percentage = (response.responseTime/1000 / maxTime) * 100;
+                        brailleString += getBraillePattern(percentage);
+                    } else {
+                        brailleString += "X";
+                    }
+                });
+                return brailleString;
+            }
+
+            // Function to start the test
+            function startTest() {
+                document.getElementById("intro").style.display = "none";
+                document.getElementById("test").style.display = "block";
+                startTime = new Date();
+                showTask();
+            }
+
+            function sendExamples(messages, systemAddress, userAddress, assistantAddress) {
+                const roleToAddress = {
+                    system: systemAddress,
+                    user: userAddress,
+                    assistant: assistantAddress
+                };
+
+                messages.forEach(msg => {
+                    const address = roleToAddress[msg.role];
+                    if (address) {
+                        postData({ role: msg.role, content: msg.content }, address);
+                    }
+                });
+            }
+
+
+
+            // Renders task.text into #poemDisplay, replacing each "_" with its own
+            // text input. Returns nothing; inputs are read later via getCurrentGuesses().
+            function renderPoem(text) {
+                const container = document.getElementById("poemDisplay");
+                container.innerHTML = "";
+                const lines = text.split("\n");
+                let blankIndex = 0;
+                let firstInput = null;
+
+                lines.forEach(line => {
+                    const lineDiv = document.createElement("div");
+                    lineDiv.className = "poem-line";
+                    const parts = line.split("_");
+
+                    parts.forEach((part, i) => {
+                        lineDiv.appendChild(document.createTextNode(part));
+                        if (i < parts.length - 1) {
+                            const input = document.createElement("input");
+                            input.type = "text";
+                            input.className = "blank-input";
+                            input.dataset.blankIndex = blankIndex;
+                            input.addEventListener("input", armInactivityTimer);
+                            input.addEventListener("keypress", function(event) {
+                                if (event.key === "Enter") {
+                                    submitAnswer();
+                                }
+                            });
+                            lineDiv.appendChild(input);
+                            if (!firstInput) firstInput = input;
+                            blankIndex++;
+                        }
+                    });
+
+                    container.appendChild(lineDiv);
+                });
+
+                if (firstInput) firstInput.focus();
+            }
+
+            function getCurrentGuesses() {
+                const inputs = Array.from(document.querySelectorAll("#poemDisplay .blank-input"));
+                inputs.sort((a, b) => Number(a.dataset.blankIndex) - Number(b.dataset.blankIndex));
+                return inputs.map(inp => inp.value);
+            }
+
+            // Function to show the current task
+            function showTask() {
+                const task = testSeries[currentTask];
+                console.log("Showing task:", task);
+                document.getElementById("taskNumber").textContent = currentTask + 1;
+                renderPoem(task.text);
+                startTimer(task.time);
+
+                postData({
+                    type: "question_loaded",
+                    questionNumber: currentTask + 1,
+                    title: task.title,
+                    text: task.text,
+                    answerInstruction: task.answer_instruction
+                }, postAddress);
+
+                armInactivityTimer();
+            }
+
+            // Function to start the timer for each task
+            function startTimer(timeLimit) {
+                taskStartTime = new Date();
+                const timerElement = document.getElementById("timer");
+                let timeLeft = timeLimit;
+                timerElement.textContent = "Time left: " + timeLeft;
+
+                timerInterval = setInterval(function() {
+                    timeLeft--;
+                    timerElement.textContent = "Time left: " + timeLeft;
+                    if (timeLeft === 0) {
+                        clearInterval(timerInterval);
+                        submitAnswer();
+                    }
+                }, 1000);
+            }
+
+            // ---------- Inactivity snapshot handling ----------
+            // Resets on every keystroke in any blank; if the user goes
+            // INACTIVITY_TIMEOUT ms without typing in any of them, their current
+            // (unsubmitted) guesses are sent. Re-arms itself, so a still-idle user
+            // keeps getting pinged every INACTIVITY_TIMEOUT ms until they type or submit.
+            function armInactivityTimer() {
+                clearInactivityTimer();
+                inactivityTimer = setTimeout(function() {
+                    postData({
+                        type: "inactivity_ping",
+                        questionNumber: currentTask + 1,
+                        text: testSeries[currentTask].text,
+                        currentGuesses: getCurrentGuesses()
+                    }, postAddress);
+                    armInactivityTimer();
+                }, INACTIVITY_TIMEOUT);
+            }
+
+            function clearInactivityTimer() {
+                if (inactivityTimer) {
+                    clearTimeout(inactivityTimer);
+                    inactivityTimer = null;
+                }
+            }
+
+            function postData(data, url) {
+                fetch(url, {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json'
+                    },
+                    body: JSON.stringify(data)
+                })
+                    .then(response => response.json())
+                    .catch(error => console.error('Error posting data:', error));
+            }
+
+            // Function to submit the user's answer
+            function submitAnswer() {
+                clearInterval(timerInterval);
+                clearInactivityTimer();
+
+                const task = testSeries[currentTask];
+                const userAnswers = getCurrentGuesses();
+                const responseTime = new Date() - taskStartTime;
+
+                const blankResults = task.blanks.map((blank, idx) => {
+                    const guess = userAnswers[idx] || "";
+                    const isCorrect = blank.answers.some(a => a.toLowerCase().replace(/\s/g, '') === guess.toLowerCase().replace(/\s/g, ''));
+                    return {
+                        guess: guess,
+                        isCorrect: isCorrect,
+                        answers: blank.answers,
+                        explanation: blank.explanation
+                    };
+                });
+
+                const allCorrect = blankResults.every(r => r.isCorrect);
+                if (allCorrect) {
+                    score++;
+                }
+
+                responses.push({
+                    title: task.title,
+                    text: task.text,
+                    blankResults: blankResults,
+                    responseTime: responseTime,
+                    isCorrect: allCorrect
+                });
+
+                totalTime += responseTime;
+                currentTask++;
+
+                if (currentTask < testSeries.length) {
+                    showTask();
+                } else {
+                    showResults();
+                }
+
+                postData({
+                    type: "answer_submitted",
+                    questionNumber: currentTask,
+                    title: task.title,
+                    text: task.text,
+                    blanks: task.blanks.map(blank => ({
+                        answers: blank.answers,
+                        explanation: blank.explanation
+                    })),
+                    userAnswers: userAnswers,
+                    answerInstruction: task.answer_instruction
+                }, postAddress);
+            }
+
+            // Function to show the test results
+            function showResults() {
+                document.getElementById("test").style.display = "none";
+                document.getElementById("results").style.display = "block";
+                document.getElementById("score").textContent = score;
+                document.getElementById("totalTasks").textContent = testSeries.length;
+                document.getElementById("totalTime").textContent = (totalTime/1000).toFixed(1) + "s";
+                const brailleRepresentation = generateBrailleRepresentation(responses, maxTime);
+                document.getElementById("brailleRep").textContent = brailleRepresentation;
+                const responsesElement = document.getElementById("responses");
+                responses.forEach(response => {
+                    const li = document.createElement("li");
+                    let blanksHtml = "";
+                    response.blankResults.forEach((b, idx) => {
+                        const cls = b.isCorrect ? "blank-correct" : "blank-incorrect";
+                        blanksHtml += "<li>Blank " + (idx + 1) + ": <span class=\"" + cls + "\">\"" + b.guess + "\"</span>"
+                            + " &mdash; accepted: " + b.answers.join(", ") + "<br>" + b.explanation + "</li>";
+                    });
+                    li.innerHTML = "<strong>" + response.title + "</strong><br>"
+                        + "<span class=\"big\">Response time:</span> " + (response.responseTime / 1000).toFixed(1) + "s<br>"
+                        + "<span class=\"big\">Blanks:</span><ul>" + blanksHtml + "</ul>";
+                    responsesElement.appendChild(li);
+                });
+            }
+
+            // Event listeners
+            document.getElementById("startBtn").addEventListener("click", loadSeries);
+            document.getElementById("submitBtn").addEventListener("click", submitAnswer);
+            document.getElementById("restartBtn").addEventListener("click", function() {
+                location.reload();
+            });
+
+            document.getElementById("maxTime").textContent = maxTime + "s";
+        </script>
+    </body>
+</html>

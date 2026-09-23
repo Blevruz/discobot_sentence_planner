@@ -1,0 +1,114 @@
+[
+	{
+		"title": "A Classic Rhyme",
+		"text": "_ are red,\n_ are blue,\n_ is _,\nAnd so are you.",
+		"blanks": [
+			{
+				"answers": ["roses"],
+				"explanation": "The classic opening word of this well-known rhyme — a red flower."
+			},
+			{
+				"answers": ["violets"],
+				"explanation": "A blue-purple flower traditionally paired with roses in this rhyme."
+			},
+			{
+				"answers": ["sugar"],
+				"explanation": "Something sweet, often used as an affectionate comparison."
+			},
+			{
+				"answers": ["sweet"],
+				"explanation": "Describes both sugar and the person the rhyme is addressed to."
+			}
+		],
+		"time": 90,
+		"answer_instruction": "Guide the user toward one of the correct answers."
+	},
+	{
+		"title": "Seasons",
+		"text": "In _ the flowers start to bloom,\nIn _ the sun drives off the gloom,\nIn _ the leaves turn gold and fall,\nIn _ the snow falls over all.",
+		"blanks": [
+			{
+				"answers": ["spring"],
+				"explanation": "The season when flowers bloom after winter."
+			},
+			{
+				"answers": ["summer"],
+				"explanation": "The warmest, sunniest season of the year."
+			},
+			{
+				"answers": ["autumn", "fall"],
+				"explanation": "The season when leaves change color and drop."
+			},
+			{
+				"answers": ["winter"],
+				"explanation": "The coldest season, associated with snow."
+			}
+		],
+		"time": 90,
+		"answer_instruction": "Guide the user toward one of the correct answers."
+	},
+	{
+		"title": "Bedtime",
+		"text": "The _ is high, the day is done,\nGoodnight to the setting _,\nClose your eyes and rest your head,\nTomorrow waits, so off to _.",
+		"blanks": [
+			{
+				"answers": ["moon"],
+				"explanation": "What rises high in the sky once the day is done."
+			},
+			{
+				"answers": ["sun"],
+				"explanation": "What sets at the end of the day."
+			},
+			{
+				"answers": ["bed"],
+				"explanation": "Where you go to rest for the night."
+			}
+		],
+		"time": 60,
+		"answer_instruction": "Guide the user toward one of the correct answers."
+	},
+	{
+		"title": "Weather",
+		"text": "When _ falls the ground turns white,\nWhen _ shines the world feels bright,\nWhen _ blows the trees all sway,\nWhen _ pours we stay inside to play.",
+		"blanks": [
+			{
+				"answers": ["snow"],
+				"explanation": "Falls white and covers the ground in cold weather."
+			},
+			{
+				"answers": ["sun"],
+				"explanation": "Shines and brightens the world."
+			},
+			{
+				"answers": ["wind"],
+				"explanation": "Blows and sways the trees."
+			},
+			{
+				"answers": ["rain"],
+				"explanation": "Pours from the sky and sends people indoors."
+			}
+		],
+		"time": 90,
+		"answer_instruction": "Guide the user toward one of the correct answers."
+	},
+	{
+		"title": "The Garden",
+		"text": "A _ that grows from a tiny seed,\nNeeds sun and _ to fill its need,\nWith gentle care it starts to _,\nAnd soon a garden comes alive.",
+		"blanks": [
+			{
+				"answers": ["flower", "plant"],
+				"explanation": "What grows in a garden, starting from a small seed."
+			},
+			{
+				"answers": ["water"],
+				"explanation": "Along with sunlight, this is essential for growth."
+			},
+			{
+				"answers": ["grow"],
+				"explanation": "What a well-cared-for seedling does over time."
+			}
+		],
+		"time": 60,
+		"answer_instruction": "Guide the user toward one of the correct answers."
+	}
+]
