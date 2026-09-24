@@ -99,9 +99,11 @@ body {
             let testSeries;
             const postAddress = "{{postAddress}}";
 
-            // How long (ms) the user can leave every blank untouched before their
-            // current (unsubmitted) guesses are sent as a snapshot. Configurable.
-            const INACTIVITY_TIMEOUT = 5000;
+            // INACTIVITY TIMEOUT CONFIGURATION
+            // Change this value to adjust how long before robot prompts inactive users
+            // Value is in seconds (e.g., 20 = 20 seconds)
+            const INACTIVITY_TIMEOUT_SECONDS = 30;
+            const INACTIVITY_TIMEOUT = INACTIVITY_TIMEOUT_SECONDS * 1000; // Convert to milliseconds
             let inactivityTimer = null;
 
             function loadSeries() {
@@ -262,12 +264,15 @@ body {
             function armInactivityTimer() {
                 clearInactivityTimer();
                 inactivityTimer = setTimeout(function() {
+                    console.log("User inactive - sending inactivity message");
                     postData({
-                        type: "inactivity_ping",
+                        inactivityTrigger: true,
+                        message: "User has been inactive. Please provide succinct engagement with the task and their input.",
                         questionNumber: currentTask + 1,
                         text: testSeries[currentTask].text,
                         currentGuesses: getCurrentGuesses()
                     }, postAddress);
+                    // Re-arm timer for continuous monitoring
                     armInactivityTimer();
                 }, INACTIVITY_TIMEOUT);
             }

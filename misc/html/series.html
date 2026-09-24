@@ -67,6 +67,11 @@
     // Target of the POST request
     const postAddress = "{{postAddress}}";
 
+    // INACTIVITY TIMEOUT CONFIGURATION
+    // Change this value to adjust how long before robot prompts inactive users
+    // Value is in seconds (e.g., 20 = 20 seconds)
+    const INACTIVITY_TIMEOUT_SECONDS = 30;
+
 
     function loadSeries() {
       testSeries = seriesData;
@@ -81,6 +86,7 @@
     let score = 0;
     let testSeries;
     let idleTimeout;
+    let inactivityTimer;
     let startTime;
     let taskStartTime;
     let responses = [];
@@ -139,6 +145,7 @@
         })),
         answerInstruction: task.answer_instruction
       }, postAddress);
+      resetInactivityTimer();
       startTimer(task.time);
     }
 
@@ -171,9 +178,27 @@
       .catch(error => console.error('Error posting data:', error));
     }
 
+    function sendInactivityMessage() {
+      console.log("User inactive - sending periodic message");
+      postData({ 
+        inactivityTrigger: true,
+        message: "User has been inactive. Please provide succinct engagement with the task and their input.",
+        currentTask: currentTask,
+        series: testSeries ? testSeries[currentTask].series : null
+      }, postAddress);
+    }
+
+    function resetInactivityTimer() {
+      clearTimeout(inactivityTimer);
+      
+      const timeoutSeconds = INACTIVITY_TIMEOUT_SECONDS;
+      inactivityTimer = setTimeout(sendInactivityMessage, timeoutSeconds * 1000);
+    }
+
     // Function to submit the user's answer
     function submitAnswer() {
       clearInterval(timerInterval);
+      clearTimeout(inactivityTimer);
 
       const userAnswer = document.getElementById("answer").value;
       const task = testSeries[currentTask];
@@ -247,6 +272,7 @@
     document.getElementById("submitBtn").addEventListener("click", submitAnswer);
     document.getElementById("answer").addEventListener("keypress", function(event) {
         clearTimeout(idleTimeout);
+        resetInactivityTimer();
         
         // Reset idle timer on any keypress
         idleTimeout = setTimeout(function() {
@@ -256,13 +282,14 @@
                 userInput: userInput,
                 series: currentSeries
             }, postAddress);
-        }, idleTimeThreshold);
+        }, idleTimeThreshold * 1000);
 
         if (event.key === "Enter") {
             submitAnswer();
             clearTimeout(idleTimeout); // Clear timer when answer is submitted
         }
     });
+    document.getElementById("answer").addEventListener("input", resetInactivityTimer);
     document.getElementById("restartBtn").addEventListener("click", function() {
       location.reload();
     });
