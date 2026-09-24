@@ -12,7 +12,44 @@
             {
                 "name": "system_string_to_llm_append",
                 "from_slot": "operator_command",
+                "target_name": "woz_router",
+                "to_slot": "input"
+            }
+        ]
+    },
+    {
+        "name": "woz_router",
+        "module": "middle_modules.woz_handler",
+        "args": {},
+        "links": [
+            {
+                "name": "woz_system_to_llm",
+                "from_slot": "system_cmd",
+                "target_name": "llm_service",
+                "to_slot": "cmd"
+            },
+            {
+                "name": "woz_assistant_to_llm",
+                "from_slot": "assistant_cmd",
+                "target_name": "llm_service",
+                "to_slot": "cmd"
+            },
+            {
+                "name": "woz_speech_to_output",
+                "from_slot": "speech_text",
+                "target_name": "io",
+                "to_slot": "generated_text"
+            },
+            {
+                "name": "woz_passthrough_to_system_append",
+                "from_slot": "passthrough_text",
                 "target_name": "system_string_to_llm_append",
+                "to_slot": "text"
+            },
+            {
+                "name": "woz_user_text_to_user_append",
+                "from_slot": "user_text",
+                "target_name": "user_string_to_llm_append",
                 "to_slot": "text"
             }
         ]
