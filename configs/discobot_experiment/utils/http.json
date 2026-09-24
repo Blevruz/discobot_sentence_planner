@@ -47,6 +47,20 @@
                 "postAddress": "/user_website_input"
 		    }
 	    }
+
+    },
+    {
+	    "name": "woz_webpage",
+	    "module": "output_modules.http",
+	    "args": {
+		    "port": "$HTTP_PORT",
+		    "path": "woz",
+		    "template": "@misc/html/woz.html",
+		    "variables": {
+                "postAddress": "/woz_input"
+		    }
+	    }
+
     },
     {
         "name": "user_website_input",
@@ -61,6 +75,23 @@
                 "from_slot": "default",
                 "target_name": "io",
                 "to_slot": "user_website_input"
+            }
+        ]
+    },
+    {
+        "name": "woz_input",
+        "module": "input_modules.http",
+        "args": {
+            "port": "$HTTP_PORT",
+            "path": "woz_input",
+            "convert_output": "json"
+        },
+        "links": [
+            {
+                "name": "woz_input_to_io",
+                "from_slot": "default",
+                "target_name": "io",
+                "to_slot": "operator_command"
             }
         ]
     }
