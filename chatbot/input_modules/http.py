@@ -23,10 +23,18 @@ class HttpInput(DummyInput):
             data = str(data)
         self.output_queue.put(data)
 
-        body = self.default_response.encode("utf-8")
+        # Convert default_response to JSON string if it's a dict
+        if isinstance(self.default_response, dict):
+            body = json.dumps(self.default_response).encode("utf-8")
+        else:
+            body = str(self.default_response).encode("utf-8")
+        
         handler.send_response(200)
         handler.send_header("Content-Type", "application/json")
         handler.send_header("Content-Length", str(len(body)))
+        handler.send_header("Access-Control-Allow-Origin", "*")
+        handler.send_header("Access-Control-Allow-Methods", "POST, OPTIONS")
+        handler.send_header("Access-Control-Allow-Headers", "Content-Type")
         handler.end_headers()
         handler.wfile.write(body)
 
@@ -49,7 +57,7 @@ class HttpInput(DummyInput):
         self.path = args.get("path", "in")
         self.convert_output = args.get("convert_output", "no") # One of "no", "json", "string"
 
-        self.default_response = args.get("default_response", "ok")
+        self.default_response = args.get("default_response", {"status": "ok"})
 
         self.service_name = args.get("service_name", "input")
         self.server = get_server("0.0.0.0", self.port, modules_post = {self.path: self.module_post})
