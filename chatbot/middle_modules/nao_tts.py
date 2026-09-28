@@ -14,6 +14,21 @@ class NaoTTS(DummyMiddle):
             1 if currently speaking, 0 otherwise
     """
 
+    def update_params(self, params):
+        for key, value in params.items(): 
+            utils.config.debug_print(f"[{self.name}] Setting parameter {key} to {value}")
+            if key == "voice":
+                self.voice = value
+                self.session.service("ALTextToSpeech").setVoice(self.voice)
+            elif key == "language":
+                self.language = value
+                self.session.service("ALTextToSpeech").setLanguage(self.language)
+            elif key == "volume":
+                self.volume = value
+                self.session.service("ALTextToSpeech").setVolume(self.volume)
+            else:
+                self.session.service("ALTextToSpeech").setParameter(key, value)
+
     def action(self, i):
 
         if len(self._input_queues['parameters']) > 0:
@@ -21,8 +36,7 @@ class NaoTTS(DummyMiddle):
             if params:
                 #self.voice = params.get("voice", self.voice)
                 #self.session.service("ALTextToSpeech").setVoice(self.voice)
-                self.language = params.get("language", self.language)
-                self.session.service("ALTextToSpeech").setLanguage(self.language)
+                self.update_params(params)
 
         speech = self.input_queue.get()
         if speech:
@@ -51,7 +65,13 @@ class NaoTTS(DummyMiddle):
     def module_start(self):
         self.session = utils.nao.connect(self.ip, self.port)
 
-        self.session.service("ALTextToSpeech").setLanguage(self.language)
+        params = {
+            "language": self.language,
+            "volume": 1.0,
+            "speed": 125,
+            }
+        self.update_params(params)
+
 
         utils.config.debug_print(f"[{self.name}] Initialized NAO TTS module {self.name} with ip {self.ip} and port {self.port}")
 
