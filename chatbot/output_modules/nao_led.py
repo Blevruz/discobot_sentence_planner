@@ -37,29 +37,27 @@ class NaoLED(DummyOutput):
         g = self.input_queue.get()
         if g:
             if self.leds_on:
-                self.led.off(self.leds)
+                for l in self.leds:
+                    self.led.off(l)
+                self.leds_on = False
             else:
-                self.led.on(self.leds)
+                for l in self.leds:
+                    self.led.on(l)
+                self.leds_on = True
 
         g = self.input_queues['color'].get()
         if g:
             if type(g) is str:
                 if g in colors:
-                    self.led.fadeRGB(self.leds, colors[g], 0.1)
+                    for l in self.leds:
+                        self.led.fadeRGB(l, colors[g], 0.1)
                 else:
                     utils.config.debug_print(f"[{self.name}] Invalid color {g}")
             elif type(g) is int:
-                self.led.fadeRGB(self.leds, g, 0.1)
+                for l in self.leds:
+                    self.led.fadeRGB(l, g, 0.1)
             else:
                 utils.config.debug_print(f"[{self.name}] Invalid color {g}")
-
-
-
-
-
-
-
-
 
     def __init__(self, name = "nao_led", **args):
         super().__init__(name, **args)
@@ -76,10 +74,11 @@ class NaoLED(DummyOutput):
         self.led = None
         self.leds = args.get("leds", ["FaceLeds", "BodyLeds"])
         self.leds_on = args.get("leds_on", True)
+
         
     def module_start(self):
         self.session = utils.nao.connect(self.ip, self.port)
         self.led = self.session.service("ALLeds")
-        utils.config.debug_print(f"[self.name] Initialized NAO LED module {self.name} with ip {self.ip} and port {self.port}")
+        utils.config.debug_print(f"[{self.name}] Initializing NAO LED module {self.name} with ip {self.ip} and port {self.port}, target LEDs {self.leds}")
 
 output_modules_class['nao_led'] = NaoLED
