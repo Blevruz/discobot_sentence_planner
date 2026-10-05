@@ -88,6 +88,8 @@ class WebRTCVAD(DummyMiddle):
                         for f, _ in self._ring_buffer:
                             self._voiced_frames.append(f)
                         self._ring_buffer.clear()
+                        if len(self._output_queues['speech_start']) > 0:
+                            self._output_queues['speech_start'].put(True)
                         utils.config.debug_print(
                                 f"[{self.name}] Speech onset detected"
                             )
@@ -104,6 +106,8 @@ class WebRTCVAD(DummyMiddle):
                             self._flush_utterance(self._voiced_frames)
                             self._voiced_frames = []
                             self._ring_buffer.clear()
+                            if len(self._output_queues['speech_end']) > 0:
+                                self._output_queues['speech_end'].put(True)
                             utils.config.debug_print(
                                     f"[{self.name}] Speech ended"
                                 )
@@ -145,6 +149,13 @@ class WebRTCVAD(DummyMiddle):
 
         self._output_queues['audio'] = QueueSlot(self, 'output', datatype='audio')
         self._output_queues['default'] = self._output_queues['audio']
+        
+        # Speech start/end detection
+        self.speech_duration = 0
+        self.silence_duration = 0
+        self._output_queues['speech_start'] = QueueSlot(self, 'output', datatype='any')
+        self._output_queues['speech_end'] = QueueSlot(self, 'output', datatype='any')
+
 
         self.vad = webrtcvad.Vad(self.aggressiveness)
 
