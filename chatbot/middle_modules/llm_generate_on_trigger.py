@@ -1,6 +1,8 @@
 # middle_modules/llm_generate_on_trigger.py
 import uuid
 from utils.dummy_module import DummyModule
+# TODO make this a config thing
+from middle_modules.token_accumulator import GENERATION_DONE
 from utils.queues import QueueSlot
 import utils.config
 
@@ -56,6 +58,11 @@ class LLMGenerateOnTrigger(DummyModule):
                     self.active = False
                     self.buffer = evt["data"]["text"]
                     utils.config.debug_print(f"[{self.name}] Generation done: {self.buffer}")
+                    # Explicitly tell the token accumulator that generation
+                    # is complete. None cannot be used here because QueueSlot.get()
+                    # also returns None when the queue is temporarily empty.
+                    if len(self._output_queues['stream']) > 0:
+                        self._output_queues['stream'].put(GENERATION_DONE)
                     if len(self._output_queues['text']) > 0:
                         self._output_queues['text'].put(self.buffer)
                 utils.config.debug_print(f"[{self.name}] Finished processing evt {evt}")
