@@ -40,7 +40,10 @@ def unroll_meta_modules(config):
     # First pass: open meta-modules and take note of links to be replaced
     for module in config:
         if type(module) is not dict:
-            raise Exception(f"Module {module['name']} is not a dictionary")
+            # Attempt to process the module as arguments if it isn't a dictionary
+            oldmod = module
+            module = utils.config.process_config_arg(module)
+            utils.config.debug_print(f"Module {oldmod} is not a dictionary, attempting to process as arguments yielded {module}")
 
         # Is it any sort of meta-module?
         if module['module'].split('.')[0] == 'meta':
@@ -194,6 +197,7 @@ def load_modules_from_config(config):
     # First pass: load every module
     for module in config:
         # If the module is a string, we want to process it same as config args
+        utils.config.debug_print(f"Processing module {module} of type {type(module)}...")
         if type(module) is str:
             utils.config.debug_print(f"Processing string \"{module}\"...")
             config.append(utils.config.process_config_arg(module))
@@ -201,7 +205,7 @@ def load_modules_from_config(config):
             continue
 
         # If the module is a list, move all its content to the main list
-        if type(module) is list:
+        elif type(module) is list:
             utils.config.debug_print(f"Popping list...")
             for m in module:
                 utils.config.debug_print(f"Appending {m} to config")
@@ -209,8 +213,8 @@ def load_modules_from_config(config):
             continue
 
         # Otherwise, the module should be a dictionary
-        if type(module) is not dict:
-            raise Exception(f"Module {module['name']} is not a dictionary")
+        elif type(module) is not dict:
+            raise Exception(f"Module {module} is not a dictionary")
 
         mod_split = module['module'].split('.')
         mod_lib = module['module']

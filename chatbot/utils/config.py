@@ -48,8 +48,12 @@ def load_config(filename):
 
 def process_config_args(args : dict):
     """Process arguments from a config file"""
-    for key, value in args.items():
-        args[key] = process_config_arg(value)
+    if isinstance(args, dict):
+        for key, value in args.items():
+            args[key] = process_config_arg(value)
+    if isinstance(args, list):
+        for i, value in enumerate(args):
+            args[i] = process_config_arg(value)
 
 def process_config_arg(arg):
     """Process an argument from a config file
@@ -57,8 +61,8 @@ def process_config_arg(arg):
         - If arg value begins with '@', it's a file
        If all else fails, return the argument
     """
-    # Is the argument a dict? Then recurse to process_config_args
-    if isinstance(arg, dict):
+    # Is the argument a dict or list? Then recurse to process_config_args
+    if isinstance(arg, dict) or isinstance(arg, list):
         process_config_args(arg)
 
     while isinstance(arg, str):
