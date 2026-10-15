@@ -13,7 +13,7 @@ class LLMGenerateOnTrigger(DummyModule):
 
     def __init__(self, name="llm_generate_on_trigger", **args):
         super().__init__(name, **args)
-        self._loop_type = 'process'
+        self._loop_type = 'thread'
         self.active = False
 
         self._input_queues['trigger'] = QueueSlot(self, 'input', datatype='dict')

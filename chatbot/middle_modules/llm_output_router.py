@@ -9,7 +9,7 @@ middle_modules_class = {}
 class LLMOutputRouter(DummyModule):
     def __init__(self, name="llm_output_router", **args):
         super().__init__(name, **args)
-        self._loop_type = 'process'
+        self._loop_type = 'thread'
 
         self._input_queues['input'] = QueueSlot(self, 'input', datatype='dict')
 

@@ -9,7 +9,7 @@ middle_modules_class = {}
 class StringToLLMAppend(DummyModule):
     def __init__(self, name="string_to_llm_append", **args):
         super().__init__(name, **args)
-        self._loop_type = 'process'
+        self._loop_type = 'thread'
         self.role = args.get("role", "user")
         self.pending = {}
 
