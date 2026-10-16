@@ -54,13 +54,13 @@
                 "name": "webrtc_vad_speech_start",
                 "from_slot": "speech_start",
                 "target_name": "io",
-                "to_slot": "toggle_stt"
+                "to_slot": "speech_toggle"
             },
             {
                 "name": "webrtc_vad_speech_end",
                 "from_slot": "speech_end",
                 "target_name": "io",
-                "to_slot": "toggle_stt"
+                "to_slot": "speech_toggle"
             }
         ]
     },
