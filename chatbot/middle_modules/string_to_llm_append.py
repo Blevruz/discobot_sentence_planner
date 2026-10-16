@@ -26,6 +26,8 @@ class StringToLLMAppend(DummyModule):
             if resp is not None:
                 utils.config.debug_print(f"[{self.name}] Got control response: {resp}")
                 if resp.get("type") == "response" and resp["id"] in self.pending:
+                    # Optional trigger output used notably to kickstart
+                    # generation in append modules.
                     if len(self._output_queues['trigger']) > 0:
                         utils.config.debug_print(f"[{self.name}] Append confirmed, triggering generation.")
                         self._output_queues['trigger'].put({
@@ -33,9 +35,9 @@ class StringToLLMAppend(DummyModule):
                             "reason": "append_done",
                             "cmd_id": resp["id"]
                         })
-                        del self.pending[resp["id"]]
                     else:
-                        raise Exception(f"Module {self.name} has no trigger output queue")
+                        utils.config.debug_print(f"[{self.name}] Append confirmed (no trigger output).")
+                    del self.pending[resp["id"]]
 
         # Handle new strings
         if len(self._input_queues['text']) > 0:
