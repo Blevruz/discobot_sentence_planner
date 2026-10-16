@@ -20,7 +20,7 @@ class HttpInput(DummyInput):
         if self.convert_output == "json":
             data = json.loads(data)
         elif self.convert_output == "string":
-            data = str(data)
+            data = data.decode("utf-8", "replace") if isinstance(data, bytes) else str(data)
         self.output_queue.put(data)
 
         # Convert default_response to JSON string if it's a dict
