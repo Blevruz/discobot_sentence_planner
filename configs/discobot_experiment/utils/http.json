@@ -57,7 +57,8 @@
 		    "path": "woz",
 		    "template": "@misc/html/woz.html",
 		    "variables": {
-                "postAddress": "/woz_input"
+                "postAddress": "/context_query",
+                "memoryAddress": "/context_result"
 		    }
 	    }
 

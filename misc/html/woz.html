@@ -51,6 +51,81 @@
       border-left: 4px solid #4CAF50;
     }
 
+    .memory {
+      grid-column: 1 / -1;
+      border-left: 4px solid #9C27B0;
+    }
+
+    .memory-toolbar {
+      display: flex;
+      gap: 10px;
+      align-items: center;
+      margin-bottom: 15px;
+      flex-wrap: wrap;
+    }
+
+    .memory-table {
+      width: 100%;
+      border-collapse: collapse;
+      table-layout: fixed;
+    }
+
+    .memory-table th,
+    .memory-table td {
+      border: 1px solid #ddd;
+      padding: 8px;
+      vertical-align: top;
+      text-align: left;
+    }
+
+    .memory-table th {
+      background: #f7f7f7;
+    }
+
+    .memory-table textarea,
+    .memory-table input {
+      min-height: 0;
+      width: 100%;
+      box-sizing: border-box;
+      padding: 7px;
+      border: 1px solid #ddd;
+      border-radius: 4px;
+      font-family: Arial, sans-serif;
+    }
+
+    .memory-table textarea {
+      min-height: 70px;
+      resize: vertical;
+    }
+
+    .memory-actions {
+      white-space: nowrap;
+    }
+
+    .memory-actions button {
+      margin: 0 4px 4px 0;
+      padding: 7px 10px;
+      font-size: 13px;
+    }
+
+    .memory-add {
+      display: grid;
+      grid-template-columns: 120px 1fr auto;
+      gap: 10px;
+      align-items: start;
+      margin-top: 15px;
+    }
+
+    .memory-add textarea,
+    .memory-add input {
+      min-height: 0;
+    }
+
+    .memory-version {
+      color: #666;
+      font-size: 13px;
+    }
+
     textarea {
       width: 100%;
       min-height: 150px;
@@ -133,77 +208,181 @@
       .control-panel {
         grid-template-columns: 1fr;
       }
+
+      .memory {
+        grid-column: auto;
+      }
+
+      .memory-add {
+        grid-template-columns: 1fr;
+      }
     }
   </style>
 </head>
+
 <body>
   <div class="container">
     <h1>🎭 Wizard of Oz Interface</h1>
-    <p style="text-align: center; color: #666;">Control DISCOBOT behind the scenes</p>
+    <p style="text-align: center; color: #666;">
+      Control DISCOBOT behind the scenes
+    </p>
 
     <div class="control-panel">
+
       <!-- System Prompt Box -->
       <div class="control-box system-prompt">
         <h2>System Prompt</h2>
+
         <p class="help-text">
-          Send a system message to modify DISCOBOT's context. This will be added to the conversation 
-          as a system-level instruction that influences the robot's behavior.
+          Send a system message to modify DISCOBOT's context. This will be
+          added to the conversation as a system-level instruction that
+          influences the robot's behavior.
         </p>
-        <textarea id="systemPromptInput" placeholder="Enter system prompt here...
-Example: You should now focus on asking about their favorite hobbies."></textarea>
-        <button id="sendSystemBtn">Send System Prompt</button>
+
+        <textarea
+          id="systemPromptInput"
+          placeholder="Enter system prompt here...
+Example: You should now focus on asking about their favorite hobbies."
+        ></textarea>
+
+        <button id="sendSystemBtn">
+          Send System Prompt
+        </button>
       </div>
+
 
       <!-- Assistant Speech Box -->
       <div class="control-box assistant-speech">
         <h2>Make Robot Speak</h2>
+
         <p class="help-text">
-          Make DISCOBOT say something out loud. This will be spoken by the robot and logged 
-          in the conversation history as an assistant message.
+          Make DISCOBOT say something out loud. This will be spoken by the
+          robot and logged in the conversation history as an assistant message.
         </p>
-        <textarea id="assistantSpeechInput" placeholder="Enter what the robot should say...
-Example: That's fascinating! Tell me more about that."></textarea>
-        <button id="sendAssistantBtn">Make Robot Say This</button>
+
+        <textarea
+          id="assistantSpeechInput"
+          placeholder="Enter what the robot should say...
+Example: That's fascinating! Tell me more about that."
+        ></textarea>
+
+        <button id="sendAssistantBtn">
+          Make Robot Say This
+        </button>
       </div>
+
+
+      <!-- Robot Memory Box -->
+      <div class="control-box memory">
+        <h2>Robot Memory</h2>
+
+        <p class="help-text">
+          Inspect and edit the messages currently stored in DISCOBOT's
+          LLM context. Changes are applied directly to the context store
+          used for subsequent generations.
+        </p>
+
+        <div class="memory-toolbar">
+          <button id="refreshMemoryBtn" type="button">
+            Refresh Memory
+          </button>
+
+          <span id="memoryVersion" class="memory-version"></span>
+        </div>
+
+        <div id="memoryContainer">
+          Loading memory...
+        </div>
+
+        <div class="memory-add">
+          <input
+            id="memoryRoleInput"
+            value="system"
+            placeholder="Role"
+          >
+
+          <textarea
+            id="memoryContentInput"
+            placeholder="Message to append to memory..."
+          ></textarea>
+
+          <button id="appendMemoryBtn" type="button">
+            Append Message
+          </button>
+        </div>
+      </div>
+
     </div>
 
-    <div id="status" class="status" style="display: none;"></div>
+    <div
+      id="status"
+      class="status"
+      style="display: none;"
+    ></div>
   </div>
 
-  <script>
-    // Target addresses for POST requests - using the same pattern as series.html
-    const postAddress = "{{postAddress}}";
 
+  <script>
+    /*
+     * Addresses are supplied by the WoZ server when this template
+     * is rendered.
+     */
+    const postAddress = "{{postAddress}}";
+    const memoryAddress = "{{memoryAddress}}";
+
+
+    /*
+     * Existing WoZ command endpoint.
+     */
     function postData(data, url) {
       return fetch(url, {
-        method: 'POST',
+        method: "POST",
         headers: {
-          'Content-Type': 'application/json'
+          "Content-Type": "application/json"
         },
         body: JSON.stringify(data)
       })
-      .then(response => response.json())
+      .then(response => {
+        if (!response.ok) {
+          throw new Error(`HTTP ${response.status}`);
+        }
+
+        return response.json();
+      })
       .catch(error => {
-        console.error('Error posting data:', error);
+        console.error("Error posting data:", error);
         throw error;
       });
     }
 
+
+    /*
+     * Display a temporary status message.
+     */
     function showStatus(message, isSuccess) {
       const statusDiv = document.getElementById("status");
+
       statusDiv.textContent = message;
-      statusDiv.className = "status " + (isSuccess ? "success" : "error");
+      statusDiv.className =
+        "status " + (isSuccess ? "success" : "error");
+
       statusDiv.style.display = "block";
-      
+
       setTimeout(() => {
         statusDiv.style.display = "none";
       }, 3000);
     }
 
+
+    /*
+     * Send a system prompt.
+     */
     function sendSystemPrompt() {
-      const systemPromptInput = document.getElementById("systemPromptInput");
-      const message = systemPromptInput.value.trim();
-      
+      const input =
+        document.getElementById("systemPromptInput");
+
+      const message = input.value.trim();
+
       if (!message) {
         showStatus("Please enter a system prompt", false);
         return;
@@ -214,21 +393,36 @@ Example: That's fascinating! Tell me more about that."></textarea>
         content: message
       }, postAddress)
       .then(() => {
-        showStatus("✓ System prompt sent successfully", true);
-        console.log("System prompt sent:", message);
-        systemPromptInput.value = "";
+        showStatus(
+          "✓ System prompt sent successfully",
+          true
+        );
+
+        input.value = "";
       })
       .catch(() => {
-        showStatus("✗ Failed to send system prompt", false);
+        showStatus(
+          "✗ Failed to send system prompt",
+          false
+        );
       });
     }
 
+
+    /*
+     * Make the robot speak.
+     */
     function sendAssistantSpeech() {
-      const assistantSpeechInput = document.getElementById("assistantSpeechInput");
-      const message = assistantSpeechInput.value.trim();
-      
+      const input =
+        document.getElementById("assistantSpeechInput");
+
+      const message = input.value.trim();
+
       if (!message) {
-        showStatus("Please enter text for the robot to say", false);
+        showStatus(
+          "Please enter text for the robot to say",
+          false
+        );
         return;
       }
 
@@ -237,34 +431,409 @@ Example: That's fascinating! Tell me more about that."></textarea>
         content: message
       }, postAddress)
       .then(() => {
-        showStatus("✓ Robot speech command sent successfully", true);
-        console.log("Assistant speech sent:", message);
-        assistantSpeechInput.value = "";
+        showStatus(
+          "✓ Robot speech command sent successfully",
+          true
+        );
+
+        input.value = "";
       })
       .catch(() => {
-        showStatus("✗ Failed to send robot speech command", false);
+        showStatus(
+          "✗ Failed to send robot speech command",
+          false
+        );
       });
     }
 
-    // Event listeners
-    document.getElementById("sendSystemBtn").addEventListener("click", sendSystemPrompt);
-    document.getElementById("sendAssistantBtn").addEventListener("click", sendAssistantSpeech);
 
-    // Allow Enter key with Ctrl/Cmd to submit
-    document.getElementById("systemPromptInput").addEventListener("keydown", function(event) {
-      if ((event.ctrlKey || event.metaKey) && event.key === "Enter") {
-        sendSystemPrompt();
+    /*
+     * Context-store request helper.
+     */
+    function memoryRequest(method, body) {
+      const options = {
+        method: method,
+        headers: {
+          "Content-Type": "application/json"
+        }
+      };
+
+      if (body !== undefined) {
+        options.body = JSON.stringify(body);
       }
-    });
 
-    document.getElementById("assistantSpeechInput").addEventListener("keydown", function(event) {
-      if ((event.ctrlKey || event.metaKey) && event.key === "Enter") {
-        sendAssistantSpeech();
+      return fetch(memoryAddress, options)
+        .then(response => {
+          return response.json().then(data => {
+
+            if (
+              !response.ok ||
+              data.status === "error"
+            ) {
+              const errorMessage =
+                data?.result?.error ||
+                `HTTP ${response.status}`;
+
+              throw new Error(errorMessage);
+            }
+
+            return data;
+          });
+        });
+    }
+
+
+    /*
+     * Render the current ContextStore contents.
+     */
+    function renderMemory(data) {
+      const container =
+        document.getElementById("memoryContainer");
+
+      const messages = data.messages || [];
+
+      document.getElementById("memoryVersion").textContent =
+        `Version ${data.version}`;
+
+
+      if (!messages.length) {
+        container.textContent = "Memory is empty.";
+        return;
       }
-    });
 
-    console.log("Wizard of Oz interface initialized");
-    console.log("POST address:", postAddress);
+
+      const table = document.createElement("table");
+      table.className = "memory-table";
+
+      table.innerHTML = `
+        <thead>
+          <tr>
+            <th style="width: 90px;">#</th>
+            <th style="width: 120px;">Role</th>
+            <th>Content</th>
+            <th style="width: 140px;">Actions</th>
+          </tr>
+        </thead>
+      `;
+
+      const tbody = document.createElement("tbody");
+
+
+      messages.forEach((message, index) => {
+        const row = document.createElement("tr");
+
+
+        /*
+         * Role editor.
+         */
+        const role = document.createElement("input");
+
+        role.value = message.role || "";
+
+
+        /*
+         * Content editor.
+         */
+        const content =
+          document.createElement("textarea");
+
+        content.value = message.content || "";
+
+
+        /*
+         * Number.
+         */
+        const numberCell =
+          document.createElement("td");
+
+        numberCell.textContent =
+          `${index + 1}`;
+
+
+        /*
+         * Role cell.
+         */
+        const roleCell =
+          document.createElement("td");
+
+        roleCell.appendChild(role);
+
+
+        /*
+         * Content cell.
+         */
+        const contentCell =
+          document.createElement("td");
+
+        contentCell.appendChild(content);
+
+
+        /*
+         * Action buttons.
+         */
+        const actionsCell =
+          document.createElement("td");
+
+        actionsCell.className =
+          "memory-actions";
+
+
+        /*
+         * Save.
+         */
+        const save =
+          document.createElement("button");
+
+        save.textContent = "Save";
+        save.type = "button";
+
+        save.onclick = () => {
+          memoryRequest("POST", {
+            op: "REPLACE",
+
+            payload: {
+              start_id: message.msg_id,
+              end_id: message.msg_id,
+
+              messages: [{
+                role: role.value.trim(),
+                content: content.value,
+                meta: message.meta || {}
+              }]
+            }
+          })
+          .then(() => {
+            showStatus(
+              "✓ Memory entry updated",
+              true
+            );
+
+            return loadMemory();
+          })
+          .catch(error => {
+            showStatus(
+              `✗ ${error.message}`,
+              false
+            );
+          });
+        };
+
+
+        /*
+         * Delete.
+         */
+        const remove =
+          document.createElement("button");
+
+        remove.textContent = "Delete";
+        remove.type = "button";
+
+        remove.onclick = () => {
+          if (!confirm(
+            "Delete this memory entry?"
+          )) {
+            return;
+          }
+
+          memoryRequest("POST", {
+            op: "DELETE",
+
+            payload: {
+              ids: [message.msg_id]
+            }
+          })
+          .then(() => {
+            showStatus(
+              "✓ Memory entry deleted",
+              true
+            );
+
+            return loadMemory();
+          })
+          .catch(error => {
+            showStatus(
+              `✗ ${error.message}`,
+              false
+            );
+          });
+        };
+
+
+        actionsCell.appendChild(save);
+        actionsCell.appendChild(remove);
+
+        row.appendChild(numberCell);
+        row.appendChild(roleCell);
+        row.appendChild(contentCell);
+        row.appendChild(actionsCell);
+
+        tbody.appendChild(row);
+      });
+
+
+      table.appendChild(tbody);
+
+      container.replaceChildren(table);
+    }
+
+
+    /*
+     * Load the current robot memory.
+     */
+    function loadMemory() {
+      return memoryRequest("GET")
+        .then(renderMemory)
+        .catch(error => {
+          document.getElementById(
+            "memoryContainer"
+          ).textContent =
+            `Failed to load memory: ${error.message}`;
+
+          showStatus(
+            "✗ Failed to load robot memory",
+            false
+          );
+        });
+    }
+
+
+    /*
+     * Append a new memory entry.
+     */
+    function appendMemory() {
+      const role =
+        document.getElementById(
+          "memoryRoleInput"
+        ).value.trim();
+
+      const content =
+        document.getElementById(
+          "memoryContentInput"
+        ).value;
+
+
+      if (!role || !content.trim()) {
+        showStatus(
+          "Please enter both a role and message",
+          false
+        );
+        return;
+      }
+
+
+      memoryRequest("POST", {
+        op: "APPEND",
+
+        payload: {
+          messages: [{
+            role: role,
+            content: content
+          }]
+        }
+      })
+      .then(() => {
+        showStatus(
+          "✓ Memory message appended",
+          true
+        );
+
+        document.getElementById(
+          "memoryContentInput"
+        ).value = "";
+
+        return loadMemory();
+      })
+      .catch(error => {
+        showStatus(
+          `✗ ${error.message}`,
+          false
+        );
+      });
+    }
+
+
+    /*
+     * Event listeners.
+     */
+    document
+      .getElementById("sendSystemBtn")
+      .addEventListener(
+        "click",
+        sendSystemPrompt
+      );
+
+    document
+      .getElementById("sendAssistantBtn")
+      .addEventListener(
+        "click",
+        sendAssistantSpeech
+      );
+
+    document
+      .getElementById("refreshMemoryBtn")
+      .addEventListener(
+        "click",
+        loadMemory
+      );
+
+    document
+      .getElementById("appendMemoryBtn")
+      .addEventListener(
+        "click",
+        appendMemory
+      );
+
+
+    /*
+     * Ctrl/Cmd + Enter submits the two original text boxes.
+     */
+    document
+      .getElementById("systemPromptInput")
+      .addEventListener(
+        "keydown",
+        function(event) {
+          if (
+            (event.ctrlKey || event.metaKey) &&
+            event.key === "Enter"
+          ) {
+            sendSystemPrompt();
+          }
+        }
+      );
+
+    document
+      .getElementById("assistantSpeechInput")
+      .addEventListener(
+        "keydown",
+        function(event) {
+          if (
+            (event.ctrlKey || event.metaKey) &&
+            event.key === "Enter"
+          ) {
+            sendAssistantSpeech();
+          }
+        }
+      );
+
+
+    /*
+     * Initialisation.
+     */
+    console.log(
+      "Wizard of Oz interface initialized"
+    );
+
+    console.log(
+      "POST address:",
+      postAddress
+    );
+
+    console.log(
+      "Memory address:",
+      memoryAddress
+    );
+
+    loadMemory();
   </script>
 </body>
 </html>

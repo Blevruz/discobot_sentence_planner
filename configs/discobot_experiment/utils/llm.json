@@ -110,6 +110,23 @@
         ]
     },
     {
+        "name": "context_query",
+        "module": "middle_modules.context_query",
+        "args": {
+            "http_port": "$HTTP_PORT",
+            "http_path_query": "/context_query",
+            "http_path_result": "/context_result"
+        },
+        "links": [
+            {
+                "name": "context_query_cmd_to_llm",
+                "from_slot": "cmd",
+                "target_name": "llm_service",
+                "to_slot": "cmd"
+            }
+        ]
+    },
+    {
         "name": "assistant_string_to_llm_append",
         "module": "middle_modules.string_to_llm_append",
         "args": {
@@ -129,7 +146,7 @@
         "module": "middle_modules.llm_service",
         "args": {
             "url": "$LLM_URL",
-            "temperature": 0.6,
+            "temperature": 0.1,
             "max_tokens": 256,
             "context": "@misc/expe_context.json"
         },
@@ -139,6 +156,12 @@
                 "from_slot": "default",
                 "target_name": "llm_output_router",
                 "to_slot": "default"
+            },
+            {
+                "name": "llm_out_to_context_query",
+                "from_slot": "default",
+                "target_name": "context_query",
+                "to_slot": "responses"
             }
         ]
     },
@@ -192,7 +215,8 @@
         "module": "middle_modules.buffer",
         "args": {
             "datatype_in": "string",
-            "datatype_out": "string"
+            "datatype_out": "string",
+            "buffer_size": 1
         },
         "links": [
             {
