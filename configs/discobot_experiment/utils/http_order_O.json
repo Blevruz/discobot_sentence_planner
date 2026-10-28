@@ -1,0 +1,98 @@
+[
+    {
+        "name": "intro_webpage",
+        "module": "output_modules.http",
+        "args": {
+            "port": "$HTTP_PORT",
+            "path": "intro",
+            "template": "@misc/html/intro.html",
+            "variables": {
+                "explanation": "@misc/explanation_en.txt",
+                "questionnaireUrl": "$QUESTIONNAIRE_URL",
+                "nextStage": "series_familiarization",
+                "nextLabel": "Begin familiarization"
+            }
+        }
+    },
+    {
+        "name": "series_familiarization_webpage",
+        "module": "output_modules.http",
+        "args": {
+            "port": "$HTTP_PORT",
+            "path": "series_familiarization",
+            "template": "@misc/html/series.html",
+            "variables": {
+                "series": "@misc/series-0.json",
+                "postAddress": "/user_website_input",
+                "robotActive": "false",
+                "nextStage": "robot_familiarization",
+                "nextLabel": "Meet the robot"
+            }
+        }
+    },
+    {
+        "name": "robot_familiarization_webpage",
+        "module": "output_modules.http",
+        "args": {
+            "port": "$HTTP_PORT",
+            "path": "robot_familiarization",
+            "template": "@misc/html/robot_familiarization.html",
+            "variables": {
+                "postAddress": "/user_website_input",
+                "durationSeconds": "120",
+                "nextStage": "series_main",
+                "nextLabel": "Begin the main task"
+            }
+        }
+    },
+    {
+        "name": "series_main_webpage",
+        "module": "output_modules.http",
+        "args": {
+            "port": "$HTTP_PORT",
+            "path": "series_main",
+            "template": "@misc/html/series.html",
+            "variables": {
+                "series": "@misc/series-1.json",
+                "postAddress": "/user_website_input",
+                "robotActive": "true",
+                "nextStage": "poems_familiarization",
+                "nextLabel": "Continue to the next task"
+            }
+        }
+    },
+    {
+        "name": "poems_familiarization_webpage",
+        "module": "output_modules.http",
+        "args": {
+            "port": "$HTTP_PORT",
+            "path": "poems_familiarization",
+            "template": "@misc/html/poems.html",
+            "variables": {
+                "poems": "@misc/poems-0.json",
+                "postAddress": "/user_website_input",
+                "robotActive": "true",
+                "commentAfterBlanks": "0",
+                "nextStage": "poems_main",
+                "nextLabel": "Begin the main task"
+            }
+        }
+    },
+    {
+        "name": "poems_main_webpage",
+        "module": "output_modules.http",
+        "args": {
+            "port": "$HTTP_PORT",
+            "path": "poems_main",
+            "template": "@misc/html/poems.html",
+            "variables": {
+                "poems": "@misc/poems-1.json",
+                "postAddress": "/user_website_input",
+                "robotActive": "true",
+                "commentAfterBlanks": "2",
+                "nextStage": "",
+                "nextLabel": ""
+            }
+        }
+    }
+]

@@ -1,0 +1,104 @@
+<!DOCTYPE html>
+<html>
+<head>
+  <meta charset="UTF-8">
+  <title>Meet the Robot</title>
+  <style>
+    body {
+      display: grid;
+      place-items: center;
+      min-height: 100vh;
+      font-family: "MutatorSans", sans-serif;
+    }
+
+    #page {
+      width: 80%;
+      max-width: 600px;
+      margin: 20px;
+      text-align: center;
+    }
+
+    #countdown {
+      font-size: 2em;
+      margin: 20px 0;
+    }
+
+    button {
+      background-color: #4CAF50;
+      color: white;
+      border: none;
+      padding: 12px 24px;
+      font-size: 16px;
+      border-radius: 4px;
+      cursor: pointer;
+    }
+
+    button:disabled {
+      background-color: #aaa;
+      cursor: not-allowed;
+    }
+  </style>
+</head>
+<body>
+  <div id="page">
+    <h1>Meet the robot</h1>
+    <p>
+      The robot is now active. Take a few minutes to talk with it and get
+      comfortable — ask it anything you like. This part is not part of the
+      task and is not scored.
+    </p>
+    <p id="countdown"></p>
+    <button id="continueBtn" disabled>Continue</button>
+  </div>
+
+  <script>
+    const postAddress = "{{postAddress}}";
+    const durationSeconds = parseInt("{{durationSeconds}}", 10) || 120;
+    const nextStage = "{{nextStage}}";
+    const nextLabel = "{{nextLabel}}";
+
+    function postData(data, url) {
+      return fetch(url, {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify(data)
+      })
+      .then(response => response.json())
+      .catch(error => console.error('Error posting data:', error));
+    }
+
+    const continueBtn = document.getElementById("continueBtn");
+    const countdownEl = document.getElementById("countdown");
+
+    if (nextLabel) {
+      continueBtn.textContent = nextLabel;
+    }
+
+    continueBtn.addEventListener("click", function() {
+      window.location.href = "/" + nextStage;
+    });
+
+    // Let the robot know this familiarization period has begun, so it can
+    // greet the participant and start a natural conversation.
+    postData({
+      type: "system_prompt",
+      content: "The participant has just met you for the first time and will chat freely with you for a few minutes before the main task begins. Greet them warmly and make conversation."
+    }, postAddress);
+
+    let remaining = durationSeconds;
+    function tick() {
+      const m = Math.floor(remaining / 60);
+      const s = remaining % 60;
+      countdownEl.textContent = "Time remaining: " + m + ":" + String(s).padStart(2, "0");
+      if (remaining <= 0) {
+        clearInterval(interval);
+        continueBtn.disabled = false;
+        countdownEl.textContent = "You may continue whenever you're ready.";
+      }
+      remaining--;
+    }
+    tick();
+    const interval = setInterval(tick, 1000);
+  </script>
+</body>
+</html>

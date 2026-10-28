@@ -1,0 +1,5 @@
+[Experimenter: replace this text with the explanation read to participants.
+It should cover, at minimum: what the participant will be asked to do,
+roughly how long the session will take, that the robot is a conversational
+partner rather than an all-knowing assistant, and how to stop the session
+at any time if they wish to withdraw.]

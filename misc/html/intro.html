@@ -1,0 +1,89 @@
+<!DOCTYPE html>
+<html>
+<head>
+  <meta charset="UTF-8">
+  <title>Welcome</title>
+  <style>
+    body {
+      display: grid;
+      place-items: center;
+      min-height: 100vh;
+      font-family: "MutatorSans", sans-serif;
+    }
+
+    #intro {
+      width: 80%;
+      max-width: 600px;
+      margin: 20px;
+      text-align: center;
+    }
+
+    #explanation {
+      text-align: left;
+      background: #f5f5f5;
+      border-radius: 8px;
+      padding: 16px 20px;
+      margin: 20px 0;
+      white-space: pre-wrap;
+    }
+
+    a.questionnaire-link {
+      display: inline-block;
+      margin: 10px 0 20px 0;
+    }
+
+    button {
+      background-color: #4CAF50;
+      color: white;
+      border: none;
+      padding: 12px 24px;
+      font-size: 16px;
+      border-radius: 4px;
+      cursor: pointer;
+    }
+
+    button:hover {
+      background-color: #45a049;
+    }
+  </style>
+</head>
+<body>
+  <div id="intro">
+    <h1>Welcome</h1>
+
+    <!-- Free-form explanation of the experiment. Edit misc/explanation_en.txt
+         (loaded via the "explanation" template variable) to change this text
+         without touching this page. -->
+    <div id="explanation">{{explanation}}</div>
+
+    <p>
+      Before you begin, please take a moment to read and sign the consent
+      questionnaire below.
+    </p>
+    <a class="questionnaire-link" id="questionnaireLink" href="{{questionnaireUrl}}" target="_blank" rel="noopener">
+      Open the consent questionnaire
+    </a>
+
+    <p>
+      Once you have done so, press the button below to begin the
+      familiarization phase. The robot will remain inactive for now — please
+      do not try to talk to it yet.
+    </p>
+
+    <button id="startBtn">Begin</button>
+  </div>
+
+  <script>
+    const nextStage = "{{nextStage}}";
+    const nextLabel = "{{nextLabel}}";
+
+    document.getElementById("startBtn").addEventListener("click", function() {
+      window.location.href = "/" + nextStage;
+    });
+
+    if (nextLabel) {
+      document.getElementById("startBtn").textContent = nextLabel;
+    }
+  </script>
+</body>
+</html>
