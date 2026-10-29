@@ -53,18 +53,30 @@ body {
         padding: 0 4px;
     }
 
-    .blank-correct {
-        color: green;
+    .blank-matched {
+        color: #2e7d32;
     }
 
-    .blank-incorrect {
-        color: red;
+    #inactiveBanner {
+        background: #fff3cd;
+        border: 1px solid #ffe08a;
+        border-radius: 6px;
+        padding: 10px 16px;
+        margin-bottom: 16px;
+    }
+
+    #continueWrap {
+        margin-top: 20px;
     }
         </style>
     </head>
     <body>
         <div id="intro">
             <h1>Welcome to the Timed Poem Fill-in-the-Blank Test</h1>
+            <div id="inactiveBanner" style="display:none;">
+              The robot is currently inactive for this part. Please don't try
+              to talk to it yet — just focus on the poems below.
+            </div>
             <p>This test will assess your ability to guess the missing words in a poem.</p>
             <p>You will have <span id="maxTime"></span> to complete each task.</p>
             <button id="startBtn">Start Test</button>
@@ -72,7 +84,7 @@ body {
 
         <div id="test" style="display: none;">
             <h2>Task <span id="taskNumber"></span></h2>
-            <p>Fill in each blank below with the word you think belongs there.</p>
+            <p>Fill in each blank below with whatever word you think fits best. There is no single right answer.</p>
             <div id="poemDisplay"></div>
             <button id="submitBtn">Submit Answer</button>
             <p id="timer"></p>
@@ -80,31 +92,53 @@ body {
 
         <div id="results" style="display: none;">
             <h2>Test Results</h2>
-            <p>You scored <span id="score"></span> out of <span id="totalTasks"></span> tasks.</p>
+            <p>The robot shared its own suggestion on <span id="commentedCount"></span> blank(s). You matched it on <span id="matchedCount"></span> of those.</p>
             <p id="brailleRep"></p>
             <p>Total time spent: <span id="totalTime"></span></p>
             <h3>Task Responses:</h3>
             <ul id="responses"></ul>
             <p>Thank you for participating!</p>
-            <button id="restartBtn">Restart Test</button>
+            <div id="continueWrap">
+              <button id="continueBtn"></button>
+            </div>
         </div>
 
         <script>
             // Poem data embedded directly in the page, updated thru "poems" variable.
-            // Each task's "text" uses "_" to mark a blank; blanks[] gives the accepted
-            // answers and explanation for each blank, in the order they appear in "text".
+            // Each task's "text" uses "_" to mark a blank; blanks[] gives a
+            // suggestion (what the robot will claim to have been "thinking of")
+            // and a few other examples of words that would fit, in the order
+            // the blanks appear in "text".
             // No peeking! ;)
             const poemData = {{poems}};
 
             let testSeries;
             const postAddress = "{{postAddress}}";
 
+            // Whether the robot should be actively engaged for this stage. When
+            // false, this page never POSTs anything that would drive the robot
+            // (no system prompts, no suggestion comments, no inactivity pings).
+            const ROBOT_ACTIVE = "{{robotActive}}" === "true";
+
+            // Where "Continue" on the results screen should lead, and its label.
+            const NEXT_STAGE = "{{nextStage}}";
+            const NEXT_LABEL = "{{nextLabel}}";
+
+            // Default number of filled blanks (by position in the poem) after
+            // which the robot comments with its own suggestion for that blank.
+            // Overridable per-poem via task.commentAfterBlanks.
+            const DEFAULT_COMMENT_AFTER_BLANKS = parseInt("{{commentAfterBlanks}}", 10) || 2;
+
             // INACTIVITY TIMEOUT CONFIGURATION
-            // Change this value to adjust how long before robot prompts inactive users
-            // Value is in seconds (e.g., 20 = 20 seconds)
             const INACTIVITY_TIMEOUT_SECONDS = 30;
-            const INACTIVITY_TIMEOUT = INACTIVITY_TIMEOUT_SECONDS * 1000; // Convert to milliseconds
+            const INACTIVITY_TIMEOUT = INACTIVITY_TIMEOUT_SECONDS * 1000;
             let inactivityTimer = null;
+
+            // Tracks, for the current task, whether the scripted comment has
+            // already fired (so it only fires once per poem).
+            let commentFired = false;
+            let commentedTotal = 0;
+            let matchedTotal = 0;
 
             function loadSeries() {
                 testSeries = poemData;
@@ -115,7 +149,6 @@ body {
             let currentTask = 0;
             let startTime;
             let totalTime = 0;
-            let score = 0;
             let taskStartTime;
             let responses = [];
             const maxTime = 60;
@@ -140,12 +173,8 @@ body {
                 let brailleString = "";
 
                 responses.forEach(response => {
-                    if (response.isCorrect) {
-                        const percentage = (response.responseTime/1000 / maxTime) * 100;
-                        brailleString += getBraillePattern(percentage);
-                    } else {
-                        brailleString += "X";
-                    }
+                    const percentage = (response.responseTime/1000 / maxTime) * 100;
+                    brailleString += getBraillePattern(Math.min(100, percentage));
                 });
                 return brailleString;
             }
@@ -157,23 +186,6 @@ body {
                 startTime = new Date();
                 showTask();
             }
-
-            function sendExamples(messages, systemAddress, userAddress, assistantAddress) {
-                const roleToAddress = {
-                    system: systemAddress,
-                    user: userAddress,
-                    assistant: assistantAddress
-                };
-
-                messages.forEach(msg => {
-                    const address = roleToAddress[msg.role];
-                    if (address) {
-                        postData({ role: msg.role, content: msg.content }, address);
-                    }
-                });
-            }
-
-
 
             // Renders task.text into #poemDisplay, replacing each "_" with its own
             // text input. Returns nothing; inputs are read later via getCurrentGuesses().
@@ -196,7 +208,10 @@ body {
                             input.type = "text";
                             input.className = "blank-input";
                             input.dataset.blankIndex = blankIndex;
-                            input.addEventListener("input", armInactivityTimer);
+                            input.addEventListener("input", function() {
+                                armInactivityTimer();
+                                maybeComment();
+                            });
                             input.addEventListener("keypress", function(event) {
                                 if (event.key === "Enter") {
                                     submitAnswer();
@@ -220,23 +235,52 @@ body {
                 return inputs.map(inp => inp.value);
             }
 
+            // If the robot is active and the n-th blank (by position in the
+            // poem, n = task.commentAfterBlanks or the page default) has just
+            // been filled for the first time, makes the robot speak its
+            // suggestion for that specific blank.
+            function maybeComment() {
+                if (!ROBOT_ACTIVE || commentFired) return;
+
+                const task = testSeries[currentTask];
+                const n = task.commentAfterBlanks !== undefined ? task.commentAfterBlanks : DEFAULT_COMMENT_AFTER_BLANKS;
+                if (!n || n < 1 || n > task.blanks.length) return;
+
+                const guesses = getCurrentGuesses();
+                if ((guesses[n - 1] || "").trim() === "") return;
+
+                commentFired = true;
+                const suggestion = task.blanks[n - 1].suggestion;
+                postData({
+                    type: "assistant_speech",
+                    content: "I was thinking of " + suggestion + "."
+                }, postAddress);
+            }
+
             // Function to show the current task
             function showTask() {
                 const task = testSeries[currentTask];
-                console.log("Showing task:", task);
+                commentFired = false;
                 document.getElementById("taskNumber").textContent = currentTask + 1;
                 renderPoem(task.text);
                 startTimer(task.time);
 
-                postData({
-                    type: "question_loaded",
-                    questionNumber: currentTask + 1,
-                    title: task.title,
-                    text: task.text,
-                    answerInstruction: task.answer_instruction
-                }, postAddress);
+                if (ROBOT_ACTIVE) {
+                    postData({
+                        type: "system_prompt",
+                        content: task.answer_instruction
+                    }, postAddress);
 
-                armInactivityTimer();
+                    postData({
+                        type: "question_loaded",
+                        questionNumber: currentTask + 1,
+                        title: task.title,
+                        text: task.text,
+                        answerInstruction: task.answer_instruction
+                    }, postAddress);
+
+                    armInactivityTimer();
+                }
             }
 
             // Function to start the timer for each task
@@ -257,14 +301,10 @@ body {
             }
 
             // ---------- Inactivity snapshot handling ----------
-            // Resets on every keystroke in any blank; if the user goes
-            // INACTIVITY_TIMEOUT ms without typing in any of them, their current
-            // (unsubmitted) guesses are sent. Re-arms itself, so a still-idle user
-            // keeps getting pinged every INACTIVITY_TIMEOUT ms until they type or submit.
             function armInactivityTimer() {
+                if (!ROBOT_ACTIVE) return;
                 clearInactivityTimer();
                 inactivityTimer = setTimeout(function() {
-                    console.log("User inactive - sending inactivity message");
                     postData({
                         inactivityTrigger: true,
                         message: "User has been inactive. Please provide succinct engagement with the task and their input.",
@@ -272,7 +312,6 @@ body {
                         text: testSeries[currentTask].text,
                         currentGuesses: getCurrentGuesses()
                     }, postAddress);
-                    // Re-arm timer for continuous monitoring
                     armInactivityTimer();
                 }, INACTIVITY_TIMEOUT);
             }
@@ -285,7 +324,7 @@ body {
             }
 
             function postData(data, url) {
-                fetch(url, {
+                return fetch(url, {
                     method: 'POST',
                     headers: {
                         'Content-Type': 'application/json'
@@ -305,29 +344,47 @@ body {
                 const userAnswers = getCurrentGuesses();
                 const responseTime = new Date() - taskStartTime;
 
+                const n = task.commentAfterBlanks !== undefined ? task.commentAfterBlanks : DEFAULT_COMMENT_AFTER_BLANKS;
+                const commentedThisTask = ROBOT_ACTIVE && n >= 1 && n <= task.blanks.length;
+
                 const blankResults = task.blanks.map((blank, idx) => {
                     const guess = userAnswers[idx] || "";
-                    const isCorrect = blank.answers.some(a => a.toLowerCase().replace(/\s/g, '') === guess.toLowerCase().replace(/\s/g, ''));
+                    const wasCommented = commentedThisTask && (idx === n - 1);
+                    const matchedSuggestion = wasCommented && guess.toLowerCase().replace(/\s/g, '') === blank.suggestion.toLowerCase().replace(/\s/g, '');
                     return {
                         guess: guess,
-                        isCorrect: isCorrect,
-                        answers: blank.answers,
-                        explanation: blank.explanation
+                        suggestion: blank.suggestion,
+                        wasCommented: wasCommented,
+                        matchedSuggestion: matchedSuggestion
                     };
                 });
 
-                const allCorrect = blankResults.every(r => r.isCorrect);
-                if (allCorrect) {
-                    score++;
+                if (commentedThisTask) {
+                    commentedTotal++;
+                    if (blankResults[n - 1].matchedSuggestion) matchedTotal++;
                 }
 
                 responses.push({
                     title: task.title,
                     text: task.text,
                     blankResults: blankResults,
-                    responseTime: responseTime,
-                    isCorrect: allCorrect
+                    responseTime: responseTime
                 });
+
+                if (ROBOT_ACTIVE) {
+                    postData({
+                        type: "answer_submitted",
+                        questionNumber: currentTask,
+                        title: task.title,
+                        text: task.text,
+                        blanks: task.blanks.map(blank => ({
+                            suggestion: blank.suggestion,
+                            examples: blank.examples
+                        })),
+                        userAnswers: userAnswers,
+                        answerInstruction: task.answer_instruction
+                    }, postAddress);
+                }
 
                 totalTime += responseTime;
                 currentTask++;
@@ -337,27 +394,14 @@ body {
                 } else {
                     showResults();
                 }
-
-                postData({
-                    type: "answer_submitted",
-                    questionNumber: currentTask,
-                    title: task.title,
-                    text: task.text,
-                    blanks: task.blanks.map(blank => ({
-                        answers: blank.answers,
-                        explanation: blank.explanation
-                    })),
-                    userAnswers: userAnswers,
-                    answerInstruction: task.answer_instruction
-                }, postAddress);
             }
 
             // Function to show the test results
             function showResults() {
                 document.getElementById("test").style.display = "none";
                 document.getElementById("results").style.display = "block";
-                document.getElementById("score").textContent = score;
-                document.getElementById("totalTasks").textContent = testSeries.length;
+                document.getElementById("commentedCount").textContent = commentedTotal;
+                document.getElementById("matchedCount").textContent = matchedTotal;
                 document.getElementById("totalTime").textContent = (totalTime/1000).toFixed(1) + "s";
                 const brailleRepresentation = generateBrailleRepresentation(responses, maxTime);
                 document.getElementById("brailleRep").textContent = brailleRepresentation;
@@ -366,25 +410,43 @@ body {
                     const li = document.createElement("li");
                     let blanksHtml = "";
                     response.blankResults.forEach((b, idx) => {
-                        const cls = b.isCorrect ? "blank-correct" : "blank-incorrect";
-                        blanksHtml += "<li>Blank " + (idx + 1) + ": <span class=\"" + cls + "\">\"" + b.guess + "\"</span>"
-                            + " &mdash; accepted: " + b.answers.join(", ") + "<br>" + b.explanation + "</li>";
+                        const cls = b.matchedSuggestion ? "blank-matched" : "";
+                        let line = "<li>Blank " + (idx + 1) + ": <span class=\"" + cls + "\">\"" + b.guess + "\"</span>";
+                        if (b.wasCommented) {
+                            line += " &mdash; robot suggested \"" + b.suggestion + "\"" + (b.matchedSuggestion ? " (matched)" : "");
+                        }
+                        line += "</li>";
+                        blanksHtml += line;
                     });
                     li.innerHTML = "<strong>" + response.title + "</strong><br>"
                         + "<span class=\"big\">Response time:</span> " + (response.responseTime / 1000).toFixed(1) + "s<br>"
                         + "<span class=\"big\">Blanks:</span><ul>" + blanksHtml + "</ul>";
                     responsesElement.appendChild(li);
                 });
+
+                const continueBtn = document.getElementById("continueBtn");
+                if (NEXT_STAGE) {
+                    continueBtn.textContent = NEXT_LABEL || "Continue";
+                    continueBtn.addEventListener("click", function() {
+                        window.location.href = "/" + NEXT_STAGE;
+                    });
+                } else {
+                    continueBtn.style.display = "none";
+                    const done = document.createElement("p");
+                    done.textContent = "You have completed the study. Thank you!";
+                    document.getElementById("continueWrap").appendChild(done);
+                }
             }
 
             // Event listeners
             document.getElementById("startBtn").addEventListener("click", loadSeries);
             document.getElementById("submitBtn").addEventListener("click", submitAnswer);
-            document.getElementById("restartBtn").addEventListener("click", function() {
-                location.reload();
-            });
 
             document.getElementById("maxTime").textContent = maxTime + "s";
+
+            if (!ROBOT_ACTIVE) {
+                document.getElementById("inactiveBanner").style.display = "block";
+            }
         </script>
     </body>
 </html>

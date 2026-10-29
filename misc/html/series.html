@@ -29,11 +29,27 @@
       font-weight: 500;
       font-family: "MutatorSans", sans-serif;
     }
+
+    #inactiveBanner {
+      background: #fff3cd;
+      border: 1px solid #ffe08a;
+      border-radius: 6px;
+      padding: 10px 16px;
+      margin-bottom: 16px;
+    }
+
+    #continueWrap {
+      margin-top: 20px;
+    }
   </style>
 </head>
 <body>
   <div id="intro">
     <h1>Welcome to the Timed Number Series Test</h1>
+    <div id="inactiveBanner" style="display:none;">
+      The robot is currently inactive for this part. Please don't try to
+      talk to it yet — just focus on the series below.
+    </div>
     <p>This test will assess your ability to identify the next element in a number series.</p>
     <p>You will have <span id="maxTime"></span> to complete each task.</p>
     <button id="startBtn">Start Test</button>
@@ -56,7 +72,9 @@
     <h3>Task Responses:</h3>
     <ul id="responses"></ul>
     <p>Thank you for participating!  Check out the <a href="https://oeis.org">OEIS</a> for more fun integer sequences.</p>
-    <button id="restartBtn">Restart Test</button>
+    <div id="continueWrap">
+      <button id="continueBtn"></button>
+    </div>
   </div>
 
   <script>
@@ -66,6 +84,16 @@
 
     // Target of the POST request
     const postAddress = "{{postAddress}}";
+
+    // Whether the robot should be actively engaged for this stage. When
+    // false, this page never POSTs anything that would drive the robot
+    // (no system prompts, no inactivity pings) — it only records answers.
+    const ROBOT_ACTIVE = "{{robotActive}}" === "true";
+
+    // Where "Continue" on the results screen should lead, and its label.
+    // An empty nextStage means this is the final stage of the protocol.
+    const NEXT_STAGE = "{{nextStage}}";
+    const NEXT_LABEL = "{{nextLabel}}";
 
     // INACTIVITY TIMEOUT CONFIGURATION
     // Change this value to adjust how long before robot prompts inactive users
@@ -135,17 +163,30 @@
       document.getElementById("taskNumber").textContent = currentTask + 1;
       document.getElementById("series").textContent = task.series;
       document.getElementById("answer").value = "";
-        // Post data with new task data
-      postData({
-        questionNumber: currentTask,
-        series: task.series,
-        answers: task.answers.map(answer => ({
-          value: answer.value,
-          explanation: answer.explanation
-        })),
-        answerInstruction: task.answer_instruction
-      }, postAddress);
-      resetInactivityTimer();
+
+      if (ROBOT_ACTIVE) {
+        // Brief the robot with this series' secret instruction (handled by
+        // WoZHandler as a proper system message, same path the WoZ panel uses).
+        postData({
+          type: "system_prompt",
+          content: task.answer_instruction
+        }, postAddress);
+
+        // Log the task context for the record.
+        postData({
+          type: "question_loaded",
+          questionNumber: currentTask,
+          series: task.series,
+          answers: task.answers.map(answer => ({
+            value: answer.value,
+            explanation: answer.explanation
+          })),
+          answerInstruction: task.answer_instruction
+        }, postAddress);
+
+        resetInactivityTimer();
+      }
+
       startTimer(task.time);
     }
 
@@ -167,7 +208,7 @@
     }
 
     function postData(data, url) {
-      fetch(url, {
+      return fetch(url, {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json'
@@ -179,8 +220,9 @@
     }
 
     function sendInactivityMessage() {
+      if (!ROBOT_ACTIVE) return;
       console.log("User inactive - sending periodic message");
-      postData({ 
+      postData({
         inactivityTrigger: true,
         message: "User has been inactive. Please provide succinct engagement with the task and their input.",
         currentTask: currentTask,
@@ -189,8 +231,9 @@
     }
 
     function resetInactivityTimer() {
+      if (!ROBOT_ACTIVE) return;
       clearTimeout(inactivityTimer);
-      
+
       const timeoutSeconds = INACTIVITY_TIMEOUT_SECONDS;
       inactivityTimer = setTimeout(sendInactivityMessage, timeoutSeconds * 1000);
     }
@@ -221,17 +264,20 @@
         isCorrect: isCorrect
       });
 
+      if (ROBOT_ACTIVE) {
         // Post data with current question and answers
-      postData({
-        questionNumber: currentTask,
-        series: task.series,
-        answers: task.answers.map(answer => ({
-          value: answer.value,
-          explanation: answer.explanation
-        })),
-        userAnswer: userAnswer,
-        answerInstruction: task.answer_instruction
-      }, postAddress);
+        postData({
+          type: "answer_submitted",
+          questionNumber: currentTask,
+          series: task.series,
+          answers: task.answers.map(answer => ({
+            value: answer.value,
+            explanation: answer.explanation
+          })),
+          userAnswer: userAnswer,
+          answerInstruction: task.answer_instruction
+        }, postAddress);
+      }
 
       totalTime += responseTime;
       currentTask++;
@@ -265,6 +311,19 @@
         li.innerHTML += "<br><span class=\"big\">Correct answers:</span><br>" + answersHtml ;
         responsesElement.appendChild(li);
       });
+
+      const continueBtn = document.getElementById("continueBtn");
+      if (NEXT_STAGE) {
+        continueBtn.textContent = NEXT_LABEL || "Continue";
+        continueBtn.addEventListener("click", function() {
+          window.location.href = "/" + NEXT_STAGE;
+        });
+      } else {
+        continueBtn.style.display = "none";
+        const done = document.createElement("p");
+        done.textContent = "You have completed the study. Thank you!";
+        document.getElementById("continueWrap").appendChild(done);
+      }
     }
 
     // Event listeners
@@ -273,9 +332,10 @@
     document.getElementById("answer").addEventListener("keypress", function(event) {
         clearTimeout(idleTimeout);
         resetInactivityTimer();
-        
+
         // Reset idle timer on any keypress
         idleTimeout = setTimeout(function() {
+            if (!ROBOT_ACTIVE) return;
             const userInput = document.getElementById("answer").value;
             const currentSeries = testSeries[currentTask].series;
             postData({
@@ -290,11 +350,12 @@
         }
     });
     document.getElementById("answer").addEventListener("input", resetInactivityTimer);
-    document.getElementById("restartBtn").addEventListener("click", function() {
-      location.reload();
-    });
 
     document.getElementById("maxTime").textContent = maxTime + "s";
+
+    if (!ROBOT_ACTIVE) {
+      document.getElementById("inactiveBanner").style.display = "block";
+    }
   </script>
 </body>
 </html>
