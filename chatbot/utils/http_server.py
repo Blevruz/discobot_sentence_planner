@@ -98,7 +98,7 @@ def _start_server(server):
     port = server["port"]
     ip_port = ip_port_to_string(ip, port)
     server["handler"] = lambda r, ca, s: GenericHandler(request = r, client_address = ca, server = s, modules_get = server["get_handlers"], modules_post = server["post_handlers"])
-    server["server"] = http.server.HTTPServer((ip, port), servers[ip_port]["handler"])
+    server["server"] = http.server.ThreadingHTTPServer((ip, port), servers[ip_port]["handler"])
     server["thread"] = threading.Thread(target=servers[ip_port]["server"].serve_forever)
     server["thread"].start()
 
