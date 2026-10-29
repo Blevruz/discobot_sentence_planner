@@ -10,6 +10,7 @@ usage() {
     echo "  --cmu         Download CMU dictionary"
     echo "  --vosk        Setup Vosk models"
     echo "  --piper       Setup Piper models"
+    echo "  --deps        Setup python environment"
     echo "  --help        Display this help and exit"
 }
 
@@ -43,6 +44,9 @@ for arg in "$@"; do
             ;;
         --piper)
             run_piper=true
+            ;;
+        --deps)
+            run_deps=true
             ;;
         --help)
             usage
