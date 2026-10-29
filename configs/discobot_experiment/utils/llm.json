@@ -184,7 +184,6 @@
             }
         ]
     },
-
     {
         "name": "llm_generate_on_trigger",
         "module": "middle_modules.llm_generate_on_trigger",
@@ -215,8 +214,7 @@
         "module": "middle_modules.buffer",
         "args": {
             "datatype_in": "string",
-            "datatype_out": "string",
-            "buffer_size": 1
+            "datatype_out": "string"
         },
         "links": [
             {

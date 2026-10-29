@@ -36,7 +36,10 @@ class _State:
     def __init__(self):
         self.lock = threading.Lock()
         self.last_result = None   # most recent captured context (dict)
-        self.pending_query = False  # a fresh QUERY is in flight
+        # Highest context version we have seen a WRITE (APPEND/DELETE/REPLACE)
+        # response for. A GET must not serve a QUERY snapshot whose version is
+        # below this, otherwise it can return a pre-write snapshot (stale).
+        self.min_required_version = 0
 
 
 _state = _State()
@@ -58,7 +61,8 @@ class ContextQuery(DummyModule):
 
     def __init__(self, name="context_query", **args):
         super().__init__(name, **args)
-        # Light enough to run in a thread
+        self._lock_sse = threading.Lock()
+        # Light enough to run in a thread
         self._loop_type = 'thread'
 
         # request: trigger to send a command (from HTTP input or another module)
@@ -91,32 +95,76 @@ class ContextQuery(DummyModule):
 
     # ------------------------------------------------------------- HTTP handlers
     def _wait_for_result(self, timeout=2.0):
-        """Return the most recent captured context, waiting briefly (bounded)
-        for an in-flight QUERY to land so a cold GET still returns live data.
-        Keeps the shared single-threaded server from stalling: at most `timeout`
-        s, and only when no fresh result is already cached.
+        """Return the LIVE context, waiting briefly (bounded) for a QUERY
+        snapshot that is at least as new as any write we have observed.
+
+        Correctness rule: a write (APPEND/DELETE/REPLACE) bumps the context
+        version. A GET must never serve a QUERY snapshot whose version is
+        *older* than the latest write we have seen, or it would return a
+        pre-write (stale) snapshot. We keep waiting until a QUERY snapshot
+        with version >= _state.min_required_version lands, then return it.
+
+        Fallback (cold GET, or if the fresh QUERY times out): the most recent
+        snapshot we have that satisfies the version floor; else the newest
+        snapshot regardless; else None. APPEND/DELETE/REPLACE responses never
+        carry messages and are never returned as the context.
         """
         deadline = time.time() + timeout
+        best_fallback = None
         while True:
             with _state.lock:
+                floor = _state.min_required_version
+                candidate = _state.last_result
                 res = None
-                if _state.last_result is not None:
-                    res = dict(_state.last_result)
-                    res.pop('_fresh', None)
-                    _state.last_result = None  # consume so next GET is fresh
+                if candidate is not None and isinstance(candidate, dict) \
+                        and "messages" in candidate:
+                    cand_version = candidate.get("version") or 0
+                    # Accept a snapshot only if it is fresh enough to reflect
+                    # every write we have observed.
+                    if cand_version >= floor:
+                        res = dict(candidate)
+                        res.pop('_fresh', None)
+                        _state.last_result = None
+                    else:
+                        # Too old (a newer write happened); hold as fallback
+                        # but keep waiting for a fresh QUERY.
+                        if best_fallback is None:
+                            best_fallback = dict(candidate)
+                            best_fallback.pop('_fresh', None)
             if res is not None:
                 return res
             if time.time() >= deadline:
-                return None
+                # Timed out: best-effort. Prefer the version-floor snapshot if
+                # we ever captured one; else the newest stale snapshot; else None.
+                return best_fallback
             time.sleep(0.03)
 
     def _http_get_result(self, handler):
         """GET /context_result -> LIVE context.
-        Triggers a fresh QUERY, then waits briefly for it to land (bounded),
-        so the WoZ page always sees current memory even on first load.
+
+        If a fresh snapshot is already cached (version >= min_required_version),
+        return it immediately without triggering a new QUERY.  Only trigger a
+        fresh QUERY when the cache is cold or stale, so that SSE wake-ups do
+        not create a QUERY -> SSE -> GET -> QUERY feedback loop.
         """
-        self._trigger("QUERY", {})
+        with _state.lock:
+            floor = _state.min_required_version
+            cached = _state.last_result
+            cached_ver = (cached.get("version") if isinstance(cached, dict) else None)
+            has_fresh = (
+                cached is not None
+                and isinstance(cached, dict)
+                and "messages" in cached
+                and (cached.get("version") or 0) >= floor
+            )
+        _cfg.debug_print(f"[{self.name}] GET /context_result: floor={floor} "
+                         f"cached_ver={cached_ver} has_fresh={has_fresh}")
+        if not has_fresh:
+            _cfg.debug_print(f"[{self.name}] GET: triggering fresh QUERY")
+            self._trigger("QUERY", {})
         res = self._wait_for_result(timeout=2.0)
+        _cfg.debug_print(f"[{self.name}] GET: returning version="
+                         f"{(res.get('version') if isinstance(res, dict) else None)}")
         _send_json(handler, 200, res if res is not None else {"status": "empty"})
 
     def _http_post_query(self, handler, data):
@@ -169,8 +217,11 @@ class ContextQuery(DummyModule):
     def module_start(self):
         _cfg.debug_print(f"[{self.name}] Starting context HTTP on port {self._port}")
         self._trigger_event = threading.Event()
+        self._sse_version = 0
+        self._sse_event = threading.Event()
         self._pending_op = "QUERY"
         self._pending_payload = {}
+        get_server(self._host, self._port, modules_get={"sse": self._handle_sse})
         start_server(self._host, self._port)
         _cfg.debug_print(f"[{self.name}] context HTTP started on :{self._port} "
                          f"(POST /{self._http_path_query}, GET /{self._http_path_result})")
@@ -197,23 +248,96 @@ class ContextQuery(DummyModule):
         # 2) Consume responses/events from llm_service; capture QUERY responses.
         if len(self._input_queues['responses']) > 0:
             msg = self._input_queues['responses'].get()
-            if msg:
-                # Only "response" messages whose id matches a cmd we sent.
-                # (GENERATE token/generation_done events pass through to the router;
-                # we ignore them here but must not block it — they share the fan-out
-                # queue, so each consumer gets its own copy.)
-                if msg.get("type") == "response" and msg.get("id") in self._sent_ids:
-                    self._sent_ids.discard(msg["id"])
-                    result = msg.get("result")
-                    with _state.lock:
-                        if result is not None:
-                            result = dict(result)
-                        if isinstance(result, dict):
-                            result["_fresh"] = True
-                        _state.last_result = result
-                    _cfg.debug_print(f"[{self.name}] Captured context (version="
-                                     f"{result.get('version') if result else '?'})")
-                    self._output_queues['result'].put(result)
+            if msg and msg.get("type") == "response":
+                result = msg.get("result")
+                # Track the context version from EVERY response we see, not
+                # just the ones we sent. APPEND/DELETE/REPLACE responses from
+                # other modules carry the bumped version and must advance the
+                # SSE signal, otherwise the browser never learns the context
+                # changed.
+                if isinstance(result, dict):
+                    resp_version = result.get("version")
+                    version_advanced = False
+                    if isinstance(resp_version, int):
+                        with _state.lock:
+                            if resp_version > _state.min_required_version:
+                                _state.min_required_version = resp_version
+                                version_advanced = True
+                    # Only cache QUERY results (which carry the 'messages'
+                    # list) as the live context snapshot, and only for commands
+                    # we sent ourselves (so we know the response is a QUERY
+                    # result, not some other op).
+                    is_ours = msg.get("id") in self._sent_ids
+                    if is_ours:
+                        self._sent_ids.discard(msg["id"])
+                        if "messages" in result:
+                            with _state.lock:
+                                result = dict(result)
+                                result["_fresh"] = True
+                                _state.last_result = result
+                            _cfg.debug_print(f"[{self.name}] Captured context "
+                                             f"(version={result.get('version')})")
+                    # Only signal SSE subscribers when the context version
+                    # actually advanced (a real change), so that repeated
+                    # QUERY responses at the same version do not spam.
+                    if version_advanced:
+                        with self._lock_sse:
+                            self._sse_version += 1
+                        _cfg.debug_print(f"[{self.name}] SSE: version advanced to "
+                                         f"{self._sse_version}, waking clients")
+                        self._sse_event.set()
+                    else:
+                        _cfg.debug_print(f"[{self.name}] Response at version "
+                                         f"{resp_version} (no advance, floor="
+                                         f"{_state.min_required_version}, "
+                                         f"ours={is_ours})")
+                # Always fan the response out so other consumers see it.
+                self._output_queues['result'].put(result)
+
+
+    def _handle_sse(self, handler):
+        """GET /sse - Server-Sent Events stream for live context updates.
+
+        Sends an SSE frame every time the context changes (driven by
+        _trigger_event). The browser's EventSource fires onmessage for
+        each frame; the WoZ page uses this as a wake-up signal to
+        re-fetch the context via GET /context_result.
+        """
+        handler.send_response(200)
+        handler.send_header("Content-Type", "text/event-stream")
+        handler.send_header("Cache-Control", "no-cache")
+        handler.send_header("Access-Control-Allow-Origin", "*")
+        handler.end_headers()
+
+        # Send an initial frame so the browser knows the connection is live.
+        handler.wfile.write(b"data: \n\n")
+        handler.wfile.flush()
+
+        try:
+            my_version = 0
+            while True:
+                # Wait for a context change (or 30s timeout for keepalive).
+                self._sse_event.wait(timeout=30)
+                # Clear the event so the next wait() blocks until a new
+                # version bump.  If two bumps happen between two wake-ups,
+                # the version check below still catches the latest one.
+                self._sse_event.clear()
+                # Check if the context version has advanced past ours.
+                with self._lock_sse:
+                    current = self._sse_version
+                if current > my_version:
+                    my_version = current
+                    _cfg.debug_print(f"[{self.name}] SSE: sending frame "
+                                     f"(version {my_version})")
+                    handler.wfile.write(b"data: \n\n")
+                    handler.wfile.flush()
+                else:
+                    # No new version (timeout or spurious wakeup): send a
+                    # keepalive comment to prevent proxy/browser timeout.
+                    handler.wfile.write(b": keepalive\n\n")
+                    handler.wfile.flush()
+        except (BrokenPipeError, ConnectionResetError, OSError):
+            pass  # Client disconnected
 
     def _send_cmd(self, op, payload):
         """Build a command addressed to llm_service and put it on our cmd slot."""

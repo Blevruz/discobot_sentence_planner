@@ -126,6 +126,27 @@
       font-size: 13px;
     }
 
+    .memory-autorefresh {
+      margin-left: auto;
+      color: #666;
+      font-size: 13px;
+      display: flex;
+      align-items: center;
+      gap: 6px;
+    }
+
+    .memory-autorefresh .dot {
+      display: inline-block;
+      width: 8px;
+      height: 8px;
+      border-radius: 50%;
+      background-color: #4CAF50;
+    }
+
+    .memory-autorefresh.paused .dot {
+      background-color: #9E9E9E;
+    }
+
     textarea {
       width: 100%;
       min-height: 150px;
@@ -288,6 +309,10 @@ Example: That's fascinating! Tell me more about that."
           </button>
 
           <span id="memoryVersion" class="memory-version"></span>
+
+          <span id="autoRefreshIndicator" class="memory-autorefresh">
+            <span class="dot"></span>auto-refresh
+          </span>
         </div>
 
         <div id="memoryContainer">
@@ -329,6 +354,18 @@ Example: That's fascinating! Tell me more about that."
      */
     const postAddress = "{{postAddress}}";
     const memoryAddress = "{{memoryAddress}}";
+    // Server-Sent Events endpoint for live context updates. Defaults to the
+    // WoZ page's own path (served by the woz_webpage HttpOutput module).
+    /* SSE endpoint: if the template variable was not substituted (raw
+       {{sseAddress}} remains), fall back to /sse which is served by the
+       context_query module on the same port. */
+    let sseAddress = "{{sseAddress}}";
+    if (sseAddress.startsWith("{{")) { sseAddress = "/sse"; }
+    // Command endpoint (system prompts / "make robot say this" / user
+    // messages) - routes through woz_handler so assistant speech is both
+    // appended to context AND spoken. Defaults to postAddress if unset.
+    let commandAddress = "{{commandAddress}}";
+    if (commandAddress.startsWith("{{")) { commandAddress = postAddress; }
 
 
     /*
@@ -391,7 +428,7 @@ Example: That's fascinating! Tell me more about that."
       postData({
         type: "system_prompt",
         content: message
-      }, postAddress)
+      }, commandAddress)
       .then(() => {
         showStatus(
           "✓ System prompt sent successfully",
@@ -399,6 +436,11 @@ Example: That's fascinating! Tell me more about that."
         );
 
         input.value = "";
+
+        // The write is async (it lands in the LLM context a moment after
+        // the POST returns), so refresh memory and wait for the version to
+        // advance so the new entry is actually shown.
+        return refreshMemoryAfterWrite();
       })
       .catch(() => {
         showStatus(
@@ -429,7 +471,7 @@ Example: That's fascinating! Tell me more about that."
       postData({
         type: "assistant_speech",
         content: message
-      }, postAddress)
+      }, commandAddress)
       .then(() => {
         showStatus(
           "✓ Robot speech command sent successfully",
@@ -437,6 +479,11 @@ Example: That's fascinating! Tell me more about that."
         );
 
         input.value = "";
+
+        // The write is async (it lands in the LLM context a moment after
+        // the POST returns), so refresh memory and wait for the version to
+        // advance so the new entry is actually shown.
+        return refreshMemoryAfterWrite();
       })
       .catch(() => {
         showStatus(
@@ -444,6 +491,46 @@ Example: That's fascinating! Tell me more about that."
           false
         );
       });
+    }
+
+
+    /*
+     * Refresh the memory panel and wait (bounded) for the context version to
+     * advance past what we just saw, so an async write made via
+     * sendSystemPrompt / sendAssistantSpeech is reflected in the table.
+     * Falls back to the last known state on timeout.
+     */
+    function refreshMemoryAfterWrite(timeoutMs = 3000) {
+      const beforeVersion =
+        parseInt(
+          document.getElementById("memoryVersion")
+            .textContent.replace(/\D/g, "") || "0",
+          10
+        );
+
+      const started = Date.now();
+
+      function attempt() {
+        return memoryRequest("GET")
+          .then(data => {
+            if (
+              data.version > beforeVersion ||
+              Date.now() - started > timeoutMs
+            ) {
+              renderMemory(data);
+              return;
+            }
+
+            return new Promise(resolve =>
+              setTimeout(resolve, 150)
+            ).then(attempt);
+          })
+          .catch(() => {
+            // Give up quietly on error; the operator can hit Refresh.
+          });
+      }
+
+      return attempt();
     }
 
 
@@ -529,6 +616,7 @@ Example: That's fascinating! Tell me more about that."
         const role = document.createElement("input");
 
         role.value = message.role || "";
+        role.dataset.rendered = role.value;
 
 
         /*
@@ -538,6 +626,7 @@ Example: That's fascinating! Tell me more about that."
           document.createElement("textarea");
 
         content.value = message.content || "";
+        content.dataset.rendered = content.value;
 
 
         /*
@@ -817,6 +906,147 @@ Example: That's fascinating! Tell me more about that."
 
 
     /*
+     * Automatic refresh, in two tiers:
+     *
+     * Primary: Server-Sent Events. The server's HttpOutput module keeps a
+     * persistent GET connection open (Accept: text/event-stream) and pushes
+     * a "data: <msg>\n\n" frame every time a message arrives on its input
+     * queue. The page re-fetches the context store on each frame, so the
+     * payload content doesn't matter — it's a wake-up signal.
+     *
+     * Fallback: polling, only when SSE is unavailable (e.g. the http
+     * module's queue isn't wired, or the server predates SSE support).
+     *
+     * In both tiers the re-render is skipped while the operator is editing
+     * a table cell, and polling pauses while the tab is hidden.
+     */
+    let lastSeenVersion = 0;
+    let pollTimer = null;
+    let sseSource = null;
+    let sseFailed = false;
+
+
+    /*
+     * True if any table editor differs from the last rendered value.
+     */
+    function memoryTableDirty() {
+      const rows = document
+        .querySelectorAll("#memoryContainer tbody tr");
+
+      for (const row of rows) {
+        const role = row.querySelector("input");
+        const content = row.querySelector("textarea");
+
+        if (
+          (role && role.value !== role.dataset.rendered) ||
+          (content && content.value !== content.dataset.rendered)
+        ) {
+          return true;
+        }
+      }
+
+      return false;
+    }
+
+
+    function setAutoRefreshIndicator(mode) {
+      const indicator = document.getElementById("autoRefreshIndicator");
+      const title = {
+        sse: "Auto-refresh: live (server-pushed updates).",
+        poll: "Auto-refresh: polling (server push unavailable).",
+        dirty: "Auto-refresh paused: unsaved edits (Save, or wait for the next tick).",
+        hidden: "Auto-refresh paused (tab hidden). It resumes when the tab is visible.",
+        off: "Auto-refresh unavailable (server unreachable).",
+      };
+      indicator.title = title[mode] || "";
+      indicator.style.opacity = (mode === "off" || mode === "dirty" || mode === "hidden") ? "0.35" : "1";
+    }
+
+
+    /* Primary path: Server-Sent Events. Each frame re-fetches the context
+       store (version-gated re-render). */
+    function handleSseEvent() {
+      if (document.hidden) {
+        return;
+      }
+      if (memoryTableDirty()) {
+        setAutoRefreshIndicator("dirty");
+        return;
+      }
+      memoryRequest("GET")
+        .then(data => {
+          const version = data.version || 0;
+          if (version !== lastSeenVersion) {
+            lastSeenVersion = version;
+            renderMemory(data);
+          }
+          if (!document.hidden) setAutoRefreshIndicator("sse");
+        })
+        .catch(() => { /* next event retries */ });
+    }
+
+
+    function connectSse() {
+      if (sseSource) {
+        return;
+      }
+      sseSource = new EventSource(sseAddress);
+      sseSource.onopen = () => {
+        sseFailed = false;
+        setAutoRefreshIndicator("sse");
+      };
+      sseSource.onmessage = () => handleSseEvent();
+      sseSource.onerror = () => {
+        /* EventSource auto-reconnects a few times, then closes. Once it is
+           CLOSED we fall back to polling and retry SSE later. */
+        if (sseSource && sseSource.readyState === EventSource.CLOSED) {
+          sseSource.close();
+          sseSource = null;
+          sseFailed = true;
+          if (!document.hidden) {
+            startPolling();
+            setAutoRefreshIndicator("poll");
+          }
+          setTimeout(connectSse, 15000);
+        }
+      };
+    }
+
+
+    /* Fallback path: polling, only active when SSE is not connected. */
+    function tickPoll() {
+      if (document.hidden || sseSource) {
+        return;
+      }
+      if (memoryTableDirty()) {
+        setAutoRefreshIndicator("dirty");
+        return;
+      }
+      memoryRequest("GET")
+        .then(data => {
+          const version = data.version || 0;
+          if (version !== lastSeenVersion) {
+            lastSeenVersion = version;
+            renderMemory(data);
+          }
+          if (!document.hidden) setAutoRefreshIndicator("poll");
+        })
+        .catch(() => {
+          setAutoRefreshIndicator("off");
+        });
+    }
+
+
+    function startPolling() {
+      if (pollTimer) {
+        return;
+      }
+      pollTimer = setInterval(tickPoll, 5000);
+      tickPoll();
+    }
+
+
+    /*
      * Initialisation.
      */
     console.log(
@@ -834,6 +1064,34 @@ Example: That's fascinating! Tell me more about that."
     );
 
     loadMemory();
+
+    document
+      .addEventListener(
+        "visibilitychange",
+        () => {
+          if (document.hidden) {
+            setAutoRefreshIndicator("hidden");
+          } else {
+            if (sseSource) {
+              setAutoRefreshIndicator("sse");
+            } else {
+              startPolling();
+            }
+          }
+        }
+      );
+
+    if (!document.hidden) {
+      connectSse();
+      /* Belt and braces: if SSE can't connect, the onerror fallback starts
+         polling; if the server has no SSE support at all, the EventSource
+         error fires almost immediately. */
+      setTimeout(() => {
+        if (!sseSource && !sseFailed) {
+          startPolling();
+        }
+      }, 3000);
+    }
   </script>
 </body>
 </html>

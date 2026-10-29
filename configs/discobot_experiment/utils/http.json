@@ -23,45 +23,45 @@
         ]
     },
     {
-	    "name": "series_webpage",
-	    "module": "output_modules.http",
-	    "args": {
-		    "port": "$HTTP_PORT",
-		    "path": "series",
-		    "template": "@misc/html/series.html",
-		    "variables": {
+        "name": "series_webpage",
+        "module": "output_modules.http",
+        "args": {
+            "port": "$HTTP_PORT",
+            "path": "series",
+            "template": "@misc/html/series.html",
+            "variables": {
                 "series": "@misc/series-1.json",
                 "postAddress": "/user_website_input"
-		    }
-	    }
+            }
+        }
     },
     {
-	    "name": "poems_webpage",
-	    "module": "output_modules.http",
-	    "args": {
-		    "port": "$HTTP_PORT",
-		    "path": "poems",
-		    "template": "@misc/html/poems.html",
-		    "variables": {
+        "name": "poems_webpage",
+        "module": "output_modules.http",
+        "args": {
+            "port": "$HTTP_PORT",
+            "path": "poems",
+            "template": "@misc/html/poems.html",
+            "variables": {
                 "poems": "@misc/poems-1.json",
                 "postAddress": "/user_website_input"
-		    }
-	    }
-
+            }
+        }
     },
     {
-	    "name": "woz_webpage",
-	    "module": "output_modules.http",
-	    "args": {
-		    "port": "$HTTP_PORT",
-		    "path": "woz",
-		    "template": "@misc/html/woz.html",
-		    "variables": {
+        "name": "woz_webpage",
+        "module": "output_modules.http",
+        "args": {
+            "port": "$HTTP_PORT",
+            "path": "woz",
+            "template": "@misc/html/woz.html",
+            "variables": {
                 "postAddress": "/context_query",
-                "memoryAddress": "/context_result"
-		    }
-	    }
-
+                "commandAddress": "/woz_input",
+                "memoryAddress": "/context_result",
+                "sseAddress": "/sse"
+            }
+        }
     },
     {
         "name": "user_website_input",

@@ -30,9 +30,10 @@
             "path": "woz",
             "template": "@misc/html/woz.html",
             "variables": {
-                "postAddress": "/user_website_input",
-                "memoryRequestAddress": "/context_query",
-                "memoryResultAddress": "/context_result"
+                "postAddress": "/context_query",
+                "commandAddress": "/woz_input",
+                "memoryAddress": "/context_result",
+                "sseAddress": "/sse"
             }
         }
 
