@@ -144,6 +144,9 @@
             font-size: 12px;
             line-height: 1.5;
             color: #212529;
+            display: flex;
+            flex-direction: column;
+            gap: 8px;
         }
         
         .memory-display::-webkit-scrollbar {
@@ -165,11 +168,83 @@
         }
         
         .memory-entry {
-            margin-bottom: 8px;
+            margin-bottom: 0;
             padding: 8px;
             background: #f8f9fa;
             border-radius: 5px;
             border-left: 3px solid #dee2e6;
+            display: flex;
+            flex-direction: column;
+            gap: 6px;
+        }
+        
+        .memory-entry-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: flex-start;
+            gap: 8px;
+        }
+        
+        .memory-entry-info {
+            flex: 1;
+            min-width: 0;
+        }
+        
+        .memory-entry-actions {
+            display: flex;
+            gap: 4px;
+            flex-shrink: 0;
+        }
+        
+        .memory-entry-actions button {
+            padding: 4px 8px;
+            font-size: 11px;
+            margin: 0;
+            background: #868e96;
+        }
+        
+        .memory-entry-actions button:hover {
+            background: #495057;
+        }
+        
+        .memory-entry-actions button.edit-btn {
+            background: #339af0;
+        }
+        
+        .memory-entry-actions button.edit-btn:hover {
+            background: #1c7ed6;
+        }
+        
+        .memory-entry-actions button.delete-btn {
+            background: #fa5252;
+        }
+        
+        .memory-entry-actions button.delete-btn:hover {
+            background: #e03131;
+        }
+        
+        .memory-entry-actions button.save-btn {
+            background: #37b24d;
+        }
+        
+        .memory-entry-actions button.save-btn:hover {
+            background: #2b8a3e;
+        }
+        
+        .memory-entry textarea,
+        .memory-entry input {
+            width: 100%;
+            padding: 6px;
+            font-size: 12px;
+            font-family: 'Courier New', monospace;
+            border: 1px solid #dee2e6;
+            border-radius: 4px;
+            resize: vertical;
+            min-height: 40px;
+        }
+        
+        .memory-entry input {
+            min-height: 0;
         }
         
         .memory-entry.system {
@@ -246,6 +321,49 @@
             font-style: italic;
         }
         
+        .memory-add-section {
+            margin-top: 8px;
+            padding: 10px;
+            background: #f8f9fa;
+            border-radius: 5px;
+            border: 2px dashed #dee2e6;
+            flex-shrink: 0;
+        }
+        
+        .memory-add-section h3 {
+            font-size: 0.9em;
+            margin: 0 0 8px 0;
+            color: #495057;
+        }
+        
+        .memory-add-grid {
+            display: grid;
+            grid-template-columns: 80px 1fr auto;
+            gap: 8px;
+            align-items: start;
+        }
+        
+        .memory-add-grid input,
+        .memory-add-grid textarea {
+            padding: 6px;
+            font-size: 12px;
+            border: 1px solid #dee2e6;
+            border-radius: 4px;
+            font-family: 'Courier New', monospace;
+        }
+        
+        .memory-add-grid textarea {
+            resize: vertical;
+            min-height: 50px;
+        }
+        
+        .memory-add-grid button {
+            padding: 8px 12px;
+            font-size: 12px;
+            margin: 0;
+            white-space: nowrap;
+        }
+        
         @media (max-width: 1200px) {
             .main-content {
                 grid-template-columns: 1fr 1fr;
@@ -299,7 +417,15 @@ Press ENTER to send"></textarea>
                 </div>
                 <div class="control-box-content">
                     <div class="memory-display" id="memoryDisplay">
-                        <div class="empty-message">No context yet. Messages will appear here.</div>
+                        <div class="empty-message">Loading context...</div>
+                    </div>
+                    <div class="memory-add-section">
+                        <h3>➕ Add Message to Context</h3>
+                        <div class="memory-add-grid">
+                            <input id="newMessageRole" type="text" value="system" placeholder="Role">
+                            <textarea id="newMessageContent" placeholder="Message content..."></textarea>
+                            <button onclick="appendMessage()">Add</button>
+                        </div>
                     </div>
                 </div>
             </div>
@@ -307,7 +433,7 @@ Press ENTER to send"></textarea>
         
         <div class="footer">
             <div class="status-message" id="statusMessage">Loading context...</div>
-            <div class="shortcuts">⌨️ Enter = Send | Shift+Enter = New line | 🔄 Live updates enabled</div>
+            <div class="shortcuts">⌨️ Enter = Send/Save | Shift+Enter = New line | 🔄 Live updates</div>
         </div>
     </div>
 
@@ -421,7 +547,10 @@ Press ENTER to send"></textarea>
                 return;
             }
             
-            memoryEl.innerHTML = memoryLog.map((entry, index) => {
+            // Clear and rebuild
+            memoryEl.innerHTML = '';
+            
+            memoryLog.forEach((entry, index) => {
                 let typeLabel, className, description;
                 
                 if (entry.role === 'system' || entry.type === 'system_prompt') {
@@ -442,15 +571,188 @@ Press ENTER to send"></textarea>
                     description = '';
                 }
                 
-                const escaped = escapeHtml(entry.content);
-                return `<div class="memory-entry ${className}">
-                    <div><strong>#${index + 1} ${typeLabel}</strong> <span class="timestamp">[${entry.timestamp || 'N/A'}]</span></div>
-                    <div style="font-size: 0.85em; color: #868e96; margin-top: 2px;">${description}</div>
-                    <div class="memory-entry-content">${escaped}</div>
-                </div>`;
-            }).join('');
+                const entryDiv = document.createElement('div');
+                entryDiv.className = `memory-entry ${className}`;
+                entryDiv.dataset.index = index;
+                entryDiv.dataset.msgId = entry.msg_id;
+                
+                entryDiv.innerHTML = `
+                    <div class="memory-entry-header">
+                        <div class="memory-entry-info">
+                            <div><strong>#${index + 1} ${typeLabel}</strong> <span class="timestamp">[${entry.timestamp || 'N/A'}]</span></div>
+                            <div style="font-size: 0.85em; color: #868e96; margin-top: 2px;">${description}</div>
+                        </div>
+                        <div class="memory-entry-actions">
+                            <button class="edit-btn" onclick="editMessage(${index})">Edit</button>
+                            <button class="delete-btn" onclick="deleteMessage(${index})">Delete</button>
+                        </div>
+                    </div>
+                    <div class="memory-entry-content">${escapeHtml(entry.content)}</div>
+                `;
+                
+                memoryEl.appendChild(entryDiv);
+            });
             
             memoryEl.scrollTop = memoryEl.scrollHeight;
+        }
+
+        function editMessage(index) {
+            const entry = memoryLog[index];
+            if (!entry) return;
+            
+            const entryDiv = document.querySelector(`.memory-entry[data-index="${index}"]`);
+            if (!entryDiv) return;
+            
+            // Replace content with editable form
+            const headerDiv = entryDiv.querySelector('.memory-entry-header');
+            const actionsDiv = headerDiv.querySelector('.memory-entry-actions');
+            
+            // Update actions to Save/Cancel
+            actionsDiv.innerHTML = `
+                <button class="save-btn" onclick="saveMessage(${index})">Save</button>
+                <button onclick="cancelEdit(${index})">Cancel</button>
+            `;
+            
+            // Replace content with textarea
+            const contentDiv = entryDiv.querySelector('.memory-entry-content');
+            contentDiv.innerHTML = `
+                <input type="text" class="edit-role" value="${escapeHtml(entry.role || 'system')}" placeholder="Role">
+                <textarea class="edit-content">${escapeHtml(entry.content)}</textarea>
+            `;
+            
+            // Add Enter key handler to the textarea
+            const textarea = contentDiv.querySelector('.edit-content');
+            textarea.addEventListener('keydown', (e) => {
+                if (e.key === 'Enter' && !e.shiftKey) {
+                    e.preventDefault();
+                    saveMessage(index);
+                }
+            });
+            
+            // Focus the textarea
+            textarea.focus();
+            // Move cursor to end
+            textarea.selectionStart = textarea.selectionEnd = textarea.value.length;
+        }
+
+        function cancelEdit(index) {
+            // Just redraw the display
+            updateMemoryDisplay();
+        }
+
+        async function saveMessage(index) {
+            const entry = memoryLog[index];
+            if (!entry) return;
+            
+            const entryDiv = document.querySelector(`.memory-entry[data-index="${index}"]`);
+            if (!entryDiv) return;
+            
+            const newRole = entryDiv.querySelector('.edit-role').value.trim();
+            const newContent = entryDiv.querySelector('.edit-content').value;
+            
+            if (!newRole || !newContent.trim()) {
+                showStatus('⚠️ Role and content cannot be empty', true);
+                return;
+            }
+            
+            showStatus('💾 Saving changes...');
+            
+            try {
+                const response = await fetch(contextAddress, {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({
+                        op: 'REPLACE',
+                        payload: {
+                            start_id: entry.msg_id,
+                            end_id: entry.msg_id,
+                            messages: [{
+                                role: newRole,
+                                content: newContent,
+                                meta: entry.meta || {}
+                            }]
+                        }
+                    })
+                });
+                
+                if (!response.ok) throw new Error(`HTTP ${response.status}`);
+                
+                showStatus('✅ Message updated!');
+                setTimeout(loadMemory, 300);
+            } catch (error) {
+                showStatus('❌ Failed to save', true);
+                console.error(error);
+            }
+        }
+
+        async function deleteMessage(index) {
+            const entry = memoryLog[index];
+            if (!entry) return;
+            
+            if (!confirm(`Delete message #${index + 1}?`)) return;
+            
+            showStatus('🗑️ Deleting message...');
+            
+            try {
+                const response = await fetch(contextAddress, {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({
+                        op: 'DELETE',
+                        payload: {
+                            ids: [entry.msg_id]
+                        }
+                    })
+                });
+                
+                if (!response.ok) throw new Error(`HTTP ${response.status}`);
+                
+                showStatus('✅ Message deleted!');
+                setTimeout(loadMemory, 300);
+            } catch (error) {
+                showStatus('❌ Failed to delete', true);
+                console.error(error);
+            }
+        }
+
+        async function appendMessage() {
+            const roleInput = document.getElementById('newMessageRole');
+            const contentInput = document.getElementById('newMessageContent');
+            
+            const role = roleInput.value.trim();
+            const content = contentInput.value.trim();
+            
+            if (!role || !content) {
+                showStatus('⚠️ Role and content required', true);
+                return;
+            }
+            
+            showStatus('➕ Adding message...');
+            
+            try {
+                const response = await fetch(contextAddress, {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({
+                        op: 'APPEND',
+                        payload: {
+                            messages: [{
+                                role: role,
+                                content: content
+                            }]
+                        }
+                    })
+                });
+                
+                if (!response.ok) throw new Error(`HTTP ${response.status}`);
+                
+                showStatus('✅ Message added!');
+                contentInput.value = '';
+                setTimeout(loadMemory, 300);
+            } catch (error) {
+                showStatus('❌ Failed to add', true);
+                console.error(error);
+            }
         }
 
         function escapeHtml(text) {
@@ -545,6 +847,15 @@ Press ENTER to send"></textarea>
             loadMemory();
             startSSE();
             document.getElementById('systemPromptInput').focus();
+            
+            // Add Enter key handler for new message content
+            const newMessageContent = document.getElementById('newMessageContent');
+            newMessageContent.addEventListener('keydown', (e) => {
+                if (e.key === 'Enter' && !e.shiftKey) {
+                    e.preventDefault();
+                    appendMessage();
+                }
+            });
         });
     </script>
 </body>
