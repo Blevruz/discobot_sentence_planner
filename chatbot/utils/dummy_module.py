@@ -24,6 +24,7 @@ class DummyModule:
         self._loop_type = 'blocking'
         self._loop_timeout = 1
 
+        self.stopped = None
         self.verbose = args.get("verbose", False)
 
         utils.config.debug_print(f"Module {name} initializing with args: {args}")
@@ -133,7 +134,6 @@ class DummyModule:
     def start_loop(self):
         utils.config.debug_print(f"Starting {self.type} loop for {self.name}")
         self.module_start()
-        self.stopped = None
         self.stopped = threading.Event()
         if self._loop_type == 'blocking':
             return

@@ -24,7 +24,9 @@ class LLMService(DummyMiddle):
             args.get("api", "/v1/chat/completions"),
             args.get("headers", {"Content-Type": "application/json"}),
             args.get("temperature", 0.3),
-            args.get("max_tokens", 256)
+            args.get("max_tokens", 256),
+            stop_event=self.stopped,
+            name = self.name + "_generator"
         )
         self.dispatcher = CommandDispatcher(self.ctx, self.gen)
 
