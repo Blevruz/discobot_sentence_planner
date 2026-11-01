@@ -165,19 +165,18 @@ class DummyModule:
             self.loop.join(timeout=self._loop_timeout)
             if self.loop.is_alive():
                 utils.config.debug_print(f"Process {self.name} did not",\
-                            f"stop after {self._loop_timeout} seconds")
+                            f"stop after {self._loop_timeout} seconds,",\
+                            f"attempting terminate")
                 self.loop.terminate()
-                self.loop.join(timeout=self._loop_timeout)
                 had_to_force = True
+                self.loop.join(timeout=self._loop_timeout)
+                if self.loop.is_alive():
+                    utils.config.debug_print(f"Process {self.name} did not",\
+                                f"stop after {self._loop_timeout} seconds,",\
+                                f"attempting kill")
+                    self.loop.kill()
+                    self.loop.join(timeout=self._loop_timeout)
 
-            """
-            if self.loop.is_alive():
-                # Try to force kill a process that won't die
-                utils.config.debug_print(f"Error: Process {self.name} did not terminate, killing...")
-                self.loop.kill()
-                self.loop.join(timeout=self._loop_timeout)
-                had_to_force = True
-            """
 
             if self.loop.is_alive():
                 # Can't seem to kill a process, just log it

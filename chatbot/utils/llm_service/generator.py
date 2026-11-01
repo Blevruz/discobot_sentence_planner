@@ -21,7 +21,7 @@ class LLMGenerator:
 
     def stream_generate(self, context):
         payload = self.build_payload(context)
-        resp = requests.post(self.url + self.api, headers=self.headers, json=payload, stream=True)
+        resp = requests.post(self.url + self.api, headers=self.headers, json=payload, stream=True, timeout=(5,30))
         resp.raise_for_status()
 
         decoder = codecs.getincrementaldecoder("utf-8")()
