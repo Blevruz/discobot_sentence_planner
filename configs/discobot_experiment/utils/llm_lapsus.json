@@ -42,16 +42,16 @@
         "args": {},
         "links": [
             {
-                "name": "woz_system_to_llm",
+                "name": "woz_system_to_deaf_block",
                 "from_slot": "system_cmd",
-                "target_name": "llm_service",
-                "to_slot": "cmd"
+                "target_name": "deaf_toggle_block",
+                "to_slot": "default"
             },
             {
-                "name": "woz_assistant_to_llm",
+                "name": "woz_assistant_to_deaf_block",
                 "from_slot": "assistant_cmd",
-                "target_name": "llm_service",
-                "to_slot": "cmd"
+                "target_name": "deaf_toggle_block",
+                "to_slot": "default"
             },
             {
                 "name": "woz_speech_to_output",
@@ -70,6 +70,33 @@
                 "from_slot": "user_text",
                 "target_name": "user_string_to_llm_append",
                 "to_slot": "text"
+            },
+            {
+                "name": "woz_toggle_deaf_to_block",
+                "from_slot": "toggle_deaf",
+                "target_name": "deaf_toggle_block",
+                "to_slot": "block"
+            },
+            {
+                "name": "woz_toggle_mute_to_block",
+                "from_slot": "toggle_mute",
+                "target_name": "mute_toggle_block",
+                "to_slot": "block"
+            }
+        ]
+    },
+    {
+        "name": "deaf_toggle_block",
+        "module": "middle_modules.toggle_block",
+        "args": {
+            "block": false
+        },
+        "links": [
+            {
+                "name": "deaf_block_to_llm",
+                "from_slot": "default",
+                "target_name": "llm_service",
+                "to_slot": "cmd"
             }
         ]
     },
@@ -87,8 +114,23 @@
                 "to_slot": "cmd"
             },
             {
-                "name": "append_trigger_to_generate",
+                "name": "append_trigger_to_mute_block",
                 "from_slot": "trigger",
+                "target_name": "mute_toggle_block",
+                "to_slot": "default"
+            }
+        ]
+    },
+    {
+        "name": "mute_toggle_block",
+        "module": "middle_modules.toggle_block",
+        "args": {
+            "block": false
+        },
+        "links": [
+            {
+                "name": "mute_block_to_generate",
+                "from_slot": "default",
                 "target_name": "llm_generate_on_trigger",
                 "to_slot": "trigger"
             }

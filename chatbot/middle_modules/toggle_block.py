@@ -15,24 +15,27 @@ class ToggleBlock(DummyMiddle):
     """
 
     def action(self, i):
+        # Check for block toggle signals first
         block = self._input_queues['block'].get()
         while block is not None:
             self._block = not self._block
             utils.config.debug_print(f"[{self.name}] Toggled blocking: {self._block}")
             block = self._input_queues['block'].get()
 
-        while self._block:
-            out = self.input_queue.get()
-            if out is None:
-                time.sleep(self.delay)
-                return
-        while not self._block:
-            out = self.input_queue.get()
-            if out is not None:
-                self.output_queue.put(out)
-            else:
-                time.sleep(self.delay)
-                return
+        # Process one message from input queue
+        out = self.input_queue.get()
+        if out is None:
+            time.sleep(self.delay)
+            return
+        
+        # If blocking is active, discard the message
+        if self._block:
+            # utils.config.debug_print(f"[{self.name}] Received data in default queue but blocking, discarding")
+            return
+        
+        # If not blocking, forward the message
+        # utils.config.debug_print(f"[{self.name}] Received data in default queue, block: {self._block}, forwarding")
+        self.output_queue.put(out)
 
     def __init__(self, name="toggle_block", **args):
         """Initializes the module.

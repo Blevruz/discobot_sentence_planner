@@ -14,6 +14,8 @@ class WoZHandler(DummyModule):
     - system_prompt: sends as system message to LLM
     - assistant_speech: sends as assistant message to LLM AND to TTS for speaking
     - regular strings: passes through as system messages (for backward compatibility)
+    - toggle_deaf: toggles blocking of context messages to LLM
+    - toggle_mute: toggles blocking of generation triggers to LLM
     """
     
     def __init__(self, name="woz_handler", **args):
@@ -27,6 +29,8 @@ class WoZHandler(DummyModule):
         self._output_queues['speech_text'] = QueueSlot(self, 'output', datatype='string')
         self._output_queues['passthrough_text'] = QueueSlot(self, 'output', datatype='string')
         self._output_queues['user_text'] = QueueSlot(self, 'output', datatype='string')
+        self._output_queues['toggle_deaf'] = QueueSlot(self, 'output', datatype='signal')
+        self._output_queues['toggle_mute'] = QueueSlot(self, 'output', datatype='signal')
 
     def action(self, i):
         if len(self._input_queues['input']) > 0:
@@ -113,6 +117,16 @@ class WoZHandler(DummyModule):
                         # Also send to TTS for speaking
                         utils.config.debug_print(f"[{self.name}] Sending to TTS: {content}")
                         self._output_queues['speech_text'].put(content)
+                    
+                    elif message_type == "toggle_deaf":
+                        # Toggle blocking of context messages to LLM
+                        utils.config.debug_print(f"[{self.name}] Toggling deaf mode (blocking context)")
+                        self._output_queues['toggle_deaf'].put(True)
+                    
+                    elif message_type == "toggle_mute":
+                        # Toggle blocking of generation triggers to LLM
+                        utils.config.debug_print(f"[{self.name}] Toggling mute mode (blocking generation)")
+                        self._output_queues['toggle_mute'].put(True)
                         
                     else:
                         # Unknown type or missing type - treat as regular operator command

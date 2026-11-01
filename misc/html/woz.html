@@ -39,16 +39,66 @@
             background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
             color: white;
             flex-shrink: 0;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
         }
         
-        .header h1 {
+        .header-left h1 {
             font-size: 1.5em;
             margin-bottom: 3px;
         }
         
-        .header .subtitle {
+        .header-left .subtitle {
             font-size: 0.85em;
             opacity: 0.9;
+        }
+        
+        .header-controls {
+            display: flex;
+            gap: 10px;
+        }
+        
+        .toggle-btn {
+            background: rgba(255, 255, 255, 0.2);
+            color: white;
+            border: 2px solid rgba(255, 255, 255, 0.4);
+            padding: 8px 16px;
+            border-radius: 6px;
+            font-size: 13px;
+            font-weight: 600;
+            cursor: pointer;
+            transition: all 0.2s;
+            display: flex;
+            align-items: center;
+            gap: 6px;
+            margin: 0;
+        }
+        
+        .toggle-btn:hover {
+            background: rgba(255, 255, 255, 0.3);
+            border-color: rgba(255, 255, 255, 0.6);
+            transform: translateY(-1px);
+        }
+        
+        .toggle-btn.active {
+            background: #fa5252;
+            border-color: #c92a2a;
+        }
+        
+        .toggle-btn.active:hover {
+            background: #e03131;
+        }
+        
+        .toggle-indicator {
+            width: 10px;
+            height: 10px;
+            border-radius: 50%;
+            background: #51cf66;
+        }
+        
+        .toggle-btn.active .toggle-indicator {
+            background: white;
         }
         
         .main-content {
@@ -379,8 +429,20 @@
 <body>
     <div class="container">
         <div class="header">
-            <h1>🤖 Wizard of Oz Control Panel</h1>
-            <p class="subtitle">Control the robot's context and speech during the experiment</p>
+            <div class="header-left">
+                <h1>🤖 Wizard of Oz Control Panel</h1>
+                <p class="subtitle">Control the robot's context and speech during the experiment</p>
+            </div>
+            <div class="header-controls">
+                <button class="toggle-btn" id="deafBtn" onclick="toggleDeaf()">
+                    <span class="toggle-indicator"></span>
+                    <span>🔇 Deaf Mode</span>
+                </button>
+                <button class="toggle-btn" id="muteBtn" onclick="toggleMute()">
+                    <span class="toggle-indicator"></span>
+                    <span>🔕 Mute Mode</span>
+                </button>
+            </div>
         </div>
         
         <div class="main-content">
@@ -444,6 +506,8 @@ Press ENTER to send"></textarea>
         let memoryLog = [];
         let currentContextVersion = 0;
         let sseSource = null;
+        let isDeaf = false;
+        let isMute = false;
 
         // Load memory from server (live robot context)
         async function loadMemory() {
@@ -751,6 +815,48 @@ Press ENTER to send"></textarea>
                 setTimeout(loadMemory, 300);
             } catch (error) {
                 showStatus('❌ Failed to add', true);
+                console.error(error);
+            }
+        }
+
+        async function toggleDeaf() {
+            try {
+                await postData(postAddress, {
+                    type: "toggle_deaf"
+                });
+                
+                isDeaf = !isDeaf;
+                const btn = document.getElementById('deafBtn');
+                if (isDeaf) {
+                    btn.classList.add('active');
+                    showStatus('🔇 Deaf mode ON - Robot stops receiving context');
+                } else {
+                    btn.classList.remove('active');
+                    showStatus('🔊 Deaf mode OFF - Robot receives context');
+                }
+            } catch (error) {
+                showStatus('❌ Failed to toggle deaf mode', true);
+                console.error(error);
+            }
+        }
+
+        async function toggleMute() {
+            try {
+                await postData(postAddress, {
+                    type: "toggle_mute"
+                });
+                
+                isMute = !isMute;
+                const btn = document.getElementById('muteBtn');
+                if (isMute) {
+                    btn.classList.add('active');
+                    showStatus('🔕 Mute mode ON - Robot stops generating');
+                } else {
+                    btn.classList.remove('active');
+                    showStatus('🔔 Mute mode OFF - Robot can generate');
+                }
+            } catch (error) {
+                showStatus('❌ Failed to toggle mute mode', true);
                 console.error(error);
             }
         }
