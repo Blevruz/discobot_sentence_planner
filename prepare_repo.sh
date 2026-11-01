@@ -108,10 +108,16 @@ setup_env() {
         source venv/bin/activate && uv pip install -r requirements.txt
     elif $PYENV_INSTALLED; then
         echo "Using pyenv to create venv..."
-        pyenv init
-        pyenv local 3.11
-        pyenv exec $PYTHON -m venv venv
-        source venv/bin/activate && $PYTHON -m pip install -r requirements.txt
+	# Do we have an install of python 3.11?
+	if pyenv version --list | grep "3.11" &>/dev/null; then
+        	pyenv init
+        	pyenv local 3.11
+        	pyenv exec $PYTHON -m venv venv
+        	source venv/bin/activate && $PYTHON -m pip install -r requirements.txt
+	else
+		echo "No pyenv install of python 3.11 found! You'll need root to install it."
+		exit 1
+	fi
     else
         echo "Using system Python to create venv..."
         $PYTHON -m venv venv
