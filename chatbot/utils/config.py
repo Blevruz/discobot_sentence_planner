@@ -67,10 +67,11 @@ def process_config_arg(arg):
 
     while isinstance(arg, str):
         if arg.startswith('$'):
-            arg = os.environ[arg[1:]]
+            key = arg[1:]
+            arg = os.environ[key]
             # Shouldn't crash if empty but we should say something about it
             if not arg:
-                debug_print(f"Environment variable {value[1:]} is empty")
+                debug_print(f"Environment variable {key} is empty")
         elif arg.startswith('@'):
             # If it's a json file, load it as a json
             if arg.endswith('.json'):
