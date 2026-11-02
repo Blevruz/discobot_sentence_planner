@@ -42,10 +42,10 @@ def manual_module_specification(args, input_modules: str, middle_modules: list, 
         input_module.link_to(output_module)
 
     if utils.config.verbose:
-        utils.config.debug_print(" Input module: {input_module.name}, input module's output queue: {input_module.output_queue}")
+        utils.config.debug_print(f" Input module: {input_module.name}, input module's output queue: {input_module.output_queue}")
         for m in middle_module_list:
-            utils.config.debug_print(" Middle module: {m.name}, middle module's input queue: {m.input_queue}, middle module's output queue: {m.output_queue}")
-        utils.config.debug_print(" Output module: {output_module.name}, output module's input queue: {output_module.input_queue}")
+            utils.config.debug_print(f" Middle module: {m.name}, middle module's input queue: {m.input_queue}, middle module's output queue: {m.output_queue}")
+        utils.config.debug_print(f" Output module: {output_module.name}, output module's input queue: {output_module.input_queue}")
 
     loaded_modules[f"input_{input_module.name}"] = input_module
     for m in middle_module_list:
