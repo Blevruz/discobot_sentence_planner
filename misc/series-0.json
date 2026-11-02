@@ -1,0 +1,35 @@
+[
+	{
+		"series": "1 – 2 – 3 – 4 – ?",
+		"answers": [
+			{
+				"value": "5",
+				"explanation": "Simply counting up by one each time."
+			}
+		],
+		"time": 30,
+		"answer_instruction": "Familiarization task: the robot is inactive. Do not comment."
+	},
+	{
+		"series": "2 – 4 – 6 – 8 – ?",
+		"answers": [
+			{
+				"value": "10",
+				"explanation": "The even numbers, step +2."
+			}
+		],
+		"time": 30,
+		"answer_instruction": "Familiarization task: the robot is inactive. Do not comment."
+	},
+	{
+		"series": "5 – 10 – 15 – 20 – ?",
+		"answers": [
+			{
+				"value": "25",
+				"explanation": "Multiples of 5, step +5."
+			}
+		],
+		"time": 30,
+		"answer_instruction": "Familiarization task: the robot is inactive. Do not comment."
+	}
+]
