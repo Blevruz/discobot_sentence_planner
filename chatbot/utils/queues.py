@@ -1,6 +1,8 @@
 # chatbot/utils/queues.py
 import multiprocessing
+import multiprocessing.queues
 import utils.config
+import threading
 from queue import Empty
 
 
@@ -72,7 +74,7 @@ class QueueWrapper:
         """Check if the queue is full"""
         return self._queue.full()
 
-    def _join_thread_with_timeout(queue, timeout):
+    def _join_thread_with_timeout(self, queue, timeout):
         """Join a multiprocessing.Queue's internal feeder thread, but don't
         block forever if it's stuck (e.g. after a killed process left its
         write lock held)."""

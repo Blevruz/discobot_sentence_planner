@@ -13,7 +13,7 @@ class LLMGenerator:
         self.headers = headers
         self.temperature = temperature
         self.max_tokens = max_tokens
-        self._stop_event = None
+        self._stop_event = stop_event
         self.name = name
 
     def build_payload(self, context):
