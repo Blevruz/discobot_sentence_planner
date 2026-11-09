@@ -244,12 +244,6 @@
                 "from_slot": "stream",
                 "target_name": "token_accumulator",
                 "to_slot": "tokens"
-            },
-            {
-                "name": "text_to_assistant_buffer_flush",
-                "from_slot": "text",
-                "target_name": "assistant_buffer",
-                "to_slot": "flush"
             }
         ]
     },

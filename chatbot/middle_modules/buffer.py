@@ -1,6 +1,6 @@
 # chatbot/middle_modules/buffer.py
 from middle_modules.dummy import DummyMiddle, middle_modules_class
-from utils.queues import QueueSlot
+from utils.queues import QueueSlot, ControlMessage, END_OF_TURN
 import utils.config
 
 buffer_behaviors = ["overwrite",    # Buffer overwrites oldest data if full
@@ -12,6 +12,10 @@ class Buffer(DummyMiddle):
     """Holds a fixed-size buffer of incoming data.
     Sends it forwards either when full, or on receiving a flush signal.
     Bypass can be toggled with the bypass input queue.
+
+    The END_OF_TURN control message on the data input also flushes. Prefer it
+    to the 'flush' slot when the data and the end of the data come from the
+    same source: being in-band, it cannot arrive before the data it ends.
     """
 
     def action(self, i):
@@ -23,6 +27,14 @@ class Buffer(DummyMiddle):
 
             while not self.input_queue.empty():
                 data = self.input_queue.get()
+                if data is None:
+                    break
+                if isinstance(data, ControlMessage):
+                    if self.bypass:
+                        self.output_queue.put(data)
+                    elif data == END_OF_TURN:
+                        self._flush_buffer()
+                    continue
                 if self.bypass:
                     self.output_queue.put(data)
                 else:
@@ -62,6 +74,7 @@ class Buffer(DummyMiddle):
         self.datatype_in = args.get('datatype_in', "any")
         self.datatype_out = args.get('datatype_out', "any")
 
+        self.deliver_control('default')
         self._input_queues['flush'] = QueueSlot(self, 'input', datatype='any')
         self._input_queues['bypass'] = QueueSlot(self, 'input', datatype='any')
         self.bypass = False

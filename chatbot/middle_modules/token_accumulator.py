@@ -2,7 +2,7 @@
 import re
 
 from middle_modules.dummy import DummyMiddle, middle_modules_class
-from utils.queues import QueueSlot
+from utils.queues import QueueSlot, END_OF_TURN
 import utils.config
 
 
@@ -17,7 +17,10 @@ class TokenAccumulator(DummyMiddle):
     Input queue:
         'tokens' : token/chunk strings; GENERATION_DONE flushes the current segment
     Output queue:
-        'stream' : emits strings (segments)
+        'stream' : emits strings (segments). After the last segment of a
+                   generation it emits the in-band END_OF_TURN control
+                   message (see utils.queues.ControlMessage), which module
+                   code never sees unless its input slot asks for it.
     """
 
     # Common abbreviations which should not cause a sentence flush when the
@@ -73,6 +76,11 @@ class TokenAccumulator(DummyMiddle):
             utils.config.debug_print(f"[{self.name}] Emitted segment: {self.segment}")
         self.segment = ""
 
+    def _emit_end_of_turn(self):
+        if len(self._output_queues['stream']) > 0:
+            self._output_queues['stream'].put(END_OF_TURN)
+            utils.config.debug_print(f"[{self.name}] Emitted end of turn")
+
     def action(self, i):
         q = self.input_queue
         while True:
@@ -85,6 +93,7 @@ class TokenAccumulator(DummyMiddle):
 
             if token == GENERATION_DONE:
                 self._emit_segment()
+                self._emit_end_of_turn()
                 break
 
             utils.config.debug_print(f"[{self.name}] Token received: {token}")

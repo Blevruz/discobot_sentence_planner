@@ -121,6 +121,21 @@ class DummyModule:
                 name=name)
         new_queue.bind_from(other, slot=from_slot)
 
+    def forward_control(self, from_slot="default", to_slot="default"):
+        """Relay in-band control messages (e.g. END_OF_TURN) arriving on an
+        input slot to an output slot, in order with the data.
+
+        Call this in __init__ of any module that transforms a stream and sits
+        between a control message's source and its consumer. The message never
+        reaches action(), so transform code needs no special case.
+        """
+        self._input_queues[from_slot].forward_control_to(to_slot)
+
+    def deliver_control(self, slot="default"):
+        """Have control messages on this input slot returned by get(), for
+        modules that need to react to them (e.g. a buffer)."""
+        self._input_queues[slot].deliver_control()
+
     def _loop(self):
         i = 0
         while not self.is_stopped():

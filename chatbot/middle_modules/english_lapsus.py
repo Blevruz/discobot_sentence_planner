@@ -140,6 +140,8 @@ class EnglishLapsus(DummyMiddle):
         self._loop_type = "thread"
         self.datatype_in = "string"
         self.datatype_out = "string"
+        # END_OF_TURN must stay in order behind the (modified) text
+        self.forward_control('input', 'output')
 
         self.niveau_phonetique = args.get('niveau_phonetique', 0.5)
         self.proba_lapsus = args.get('proba_lapsus', 0.4)

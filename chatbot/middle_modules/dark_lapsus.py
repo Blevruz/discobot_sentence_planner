@@ -152,6 +152,8 @@ class DarkLapsus(DummyMiddle):
         self._loop_type = "thread"
         self.datatype_in = "string"
         self.datatype_out = "string"
+        # END_OF_TURN must stay in order behind the (modified) text
+        self.forward_control('input', 'output')
 
         self.niveau_dark   = args.get('niveau_dark',   0.5)
         self.niveau_rime   = args.get('niveau_rime',   0.5)

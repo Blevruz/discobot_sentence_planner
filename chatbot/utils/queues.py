@@ -6,6 +6,38 @@ import threading
 from queue import Empty
 
 
+class ControlMessage:
+    """Control message going through the same queues as the data for
+    synchronisation purposes.
+
+    By default, not retrieved by QueueSlot.get().
+    This behavior can be overriden through 
+        QueueSlot.forward_control_to, forwarding it through a module
+        QueueSlot.deliver_control, providing it for the module to use
+    """
+    __slots__ = ("kind",)
+
+    def __init__(self, kind):
+        self.kind = kind
+
+    def __eq__(self, other):
+        return isinstance(other, ControlMessage) and other.kind == self.kind
+
+    def __hash__(self):
+        return hash(("ControlMessage", self.kind))
+
+    def __repr__(self):
+        return f"ControlMessage({self.kind!r})"
+
+    def __reduce__(self):
+        # Survive pickling through multiprocessing queues.
+        return (ControlMessage, (self.kind,))
+
+
+# Emitted after the last piece of data of an assistant turn.
+END_OF_TURN = ControlMessage("end_of_turn")
+
+
 def datatype_match(datatype1, datatype2):
     """Check if two datatypes match"""
     if datatype1 == datatype2:
@@ -145,6 +177,9 @@ class QueueSlot:
         self._size = size
         self._queues = []
         self._offset_get = 0
+        # What to do with in-band ControlMessages arriving on this (input) slot
+        self._control_forward = []   # names of output slots of the module
+        self._control_deliver = False
 
     @property
     def datatype(self):
@@ -168,19 +203,58 @@ class QueueSlot:
             for queue in self._queues:
                 queue.put(data)
 
+    def forward_control_to(self, *output_slots):
+        """Relay ControlMessages received on this input slot to the given
+        output slots of the owning module, in order with the data.
+
+        The relay happens when the message is read, i.e. after the module has
+        finished processing (and emitting the results of) all the data that
+        preceded it. This holds for modules that emit synchronously from
+        action(); a module that holds data back between calls must handle
+        control messages itself (see deliver_control).
+        """
+        for name in output_slots:
+            if name not in self._module._output_queues:
+                raise ValueError(f"{self._module.name} has no output slot {name}")
+            if name not in self._control_forward:
+                self._control_forward.append(name)
+
+    def deliver_control(self, deliver=True):
+        """Have ControlMessages returned by get() instead of being swallowed."""
+        self._control_deliver = deliver
+
+    def _handle_control(self, msg):
+        """Apply this slot's policy to a control message. Returns True when
+        the message should be handed to the caller of get()."""
+        for name in self._control_forward:
+            self._module._output_queues[name].put(msg)
+        return self._control_deliver
+
     def get(self):
-        """ Get data from one of the queues in this slot."""
+        """ Get data from one of the queues in this slot.
+
+        ControlMessages are never returned unless deliver_control() was set.
+        """
         if self._direction == 'output':
             raise ValueError(f"Attempting to get data from output queue slot")
-        else:
-            # TODO: Try to order received input chronologically somehow
-            # In the meantime we'll just get the first non-empty queue and
-            # change the offset to not always get the same queue
-            for qi in range(len(self._queues)):
-                queue = self._queues[(self._offset_get + qi) % len(self._queues)]
-                if not queue.empty():
-                    self._offset_get = (self._offset_get + qi + 1) % len(self._queues)
-                    return queue.get()
+        # TODO: Try to order received input chronologically somehow
+        # In the meantime we'll just get the first non-empty queue and
+        # change the offset to not always get the same queue
+        for qi in range(len(self._queues)):
+            idx = (self._offset_get + qi) % len(self._queues)
+            queue = self._queues[idx]
+            while not queue.empty():
+                item = queue.get()
+                if item is None:
+                    # empty() is only a hint on multiprocessing queues
+                    break
+                if isinstance(item, ControlMessage):
+                    if self._handle_control(item):
+                        self._offset_get = (idx + 1) % len(self._queues)
+                        return item
+                    continue
+                self._offset_get = (idx + 1) % len(self._queues)
+                return item
 
         return None
 
@@ -194,7 +268,7 @@ class QueueSlot:
         # Bit harder than empty since it's probably also interesting to know
         # if we have a single full queue in there
         # So let's yell at the user not to use this I guess!
-        raise NotImplementedError("QueueSlot.full() is not implemented right now")
+        raise NotImplementedError("QueueSlot.full() is not implemented.")
         #for queue in self._queues:
         #    if not queue.full():
         #        return False
