@@ -8,7 +8,7 @@
             "template": "@misc/html/intro.html",
             "variables": {
                 "explanation": "@misc/explanation_en.txt",
-                "questionnaireUrl": "$QUESTIONNAIRE_URL",
+                "introQuestionnaireUrl": "$INTRO_QUESTIONNAIRE_URL",
                 "nextStage": "poems_familiarization",
                 "nextLabel": "Begin familiarization"
             }
@@ -90,6 +90,20 @@
                 "series": "@misc/series-1.json",
                 "postAddress": "/user_website_input",
                 "robotActive": "true",
+                "nextStage": "outro",
+                "nextLabel": "End"
+            }
+        }
+    },
+    {
+        "name": "outro_webpage",
+        "module": "output_modules.http",
+        "args": {
+            "port": "$HTTP_PORT",
+            "path": "outro",
+            "template": "@misc/html/outro.html",
+            "variables": {
+                "outroQuestionnaireUrl": "$OUTRO_QUESTIONNAIRE_URL",
                 "nextStage": "",
                 "nextLabel": ""
             }
