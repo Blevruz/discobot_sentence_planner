@@ -8,7 +8,7 @@
             "template": "@misc/html/intro.html",
             "variables": {
                 "explanation": "@misc/explanation_en.txt",
-                "questionnaireUrl": "$QUESTIONNAIRE_URL",
+                "questionnaireUrl": "$INTRO_QUESTIONNAIRE_URL",
                 "nextStage": "series_familiarization",
                 "nextLabel": "Begin familiarization"
             }
