@@ -15,12 +15,13 @@ class HttpOutput(DummyOutput):
     def handle_get(self, handler):
         """Sends the current HTML content as a response."""
         with self._lock:
-            body = self.current_html
+            body = self.current_html.encode('utf-8')
         handler.send_response(200)
         handler.send_header("Content-Type", "text/html; charset=utf-8")
+        # Length in bytes (to avoid cutoff)
         handler.send_header("Content-Length", str(len(body)))
         handler.end_headers()
-        handler.wfile.write(body.encode('utf-8'))
+        handler.wfile.write(body)
 
     def render_template(self, template):
         def replace(matched):
