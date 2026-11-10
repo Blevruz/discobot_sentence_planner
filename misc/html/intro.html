@@ -76,6 +76,23 @@
     const nextStage = "{{nextStage}}";
     const nextLabel = "{{nextLabel}}";
 
+    // Progress reporting for the supervisor (WoZ panel); skipped when the
+    // stage has no statusAddress configured.
+    const STATUS_ADDRESS = "{{statusAddress}}";
+    const STAGE_LABEL = "{{stageLabel}}";
+    function reportStatus(fields) {
+      if (!STATUS_ADDRESS || STATUS_ADDRESS.indexOf("{{") === 0) return;
+      const stage = window.location.pathname.replace(/^\/+|\/+$/g, "");
+      const label = STAGE_LABEL.indexOf("{{") === 0 ? stage : STAGE_LABEL;
+      fetch(STATUS_ADDRESS, {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify(Object.assign({ stage: stage, stageLabel: label }, fields))
+      }).catch(function() {});
+    }
+    reportStatus({ state: "intro" });
+
+
     document.getElementById("startBtn").addEventListener("click", function() {
       window.location.href = "/" + nextStage;
     });

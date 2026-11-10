@@ -101,6 +101,65 @@
             background: white;
         }
         
+        /* Where the participant currently is (fed by /participant_status) */
+        .participant-status {
+            display: flex;
+            align-items: center;
+            gap: 10px;
+            margin: 0 20px;
+            padding: 6px 14px;
+            min-width: 260px;
+            max-width: 520px;
+            background: rgba(255, 255, 255, 0.2);
+            border: 2px solid rgba(255, 255, 255, 0.4);
+            border-radius: 6px;
+        }
+
+        .ps-dot {
+            flex-shrink: 0;
+            width: 12px;
+            height: 12px;
+            border-radius: 50%;
+            background: #adb5bd;
+        }
+
+        .participant-status[data-state="task"] .ps-dot,
+        .participant-status[data-state="chatting"] .ps-dot { background: #51cf66; }
+        .participant-status[data-state="intro"] .ps-dot,
+        .participant-status[data-state="waiting"] .ps-dot,
+        .participant-status[data-state="results"] .ps-dot { background: #fcc419; }
+        .participant-status[data-state="finished"] .ps-dot { background: #74c0fc; }
+        .participant-status[data-state="error"] .ps-dot { background: #fa5252; }
+
+        .ps-text {
+            flex: 1;
+            min-width: 0;
+        }
+
+        .ps-stage {
+            font-size: 0.9em;
+            font-weight: 700;
+        }
+
+        .ps-detail {
+            font-size: 0.8em;
+            opacity: 0.9;
+            white-space: nowrap;
+            overflow: hidden;
+            text-overflow: ellipsis;
+        }
+
+        .ps-timer {
+            flex-shrink: 0;
+            font-size: 1.2em;
+            font-weight: 700;
+            font-variant-numeric: tabular-nums;
+        }
+
+        .ps-timer.overtime {
+            color: #ffa8a8;
+        }
+
         .main-content {
             flex: 1;
             display: grid;
@@ -415,6 +474,19 @@
         }
         
         @media (max-width: 1200px) {
+            .header {
+                flex-wrap: wrap;
+                gap: 10px;
+            }
+
+            /* Own row below the title and the toggles */
+            .participant-status {
+                order: 3;
+                flex: 1 1 100%;
+                max-width: none;
+                margin: 0;
+            }
+
             .main-content {
                 grid-template-columns: 1fr 1fr;
                 grid-template-rows: 1fr 1fr;
@@ -432,6 +504,15 @@
             <div class="header-left">
                 <h1>🤖 Wizard of Oz Control Panel</h1>
                 <p class="subtitle">Control the robot's context and speech during the experiment</p>
+            </div>
+            <div class="participant-status" id="participantStatus" data-state="none"
+                 title="What the participant is currently doing">
+                <span class="ps-dot"></span>
+                <div class="ps-text">
+                    <div class="ps-stage" id="psStage">Participant</div>
+                    <div class="ps-detail" id="psDetail">Waiting for the first page to load…</div>
+                </div>
+                <div class="ps-timer" id="psTimer"></div>
             </div>
             <div class="header-controls">
                 <button class="toggle-btn" id="deafBtn" onclick="toggleDeaf()">
@@ -503,6 +584,7 @@ Press ENTER to send"></textarea>
         const postAddress = "/woz_input";
         const contextAddress = "/context_result";
         const sseAddress = "/sse";
+        const statusAddress = "/participant_status";
         let memoryLog = [];
         let currentContextVersion = 0;
         let sseSource = null;
@@ -949,7 +1031,89 @@ Press ENTER to send"></textarea>
             }
         }
 
+        // ---------- Participant progress indicator ----------
+        const PS_DESCRIPTIONS = {
+            intro: "Reading the introduction",
+            waiting: "On the instructions page, has not started yet",
+            chatting: "Chatting freely with the robot",
+            results: "Looking at the results of this part",
+            finished: "Has finished the study"
+        };
+        let psRequestInFlight = false;
+
+        function formatClock(totalSeconds) {
+            const s = Math.max(0, Math.ceil(totalSeconds));
+            return Math.floor(s / 60) + ":" + String(s % 60).padStart(2, "0");
+        }
+
+        function renderParticipantStatus(status, serverTime) {
+            const box = document.getElementById('participantStatus');
+            const stageEl = document.getElementById('psStage');
+            const detailEl = document.getElementById('psDetail');
+            const timerEl = document.getElementById('psTimer');
+            timerEl.textContent = "";
+            timerEl.classList.remove('overtime');
+
+            if (!status) {
+                box.dataset.state = "none";
+                stageEl.textContent = "Participant";
+                detailEl.textContent = "Waiting for the first page to load…";
+                box.title = "No update from the participant's pages yet";
+                return;
+            }
+
+            box.dataset.state = status.state || "none";
+            stageEl.textContent = status.stageLabel || status.stage || "Unknown stage";
+
+            if (status.state === "task") {
+                let detail = "Task " + (status.task || "?");
+                if (status.taskCount) detail += " of " + status.taskCount;
+                if (status.taskTitle) detail += " — " + status.taskTitle;
+                detailEl.textContent = detail;
+            } else {
+                detailEl.textContent = PS_DESCRIPTIONS[status.state] || "";
+            }
+
+            // Time left, from the server's clock so the two browsers need not agree.
+            if ((status.state === "task" || status.state === "chatting") && status.timeLimit) {
+                const left = status.timeLimit - (serverTime - status.since);
+                timerEl.textContent = formatClock(left);
+                if (left <= 0) timerEl.classList.add('overtime');
+            }
+
+            const age = Math.max(0, Math.round(serverTime - status.since));
+            box.title = "Last update " + age + "s ago";
+        }
+
+        function renderParticipantStatusError() {
+            const box = document.getElementById('participantStatus');
+            box.dataset.state = "error";
+            document.getElementById('psStage').textContent = "Participant";
+            document.getElementById('psDetail').textContent = "Status unavailable (server unreachable?)";
+            document.getElementById('psTimer').textContent = "";
+        }
+
+        async function refreshParticipantStatus() {
+            if (psRequestInFlight) return;
+            psRequestInFlight = true;
+            try {
+                const response = await fetch(statusAddress, { cache: 'no-store' });
+                if (!response.ok) {
+                    throw new Error(`HTTP error! status: ${response.status}`);
+                }
+                const result = await response.json();
+                renderParticipantStatus(result.status, result.server_time);
+            } catch (error) {
+                console.error('Error loading participant status:', error);
+                renderParticipantStatusError();
+            } finally {
+                psRequestInFlight = false;
+            }
+        }
+
         window.addEventListener('load', () => {
+            refreshParticipantStatus();
+            setInterval(refreshParticipantStatus, 1000);
             loadMemory();
             startSSE();
             document.getElementById('systemPromptInput').focus();

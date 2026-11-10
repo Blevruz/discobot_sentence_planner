@@ -70,5 +70,14 @@
                 "to_slot": "operator_command"
             }
         ]
+    },
+    {
+        "name": "participant_status",
+        "module": "middle_modules.participant_status",
+        "args": {
+            "port": "$HTTP_PORT",
+            "path": "participant_status"
+        },
+        "links": []
     }
 ]

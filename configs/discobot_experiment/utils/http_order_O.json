@@ -7,6 +7,8 @@
             "path": "intro",
             "template": "@misc/html/intro.html",
             "variables": {
+                "statusAddress": "/participant_status",
+                "stageLabel": "Introduction",
                 "explanation": "@misc/explanation_en.txt",
                 "questionnaireUrl": "$INTRO_QUESTIONNAIRE_URL",
                 "nextStage": "series_familiarization",
@@ -22,6 +24,8 @@
             "path": "series_familiarization",
             "template": "@misc/html/series.html",
             "variables": {
+                "statusAddress": "/participant_status",
+                "stageLabel": "Series – familiarization",
                 "series": "@misc/series-0.json",
                 "postAddress": "/user_website_input",
                 "robotActive": "false",
@@ -38,6 +42,8 @@
             "path": "robot_familiarization",
             "template": "@misc/html/robot_familiarization.html",
             "variables": {
+                "statusAddress": "/participant_status",
+                "stageLabel": "Meet the robot",
                 "postAddress": "/user_website_input",
                 "durationSeconds": "120",
                 "nextStage": "series_main",
@@ -53,6 +59,8 @@
             "path": "series_main",
             "template": "@misc/html/series.html",
             "variables": {
+                "statusAddress": "/participant_status",
+                "stageLabel": "Series – main task",
                 "series": "@misc/series-1.json",
                 "postAddress": "/user_website_input",
                 "robotActive": "true",
@@ -69,6 +77,8 @@
             "path": "poems_familiarization",
             "template": "@misc/html/poems.html",
             "variables": {
+                "statusAddress": "/participant_status",
+                "stageLabel": "Poems – familiarization",
                 "poems": "@misc/poems-0.json",
                 "postAddress": "/user_website_input",
                 "robotActive": "true",
@@ -86,6 +96,8 @@
             "path": "poems_main",
             "template": "@misc/html/poems.html",
             "variables": {
+                "statusAddress": "/participant_status",
+                "stageLabel": "Poems – main task",
                 "poems": "@misc/poems-1.json",
                 "postAddress": "/user_website_input",
                 "robotActive": "true",

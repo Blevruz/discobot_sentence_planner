@@ -30,6 +30,8 @@
             "path": "series",
             "template": "@misc/html/series.html",
             "variables": {
+                "statusAddress": "/participant_status",
+                "stageLabel": "Series",
                 "series": "@misc/series-1.json",
                 "postAddress": "/user_website_input"
             }
@@ -43,6 +45,8 @@
             "path": "poems",
             "template": "@misc/html/poems.html",
             "variables": {
+                "statusAddress": "/participant_status",
+                "stageLabel": "Poems",
                 "poems": "@misc/poems-1.json",
                 "postAddress": "/user_website_input"
             }
@@ -95,5 +99,14 @@
                 "to_slot": "operator_command"
             }
         ]
+    },
+    {
+        "name": "participant_status",
+        "module": "middle_modules.participant_status",
+        "args": {
+            "port": "$HTTP_PORT",
+            "path": "participant_status"
+        },
+        "links": []
     }
 ]

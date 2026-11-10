@@ -85,6 +85,22 @@
     // Target of the POST request
     const postAddress = "{{postAddress}}";
 
+    // Progress reporting for the supervisor (WoZ panel). Unlike the robot-driving
+    // posts below, this does not depend on ROBOT_ACTIVE. It is silently skipped
+    // when the stage has no statusAddress configured.
+    const STATUS_ADDRESS = "{{statusAddress}}";
+    const STAGE_LABEL = "{{stageLabel}}";
+    function reportStatus(fields) {
+      if (!STATUS_ADDRESS || STATUS_ADDRESS.indexOf("{{") === 0) return;
+      const stage = window.location.pathname.replace(/^\/+|\/+$/g, "");
+      const label = STAGE_LABEL.indexOf("{{") === 0 ? stage : STAGE_LABEL;
+      fetch(STATUS_ADDRESS, {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify(Object.assign({ stage: stage, stageLabel: label }, fields))
+      }).catch(function() {});
+    }
+
     // Whether the robot should be actively engaged for this stage. When
     // false, this page never POSTs anything that would drive the robot
     // (no system prompts, no inactivity pings) — it only records answers.
@@ -163,6 +179,14 @@
       document.getElementById("taskNumber").textContent = currentTask + 1;
       document.getElementById("series").textContent = task.series;
       document.getElementById("answer").value = "";
+      reportStatus({
+        state: "task",
+        task: currentTask + 1,
+        taskCount: testSeries.length,
+        taskTitle: task.series,
+        timeLimit: task.time
+      });
+ 
 
       if (ROBOT_ACTIVE) {
         // Brief the robot with this series' secret instruction (handled by
@@ -292,6 +316,10 @@
 
     // Function to show the test results
     function showResults() {
+      reportStatus({
+        state: NEXT_STAGE ? "results" : "finished",
+        taskCount: testSeries.length
+      });
       document.getElementById("test").style.display = "none";
       document.getElementById("results").style.display = "block";
       document.getElementById("score").textContent = score;
@@ -352,6 +380,7 @@
     document.getElementById("answer").addEventListener("input", resetInactivityTimer);
 
     document.getElementById("maxTime").textContent = maxTime + "s";
+    reportStatus({ state: "waiting", taskCount: seriesData.length });
 
     if (!ROBOT_ACTIVE) {
       document.getElementById("inactiveBanner").style.display = "block";
