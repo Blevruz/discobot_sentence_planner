@@ -4,6 +4,7 @@ from pathlib import Path
 sys.path.insert(0, str(Path(__file__).resolve().parents[1] / "chatbot"))
 
 from middle_modules.token_accumulator import GENERATION_DONE, TokenAccumulator
+from utils.queues import END_OF_TURN
 
 
 class FakeInput:
@@ -78,7 +79,7 @@ class TokenAccumulatorTests(unittest.TestCase):
     def test_generation_end_flushes_unpunctuated_sentence(self):
         acc, output = self.make_accumulator(['This is the final sentence', GENERATION_DONE])
         acc.action(0)
-        self.assertEqual(output.items, ['This is the final sentence'])
+        self.assertEqual(output.items, ["This is the final sentence", END_OF_TURN])
 
     def test_none_does_not_flush_unpunctuated_sentence(self):
         acc, output = self.make_accumulator(['This is still being generated'])
