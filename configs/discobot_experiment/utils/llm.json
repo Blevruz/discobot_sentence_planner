@@ -20,6 +20,25 @@
                 "from_slot": "toggle_stt",
                 "target_name": "webpage_input_toggle_block",
                 "to_slot": "block"
+            },
+            {
+                "name": "toggle_tts_to_tts_webpage_block",
+                "from_slot": "toggle_tts",
+                "target_name": "tts_webpage_toggle_block",
+                "to_slot": "block"
+            }
+        ]
+    },
+    {
+        "name": "tts_webpage_toggle_block",
+        "module": "middle_modules.toggle_block",
+        "args": {},
+        "links": [
+            {
+                "name": "tts_webpage_input_to_woz_router",
+                "from_slot": "default",
+                "target_name": "woz_router",
+                "to_slot": "input"
             }
         ]
     },
@@ -29,10 +48,10 @@
         "args": {},
         "links": [
             {
-                "name": "webpage_input_to_woz_router",
+                "name": "webpage_input_to_tts_block",
                 "from_slot": "default",
-                "target_name": "woz_router",
-                "to_slot": "input"
+                "target_name": "tts_webpage_toggle_block",
+                "to_slot": "default"
             }
         ]
     },

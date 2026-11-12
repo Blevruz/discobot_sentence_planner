@@ -97,6 +97,12 @@
                 "from_slot": "default",
                 "target_name": "stt",
                 "to_slot": "toggle_stt"
+            },
+            {
+                "name": "nao_tts_to_llm_toggle_tts",
+                "from_slot": "default",
+                "target_name": "llm",
+                "to_slot": "toggle_tts"
             }
         ]
     },
