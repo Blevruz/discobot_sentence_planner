@@ -26,38 +26,33 @@
             {
                 "name": "audio_toggle_to_vad",
                 "from_slot": "default",
-                "target_name": "webrtc_vad",
+                "target_name": "silero_vad",
                 "to_slot": "default"
             }
         ]
     },
     {
-        "name": "webrtc_vad",
-        "module": "middle_modules.webrtc_vad",
+        "name": "silero_vad",
+        "module": "middle_modules.silero_vad",
         "args": {
             "sample_rate": 16000,
-            "aggressiveness": 3,
-            "frame_duration_ms": 30,
-            "padding_duration_ms": 300,
-            "speech_trigger_ratio": 0.9,
-            "silence_trigger_ratio": 0.9,
             "idle_sleep_s": 0.005
         },
         "links": [
             {
-                "name": "webrtc_vad_to_faster_whisper",
+                "name": "silero_vad_to_faster_whisper",
                 "from_slot": "default",
                 "target_name": "faster_whisper",
                 "to_slot": "default"
             },
             {
-                "name": "webrtc_vad_speech_start",
+                "name": "silero_vad_speech_start",
                 "from_slot": "speech_start",
                 "target_name": "io",
                 "to_slot": "speech_toggle"
             },
             {
-                "name": "webrtc_vad_speech_end",
+                "name": "silero_vad_speech_end",
                 "from_slot": "speech_end",
                 "target_name": "io",
                 "to_slot": "speech_toggle"
