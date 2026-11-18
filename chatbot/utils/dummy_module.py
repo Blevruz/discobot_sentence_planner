@@ -1,6 +1,7 @@
 # chatbot/utils/dummy_module.py
 import multiprocessing
 import threading
+import time
 import utils.config
 from utils.queues import QueueWrapper, QueueSlot
 
@@ -26,6 +27,8 @@ class DummyModule:
 
         self.stopped = None
         self.verbose = args.get("verbose", False)
+
+        self._idle_sleep_s = args.get("idle_sleep_s", 0.001)
 
         utils.config.debug_print(f"Module {name} initializing with args: {args}")
 
@@ -136,10 +139,20 @@ class DummyModule:
         modules that need to react to them (e.g. a buffer)."""
         self._input_queues[slot].deliver_control()
 
+    # Heuristic: an action quicker than this probably found nothing to do
+    _IDLE_ACTION_S = 0.002
+
     def _loop(self):
         i = 0
+        idle = self._idle_sleep_s
         while not self.is_stopped():
-            self.action(i)
+            if idle:
+                start = time.perf_counter()
+                self.action(i)
+                if time.perf_counter() - start < self._IDLE_ACTION_S:
+                    time.sleep(idle)
+            else:
+                self.action(i)
             i += 1
 
     # Overwrite this module if you want to do something when the loop starts
