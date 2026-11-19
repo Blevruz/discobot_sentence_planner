@@ -22,7 +22,7 @@
         "args": {
             "port": "$HTTP_PORT",
             "path": "series_familiarization",
-            "template": "@misc/html/series.html",
+            "template": "@misc/html/series_next_prompt.html",
             "variables": {
                 "statusAddress": "/participant_status",
                 "stageLabel": "Series – familiarization",
@@ -57,7 +57,7 @@
         "args": {
             "port": "$HTTP_PORT",
             "path": "series_main",
-            "template": "@misc/html/series.html",
+            "template": "@misc/html/series_next_prompt.html",
             "variables": {
                 "statusAddress": "/participant_status",
                 "stageLabel": "Series – main task",
@@ -75,7 +75,7 @@
         "args": {
             "port": "$HTTP_PORT",
             "path": "poems_familiarization",
-            "template": "@misc/html/poems.html",
+            "template": "@misc/html/poems_next_prompt.html",
             "variables": {
                 "statusAddress": "/participant_status",
                 "stageLabel": "Poems – familiarization",
@@ -94,7 +94,7 @@
         "args": {
             "port": "$HTTP_PORT",
             "path": "poems_main",
-            "template": "@misc/html/poems.html",
+            "template": "@misc/html/poems_next_prompt.html",
             "variables": {
                 "statusAddress": "/participant_status",
                 "stageLabel": "Poems – main task",

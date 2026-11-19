@@ -16,6 +16,7 @@ class WoZHandler(DummyModule):
     - regular strings: passes through as system messages (for backward compatibility)
     - toggle_deaf: toggles blocking of context messages to LLM
     - toggle_mute: toggles blocking of generation triggers to LLM
+    - inactivityTrigger: sent on the `inactivity_text` output, triggers generation.
     """
     
     def __init__(self, name="woz_handler", **args):
@@ -29,6 +30,7 @@ class WoZHandler(DummyModule):
         self._output_queues['speech_text'] = QueueSlot(self, 'output', datatype='string')
         self._output_queues['passthrough_text'] = QueueSlot(self, 'output', datatype='string')
         self._output_queues['user_text'] = QueueSlot(self, 'output', datatype='string')
+        self._output_queues['inactivity_text'] = QueueSlot(self, 'output', datatype='string')
         self._output_queues['toggle_deaf'] = QueueSlot(self, 'output', datatype='signal')
         self._output_queues['toggle_mute'] = QueueSlot(self, 'output', datatype='signal')
 
@@ -76,8 +78,12 @@ class WoZHandler(DummyModule):
                         inactivity_message = data.get("message", "")
                         if inactivity_message:
                             utils.config.debug_print(f"[{self.name}] Inactivity detected, sending as user message to trigger generation")
-                            # Route to user_text output so it triggers generation
-                            self._output_queues['user_text'].put(inactivity_message)
+                            # Its own output, so that it can be gated without
+                            # touching other messages; user_text if unlinked
+                            slot = 'inactivity_text' \
+                                if len(self._output_queues['inactivity_text']) > 0 \
+                                else 'user_text'
+                            self._output_queues[slot].put(inactivity_message)
                         return
                     
                     if message_type == "system_prompt":
