@@ -10,7 +10,7 @@
                 "statusAddress": "/participant_status",
                 "stageLabel": "Introduction",
                 "explanation": "@misc/explanation_en.txt",
-                "questionnaireUrl": "$INTRO_QUESTIONNAIRE_URL",
+                "introQuestionnaireUrl": "$INTRO_QUESTIONNAIRE_URL",
                 "nextStage": "series_familiarization",
                 "nextLabel": "Begin familiarization"
             }
