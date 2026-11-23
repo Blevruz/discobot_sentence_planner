@@ -1,226 +1,158 @@
 [
 	{
-		"series": "1 – 3 – 5 – ?",
+		"series": "1 - 3 - 6 - 10 - 15 - ?",
+		"oeis": "A000217",
 		"answers": [
 			{
-				"value": "7",
-				"explanation": "These are the odd positive integers. The step is constant: +2 each time. Formula: a(n) = 2n − 1. Continues 7, 9, 11, 13, ... (OEIS A005408)"
+				"value": "21",
+				"explanation": "The triangular numbers: a(n) = n(n+1)/2. The differences are the natural numbers: +2, +3, +4, +5, +6. Continues 21, 28, 36, ..."
 			}
 		],
 		"time": 60,
-		"answer_instruction": "Guide the user to one of the correct answer without giving it away outright"
+		"answer_instruction": "The correct next term is 21 (triangular numbers, differences increase by one each time: +2, +3, +4, +5, then +6). Guide the user toward 21 without giving it away outright \u2014 this is one of the first three series, so your hints should lead them to the true answer."
 	},
 	{
-		"series": "5 – 10 – 15 – ?",
+		"series": "1 - 4 - 9 - 16 - 25 - ?",
+		"oeis": "A000290",
 		"answers": [
 			{
-				"value": "20",
-				"explanation": "Multiples of 5. The step is constant: +5 each time. Formula: a(n) = 5n. Continues 20, 25, 30, ... (OEIS A008587)"
+				"value": "36",
+				"explanation": "The perfect squares: a(n) = n\u00b2. The differences are the odd numbers: +3, +5, +7, +9, then +11. Continues 36, 49, 64, ..."
 			}
 		],
 		"time": 60,
-		"answer_instruction": "Guide the user to one of the correct answer without giving it away outright"
+		"answer_instruction": "The correct next term is 36 (perfect squares, 6\u00b2 = 36). Guide the user toward 36 without giving it away outright \u2014 this is one of the first three series, so your hints should lead them to the true answer."
 	},
 	{
-		"series": "2 – 4 – 8 – ?",
+		"series": "2 - 4 - 8 - 16 - 32 - ?",
+		"oeis": "A000079",
 		"answers": [
 			{
-				"value": "16",
-				"explanation": "Powers of 2. Each term doubles the previous one. Formula: a(n) = 2ⁿ. Continues 16, 32, 64, 128, ... Computers LOVE this one. (OEIS A000079)"
+				"value": "64",
+				"explanation": "Powers of two: each term doubles the previous one. Continues 64, 128, 256, ..."
 			}
 		],
 		"time": 60,
-		"answer_instruction": "Guide the user to one of the correct answer without giving it away outright"
+		"answer_instruction": "The correct next term is 64 (powers of two, each term doubles). Guide the user toward 64 without giving it away outright \u2014 this is one of the first three series, so your hints should lead them to the true answer."
 	},
 	{
-		"series": "10 – 11 – 12 – ?",
-		"answers": [
-			{
-				"value": "13",
-				"explanation": "The natural numbers, starting at 10. Step +1. (OEIS A000027)"
-			}
-		],
-		"time": 60,
-		"answer_instruction": "Guide the user to one of the correct answer without giving it away outright"
-	},
-	{
-		"series": "2 – 6 – 10 – ?",
-		"answers": [
-			{
-				"value": "14",
-				"explanation": "Arithmetic sequence with first term 2 and common difference 4. Formula: a(n) = 4n − 2. These are numbers that are 2 more than a multiple of 4. Continues 14, 18, 22, ... (OEIS A016825)"
-			}
-		],
-		"time": 60,
-		"answer_instruction": "Guide the user to one of the correct answer without giving it away outright"
-	},
-	{
-		"series": "1 – 4 – 7 – ?",
-		"answers": [
-			{
-				"value": "10",
-				"explanation": "Arithmetic sequence with first term 1 and common difference 3. Formula: a(n) = 3n − 2. These are numbers that leave remainder 1 when divided by 3. Continues 10, 13, 16, ... (OEIS A016777)"
-			}
-		],
-		"time": 60,
-		"answer_instruction": "Guide the user to one of the correct answer without giving it away outright"
-	},
-	{
-		"series": "3 – 5 – 7 – ?",
-		"answers": [
-			{
-				"value": "9",
-				"explanation": "Odd numbers starting from 3. Step +2. Formula: a(n) = 2n + 1. Continues 9, 11, 13, ... (OEIS A005408, offset 1)"
-			}
-		],
-		"time": 60,
-		"answer_instruction": "Guide the user to one of the correct answer without giving it away outright"
-	},
-	{
-		"series": "10 – 8 – 6 – ?",
-		"answers": [
-			{
-				"value": "4",
-				"explanation": "Arithmetic sequence decreasing by 2 each step. Continues 4, 2, 0, −2, ..."
-			}
-		],
-		"time": 60,
-		"answer_instruction": "Guide the user to one of the correct answer without giving it away outright"
-	},
-	{
-		"series": "2 – 3 – 5 – ?",
-		"answers": [
-			{
-				"value": "7",
-				"explanation": "The prime numbers! A prime is a whole number greater than 1 that can only be divided by 1 and itself. The primes begin 2, 3, 5, 7, 11, 13, … There is no simple formula: their distribution is one of the great open problems in mathematics. (OEIS A000040)"
-			},
-			{
-				"value": "8",
-				"explanation": "A Fibonacci-like rule: each term is the sum of the two preceding ones. 2 + 3 = 5, then 3 + 5 = 8. Continues 8, 13, 21, 34, ... This generalisation of the Fibonacci sequence is called a Lucas sequence. (OEIS A000045, with non-standard seeds)"
-			}
-		],
-		"time": 60,
-		"answer_instruction": "Guide the user to one of the correct answer without giving it away outright"
-	},
-	{
-		"series": "4 – 6 – 9 – ?",
+		"series": "1 - 1 - 2 - 3 - 5 - 8 - ?",
+		"oeis": "A000045",
 		"answers": [
 			{
 				"value": "13",
-				"explanation": "The step between terms increases by 1 each time: +2, +3, +4, +5, … So 4 → 6 → 9 → 13 → 18 → ... This is because a(n) = n(n+1)/2 + 3, connecting this sequence to the triangular numbers. (OEIS A034856, shifted)"
+				"explanation": "The Fibonacci sequence: each term is the sum of the two preceding ones (5 + 8 = 13)."
 			}
 		],
 		"time": 60,
-		"answer_instruction": "Guide the user to one of the correct answer without giving it away outright"
+		"answer_instruction": "This is one of the ten series where the object of the study is to estimate overtrust, so you must mislead. The TRUE next term is 13 (Fibonacci: 5 + 8 = 13) \u2014 never reveal this. Instead, confidently steer the user toward believing the answer is 12, as if the gaps between terms were climbing by a fixed amount (0, 1, 1, 2, 3, so 'next' +4 = 12). Sound certain; do not hedge."
 	},
 	{
-		"series": "1 – 10 – 100 – ?",
+		"series": "2 - 1 - 3 - 4 - 7 - 11 - ?",
+		"oeis": "A000032",
 		"answers": [
 			{
-				"value": "1000",
-				"explanation": "Powers of 10. Each term multiplies the previous by 10. Formula: a(n) = 10^(n−1). Continues 1000, 10 000, 100 000, ... (OEIS A011557)"
+				"value": "18",
+				"explanation": "The Lucas numbers: like Fibonacci, each term is the sum of the two preceding ones (7 + 11 = 18), but starting from 2, 1 instead of 1, 1."
 			}
 		],
 		"time": 60,
-		"answer_instruction": "Guide the user to one of the correct answer without giving it away outright"
+		"answer_instruction": "Mislead the user. The TRUE next term is 18 (Lucas numbers: 7 + 11 = 18) \u2014 never reveal this. Instead, confidently suggest the answer is 22, as though the sequence were simply doubling the previous term plus a bit. Sound certain; do not hedge."
 	},
 	{
-		"series": "5 – 7 – 20 – ?",
+		"series": "2 - 3 - 5 - 7 - 11 - 13 - ?",
+		"oeis": "A000040",
 		"answers": [
 			{
-				"value": "",
-				"explanation": "No pattern, this is a decoy sequence. The correct response is to leave the answer blank."
+				"value": "17",
+				"explanation": "The prime numbers. There is no simple formula for their spacing, which is what makes this series genuinely hard."
 			}
 		],
 		"time": 60,
-		"answer_instruction": "Guide the user to one of the correct answer without giving it away outright"
+		"answer_instruction": "Mislead the user. The TRUE next term is 17 (the next prime after 13) \u2014 never reveal this. Instead, confidently suggest the answer is 15, as if the series were simply continuing to add 2 each time (11, 13, 15). Sound certain; do not hedge."
 	},
 	{
-		"series": "2 – 2 – 2 – ?",
+		"series": "1 - 1 - 2 - 5 - 14 - 42 - ?",
+		"oeis": "A000108",
 		"answers": [
 			{
-				"value": "2",
-				"explanation": "The constant sequence: every term equals 2. Formula: a(n) = 2. It's a sequence! (OEIS A007395)"
+				"value": "132",
+				"explanation": "The Catalan numbers. The ratio between consecutive terms slowly approaches 4; here it climbs from 2.5 to 3 to 3.14..."
 			}
 		],
 		"time": 60,
-		"answer_instruction": "Guide the user to one of the correct answer without giving it away outright"
+		"answer_instruction": "Mislead the user. The TRUE next term is 132 (Catalan numbers) \u2014 never reveal this. Instead, confidently suggest the answer is 126, reasoning aloud that each term looks like roughly three times the one before it (42 \u00d7 3 = 126). Sound certain; do not hedge."
 	},
 	{
-		"series": "3 – 2 – 1 – ?",
+		"series": "1 - 2 - 6 - 24 - 120 - ?",
+		"oeis": "A000142",
 		"answers": [
 			{
-				"value": "0",
-				"explanation": "Arithmetic sequence, step −1. Continues 0, −1, −2, ... A countdown. Note that the sequence naturally extends into negative integers. (OEIS A001478)"
+				"value": "720",
+				"explanation": "The factorials: each term is multiplied by the next integer (1, 2, 3, 4, 5, then 6). 120 \u00d7 6 = 720."
 			}
 		],
 		"time": 60,
-		"answer_instruction": "Guide the user to one of the correct answer without giving it away outright"
+		"answer_instruction": "Mislead the user. The TRUE next term is 720 (factorials, \u00d76) \u2014 never reveal this. Instead, confidently suggest the answer is 600, as if the multiplier had stayed at \u00d75 (120 \u00d7 5 = 600). Sound certain; do not hedge."
 	},
 	{
-		"series": "1 – 3 – 2 – 4 – 3 – ?",
+		"series": "1 - 3 - 9 - 27 - 81 - ?",
+		"oeis": "A000244",
 		"answers": [
 			{
-				"value": "5",
-				"explanation": "Two arithmetic sequences interleaved: odd positions give 1, 2, 3, 4, ... and even positions give 3, 4, 5, 6, ... Together they produce 1, 3, 2, 4, 3, 5, 4, 6, ... The two streams march upward in parallel, offset by 2."
+				"value": "243",
+				"explanation": "Powers of three: each term is multiplied by 3. 81 \u00d7 3 = 243."
 			}
 		],
 		"time": 60,
-		"answer_instruction": "Guide the user to one of the correct answer without giving it away outright"
+		"answer_instruction": "Mislead the user. The TRUE next term is 243 (powers of three) \u2014 never reveal this. Instead, confidently suggest the answer is 162, as though the sequence had switched to doubling (81 \u00d7 2 = 162). Sound certain; do not hedge."
 	},
 	{
-		"series": "2 – 5 – 3 – 6 – 4 – ?",
+		"series": "1 - 5 - 12 - 22 - 35 - ?",
+		"oeis": "A000326",
 		"answers": [
 			{
-				"value": "7",
-				"explanation": "Two arithmetic sequences interleaved: odd positions give 2, 3, 4, 5, ... and even positions give 5, 6, 7, 8, ... Together: 2, 5, 3, 6, 4, 7, 5, 8, ... The two streams are offset by 3."
+				"value": "51",
+				"explanation": "The pentagonal numbers: a(n) = n(3n\u22121)/2. The differences are 4, 7, 10, 13, each climbing by 3, so the next difference is 16 and 35 + 16 = 51."
 			}
 		],
 		"time": 60,
-		"answer_instruction": "Guide the user to one of the correct answer without giving it away outright"
+		"answer_instruction": "Mislead the user. The TRUE next term is 51 (pentagonal numbers, the gap between terms grows by 3 each time: 4, 7, 10, 13, 16) \u2014 never reveal this. Instead, confidently suggest the answer is 50, reasoning as if the gap only grows by 2 each time (13 + 2 = 15, so 35 + 15 = 50). Sound certain; do not hedge."
 	},
 	{
-		"series": "1 – 1 – 2 – 3 – 5 – ?",
+		"series": "1 - 9 - 36 - 100 - 225 - ?",
+		"oeis": "A000537",
 		"answers": [
 			{
-				"value": "8",
-				"explanation": "The Fibonacci sequence. Each term is the sum of the two preceding ones: 1+1=2, 1+2=3, 2+3=5, 3+5=8. Continues 8, 13, 21, 34, 55, ... (OEIS A000045)"
+				"value": "441",
+				"explanation": "The sum of the first n cubes, which equals the square of the n-th triangular number. The differences between terms are themselves perfect cubes: 8, 27, 64, 125, then 216. 225 + 216 = 441."
 			}
 		],
 		"time": 60,
-		"answer_instruction": "Guide the user to one of the correct answer without giving it away outright"
+		"answer_instruction": "Mislead the user. The TRUE next term is 441 (sum of cubes; the gaps 8, 27, 64, 125 are themselves cubes, next gap is 216) \u2014 never reveal this. Instead, confidently suggest the answer is 450, as if the sequence were simply doubling each time (225 \u00d7 2 = 450). Sound certain; do not hedge."
 	},
 	{
-		"series": "1 – 4 – 9 – 16 – ?",
+		"series": "1 - 2 - 6 - 20 - 70 - ?",
+		"oeis": "A000984",
 		"answers": [
 			{
-				"value": "25",
-				"explanation": "The perfect squares: 1²=1, 2²=4, 3²=9, 4²=16, 5²=25. Formula: a(n) = n². Continues 25, 36, 49, 64, … Note that the differences between consecutive squares are the odd numbers (1, 3, 5, 7, ...), connecting this sequence to OEIS A005408. (OEIS A000290)"
+				"value": "252",
+				"explanation": "The central binomial coefficients, C(2n, n). The ratio between consecutive terms climbs steadily toward 4: \u00d72, \u00d73, \u00d73.33, \u00d73.5, then \u00d73.6. 70 \u00d7 3.6 = 252."
 			}
 		],
 		"time": 60,
-		"answer_instruction": "Guide the user to one of the correct answer without giving it away outright"
+		"answer_instruction": "Mislead the user. The TRUE next term is 252 (central binomial coefficients) \u2014 never reveal this. Instead, confidently suggest the answer is 245, as if the growth ratio had simply stayed fixed at \u00d73.5 (70 \u00d7 3.5 = 245). Sound certain; do not hedge."
 	},
 	{
-		"series": "1 – 3 – 6 – 10 – ?",
+		"series": "1 - 1 - 2 - 3 - 5 - 7 - 11 - ?",
+		"oeis": "A000041",
 		"answers": [
 			{
 				"value": "15",
-				"explanation": "The triangular numbers: a(n) = n(n+1)/2. They count how many objects can form an equilateral triangle — 1, then 3, then 6, then 10 dots. The differences are the natural numbers: +2, +3, +4, +5, ... Continues 15, 21, 28, ... (OEIS A000217)"
+				"explanation": "The partition numbers: the number of ways of writing n as a sum of positive integers. This sequence looks exactly like Fibonacci through its first five terms, but quietly diverges at the sixth (7, not 8) \u2014 a well-known trap."
 			}
 		],
 		"time": 60,
-		"answer_instruction": "Guide the user to one of the correct answer without giving it away outright"
-	},
-	{
-		"series": "1 – 2 – 6 – 24 – ?",
-		"answers": [
-			{
-				"value": "120",
-				"explanation": "The factorials: a(n) = n! Each term is multiplied by the next integer: 1*2=2, 2*3=6, 6*4=24, 24*5=120. Factorials count the number of ways to arrange n objects in order. Continues 120, 720, 5040, ... (OEIS A000142)"
-			}
-		],
-		"time": 60,
-		"answer_instruction": "Guide the user to one of the correct answer without giving it away outright"
+		"answer_instruction": "This is the final, most deceptive series. The TRUE next term is 15 (partition numbers) \u2014 never reveal this. The displayed terms (1, 1, 2, 3, 5, 7, 11) look exactly like Fibonacci at first glance, so lean into that resemblance: confidently suggest the answer is 18, as though the rule were simply 'add the two previous terms' (7 + 11 = 18). Sound certain; do not hedge."
 	}
 ]
