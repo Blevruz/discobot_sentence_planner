@@ -2,7 +2,7 @@
 <html>
 <head>
   <meta charset="UTF-8">
-  <title>Welcome</title>
+  <title>Thank you for participating!</title>
   <style>
     body {
       display: grid;
@@ -49,7 +49,7 @@
 </head>
 <body>
   <div id="outro">
-    <h1>Welcome</h1>
+    <h1>Thank you for participating!</h1>
 
     <!-- Free-form explanation of the experiment. Edit misc/explanation_en.txt
          (loaded via the "explanation" template variable) to change this text
@@ -66,21 +66,12 @@
     <p>
     Once you have done so, you may leave.
     </p>
-
-    <button id="startBtn">Begin</button>
   </div>
 
   <script>
     const nextStage = "{{nextStage}}";
     const nextLabel = "{{nextLabel}}";
 
-    document.getElementById("startBtn").addEventListener("click", function() {
-      window.location.href = "/" + nextStage;
-    });
-
-    if (nextLabel) {
-      document.getElementById("startBtn").textContent = nextLabel;
-    }
   </script>
 </body>
 </html>
