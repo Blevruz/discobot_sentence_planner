@@ -73,10 +73,10 @@
                 "to_slot": "default"
             },
             {
-                "name": "woz_speech_to_output",
+                "name": "woz_speech_to_lapsus",
                 "from_slot": "speech_text",
-                "target_name": "io",
-                "to_slot": "generated_text"
+                "target_name": "lapsus_filter",
+                "to_slot": "input"
             },
             {
                 "name": "woz_passthrough_to_system_append",
@@ -102,7 +102,7 @@
                 "target_name": "mute_toggle_block",
                 "to_slot": "block"
             }
-        ]
+        ]    
     },
     {
         "name": "deaf_toggle_block",
