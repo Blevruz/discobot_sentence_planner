@@ -74,6 +74,9 @@ class EnglishLapsus(DummyMiddle):
             time.sleep(self.idle_sleep_s)
             return
 
+        # Preserve the leading whitespace of the incoming segment.
+        lead = text[:len(text) - len(text.lstrip())]
+
         # Split into sentences
         sentences = re.split(r'(?<=[.!?])\s+', text.strip())
         result_parts = []
@@ -126,7 +129,7 @@ class EnglishLapsus(DummyMiddle):
             else:
                 result_parts.append(sentence)
 
-        output = ' '.join(result_parts)
+        output = lead + ' '.join(result_parts)
 
         if lapsus_count > 0:
             utils.config.debug_print(
