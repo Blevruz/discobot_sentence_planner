@@ -68,7 +68,7 @@ class NaoTTS(DummyMiddle):
         params = {
             "language": self.language,
             "volume": 1.0,
-            "speed": 125,
+            "speed": 100,
             }
         self.update_params(params)
 
