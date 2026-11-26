@@ -81,7 +81,7 @@
                 "stageLabel": "Poems – familiarization",
                 "poems": "@misc/poems-0.json",
                 "postAddress": "/user_website_input",
-                "robotActive": "true",
+                "robotActive": "false",
                 "commentAfterBlanks": "0",
                 "nextStage": "poems_main",
                 "nextLabel": "Begin the main task"
